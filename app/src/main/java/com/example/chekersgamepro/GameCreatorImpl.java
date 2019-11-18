@@ -39,7 +39,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private CellDataImpl prevCellData;
 
-    private boolean isLastOptionalPathValid = false;
+    private CellDataImpl prevCellDataTmp;
 
     private boolean isPlayerOneTurn;
 
@@ -99,7 +99,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         // check if point contains in the can be start cells
         if (!cellsRelevantStart.contains(currCellData.getPoint())) {
             addDataOptionalPath(false, currCellData);
-            isLastOptionalPathValid = false;
             return dataOptionalPathByView;
         }
 
@@ -110,16 +109,10 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         addDataOptionalPath(true, currCellData);
 
         // add the first/root cell
-//        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, true), true);
 
         // add the first/root cell
-//        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, false), true);
-
-        isLastOptionalPathValid = true;
-
-        Log.d("TEST_GAME", "dataOptionalPathByView.size():: " + dataOptionalPathByView.size());
 
         return dataOptionalPathByView;
 
@@ -170,12 +163,16 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
             if (currCellData.isEmpty()){
                 addDataOptionalPath(true, currCellData);
                 listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
+                List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalCellsPathTmp);
 
                 prevCellData = currCellData;
+                prevCellDataTmp = currCellData;
                 CellDataImpl nextCellDataByCellRight = getNextCell(currCellData, false);
                 if (nextCellDataByCellRight != null && !nextCellDataByCellRight.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellRight)){
                     createOptionalPathByCell(nextCellDataByCellRight, true);
                 }
+                prevCellData = prevCellDataTmp;
+                listOptionalCellsPathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
 
                 CellDataImpl nextCellDataByCellLeft = getNextCell(currCellData, true);
                 if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
