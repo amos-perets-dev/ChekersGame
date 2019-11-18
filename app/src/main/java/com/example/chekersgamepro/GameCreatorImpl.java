@@ -188,8 +188,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     }
 
-
-
     private CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft){
             return cellData != null
                     ? isPlayerOneTurn
@@ -214,40 +212,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
     }
 
     /**
-     * Checked if the point in the optional path or not
-     *
-     * @param x from current point cell
-     * @param y from current point cell
-     * @return
-     */
-    public boolean isInOptionalPath(float x, float y) {
-
-        if (!isLastOptionalPathValid){
-            dataOptionalPathByView.clear();
-            return false;
-        }
-
-        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) x, (int) y));
-        // check if the pawn is null
-        // because if the user click when another process is running the pawn is null
-        if (cellByPoint == null) return false;
-        Point currPoint = cellByPoint.getPointStartPawn();
-
-        return FluentIterable.from(listsAllOptionalPathByCell.values())
-                .transform(new Function<Pair<List<Point>, List<PawnDataImpl>>, List<Point>>() {
-                    @Nullable
-                    @Override
-                    public List<Point> apply(@Nullable Pair<List<Point>, List<PawnDataImpl>> input) {
-                        return input.first;
-                    }
-                })
-                .filter(list -> list.contains(currPoint))
-                .first()
-                .isPresent();
-
-    }
-
-    /**
      * Check if the point is the end point in the path
      * @param x from current point cell
      * @param y from current point cell
@@ -258,9 +222,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
       return listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) != null;
     }
 
-    CellDataImpl cellDataSrc;
-    CellDataImpl cellDataDst;
-    PawnDataImpl pawnDataStart;
     /**
      *
      *
@@ -275,7 +236,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         Point currPointFromUser = new Point((int) x, (int) y);
         Pair<List<Point>, List<PawnDataImpl>> listPair = listsAllOptionalPathByCell.get(currPointFromUser);
 
-        cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
+        CellDataImpl cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
 
         //create list, for the move the pawn on the empties cells
         FluentIterable.from(listPair.second)
@@ -290,12 +251,12 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 })
                 .toList();
 
-        setCurrentTurnData();
+        setCurrentTurnData(cellDataDst);
 
         return new Pair<>(cellDataSrcCurrently.getPointStartPawn(), listPair.first);
     }
 
-    public void setCurrentTurnData(){
+    public void setCurrentTurnData(CellDataImpl cellDataDst){
         //SET DATA <<<
         dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
         // cell data src

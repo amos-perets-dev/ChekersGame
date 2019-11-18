@@ -169,12 +169,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setClickableViews(boolean isClickable){
         FluentIterable.from(pawnViewMap.values())
-                .transform(pawnView -> pawnView.setClickablePawn(isClickable))
                 .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
                 .toList();
 
         FluentIterable.from(cellViewMap.values())
-                .transform(cellView -> cellView.setClickableCell(isClickable))
                 .transform(cellView -> cellView.setEnabledCell(isClickable))
                 .toList();
     }
