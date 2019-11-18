@@ -152,11 +152,8 @@ public class MainActivity extends AppCompatActivity {
                 .removePawn(this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(point -> {
-                    PawnView pawnView = pawnViewMap.get(point);
-                    pawnView.removePawn();
-
-                }));
+                .map(pawnViewMap::get)
+                .subscribe(PawnView::removePawn));
 
 
         FloatingActionButton fab = findViewById(R.id.fab);
