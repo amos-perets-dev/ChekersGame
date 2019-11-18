@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn1"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn3"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn4"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn5"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn6"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn7"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn8"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn9"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn10"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn11"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn12"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn13"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn14"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn15"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn16"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn17"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn18"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn19"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn20"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn21"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn22"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn23"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+    <com.example.chekersgamepro.graphic.pawn.PawnView
+        android:id="@+id/pawn24"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
