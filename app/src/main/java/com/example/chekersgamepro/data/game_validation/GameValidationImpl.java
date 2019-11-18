@@ -73,33 +73,8 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
     }
 
-    public boolean isAttackMove(@Nullable CellDataImpl currCellData){
-
-        CellDataImpl nextCellLeft = getNextCell(currCellData, true);
-        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
-
-        CellDataImpl nextCellRight = getNextCell(currCellData, false);
-        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
-
-        // 1. check if there is normal turn
-        // 2. check if there is attack turn
-        if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(currCellData, nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
-            return !nextCellLeft.isEmpty();
-        }
-
-        // 1. check if there is normal turn
-        // 2. check if there is attack turn
-        if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(currCellData, nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
-            return !nextCellRight.isEmpty();
-        }
-
-        return false;
-    }
-
     public boolean isEqualPlayerCells(CellDataImpl currCellData){
 
-        // need to check if the next cell empty for the first turn
-        // in the first turn the next row after the last is init by player but empty
         boolean isPlayerOneCurrently = currCellData.isPlayerOneCurrently();
         return (isPlayerOneCurrently  && isPlayerOneTurn)
                 || (!isPlayerOneCurrently && !isPlayerOneTurn);
@@ -108,9 +83,9 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
     public boolean isEqualPlayerCells(CellDataImpl currCellData, CellDataImpl nextCellData){
 
-        // need to check if the next cell empty for the first turn
-        // in the first turn the next row after the last is init by player but empty
-        return currCellData.isPlayerOneCurrently() == nextCellData.isPlayerOneCurrently()/* && !nextCellData.isEmpty()*/;
+        boolean isPlayerOneCurrently = currCellData.isPlayerOneCurrently();
+        return (isPlayerOneCurrently  && isPlayerOneTurn)
+                || (!isPlayerOneCurrently && !isPlayerOneTurn);
 
     }
 

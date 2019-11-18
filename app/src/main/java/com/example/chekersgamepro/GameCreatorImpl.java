@@ -1,6 +1,7 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
+import android.util.Log;
 import android.util.Pair;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -116,6 +117,8 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         isLastOptionalPathValid = true;
 
+        Log.d("TEST_GAME", "dataOptionalPathByView.size():: " + dataOptionalPathByView.size());
+
         return dataOptionalPathByView;
 
     }
@@ -130,9 +133,8 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
             addDataOptionalPath(true, currCellData);
             listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
 
-            List<Point> pointListMovePawnTmp = new ArrayList<>(listOptionalCellsPathTmp);
-            List<PawnDataImpl> removeListDataPawnTmp = new ArrayList<>(removeListPawnTmp);
-            listsAllOptionalPathByCell.put(currCellData.getPoint(), Pair.create(pointListMovePawnTmp, removeListDataPawnTmp));
+            listsAllOptionalPathByCell.put(
+                    currCellData.getPoint(), Pair.create(new ArrayList<>(listOptionalCellsPathTmp), new ArrayList<>(removeListPawnTmp)));
             listOptionalCellsPathTmp.clear();
             removeListPawnTmp.clear();
             return;
@@ -289,22 +291,24 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 .transform(removeListPawn::add)
                 .toList();
 
-//        //SET DATA <<<
-//        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
-//        dataGame.updateCell(cellDataSrc, true, false);
-//        dataGame.updatePawn(pawnDataStart, cellDataDst);
-//        //SET DATA >>>
+        Pair<Point, List<Point>> pointListPair = new Pair<>(pawnDataStart.getStartXY(), pointListMovePawnPath);
 
-
-        return new Pair<>(pawnDataStart.getStartXY(), pointListMovePawnPath);
-    }
-
-    public void setCurrentTurnData(){
         //SET DATA <<<
         dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
         dataGame.updateCell(cellDataSrc, true, false);
         dataGame.updatePawn(pawnDataStart, cellDataDst);
         //SET DATA >>>
+
+
+        return pointListPair;
+    }
+
+    public void setCurrentTurnData(){
+//        //SET DATA <<<
+//        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
+//        dataGame.updateCell(cellDataSrc, true, false);
+//        dataGame.updatePawn(pawnDataStart, cellDataDst);
+//        //SET DATA >>>
     }
 
     private int indexRemovePawnList = 0;
@@ -322,12 +326,14 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (indexRemovePawnList < removeListPawn.size()){
             pawnData = removeListPawn.get(indexRemovePawnList);
             indexRemovePawnList++;
+            dataGame.updatePawnKilled(pawnData);
+
         }
         return pawnData;
 
     }
 
     public void updatePawnKilled(PawnDataImpl pawnData) {
-        dataGame.updatePawnKilled(pawnData);
+//        dataGame.updatePawnKilled(pawnData);
     }
 }
