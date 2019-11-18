@@ -110,8 +110,18 @@ public class GameManager {
         gameCreatorChecked.clearData();
     }
 
-    public boolean isInOptionalPathValid(float x, float y) {
-        return gameCreatorChecked.isInOptionalPathValidCell(x, y);
+//    public boolean isInOptionalPathValid(float x, float y) {
+//        return gameCreatorChecked.isInOptionalPathValidCell(x, y);
+//    }
+
+    public void updatePawnKilled() {
+        gameCreatorChecked.updatePawnKilled();
+    }
+
+    public void setCurrentSrcDstCellData() {
+
+        gameCreatorChecked.setCurrentSrcDstCellData();
+
     }
 
     public interface ChangePlayerListener{
