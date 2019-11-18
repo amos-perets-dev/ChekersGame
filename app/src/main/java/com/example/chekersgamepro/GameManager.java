@@ -124,10 +124,10 @@ public class GameManager {
 
     }
 
-    public void updatePawnKilled(PawnDataImpl pawnData) {
-        gameCreatorChecked.updatePawnKilled(pawnData);
-
-    }
+//    public void updatePawnKilled(PawnDataImpl pawnData) {
+//        gameCreatorChecked.updatePawnKilled(pawnData);
+//
+//    }
 
     public interface ChangePlayerListener{
         void onChangePlayer(boolean isPlayerOneTurn);

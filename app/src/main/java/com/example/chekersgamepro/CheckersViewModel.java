@@ -1,6 +1,7 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.lifecycle.LifecycleOwner;
@@ -110,14 +111,15 @@ public class CheckersViewModel extends ViewModel {
 
         boolean isInOptionalPath = gameManager.isInOptionalPath(x, y);
         boolean isInOptionalPathValid = gameManager.isInOptionalPathValid(x, y);
-
+        Log.d("TEST_GAME", "1 getMoveOrOptionalPath");
         if (isInOptionalPath){
             if (isInOptionalPathValid){
                 // x,y from cell
                 Pair<Point,  List<Point>> movePawnPath = gameManager.getMovePawnPath(x, y);
                 if (movePawnPath != null){
                     movePawn.postValue(movePawnPath);
-                    gameManager.setCurrentTurnData();
+                    Log.d("TEST_GAME", "2 getMoveOrOptionalPath");
+//                    gameManager.setCurrentTurnData();
                 }
             } else {
                 optionalPath.postValue( Collections.EMPTY_LIST );
@@ -132,7 +134,7 @@ public class CheckersViewModel extends ViewModel {
         PawnDataImpl pawnData = gameManager.removePawnIfNeeded();
         if (pawnData!=null){
             removePawn.postValue(pawnData.getStartXY());
-            gameManager.updatePawnKilled(pawnData);
+//            gameManager.updatePawnKilled(pawnData);
         }
 
     }

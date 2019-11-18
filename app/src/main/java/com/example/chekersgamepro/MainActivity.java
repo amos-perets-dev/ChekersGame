@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
     private void animatePawnMove(PawnView pawnViewStart, Point pointPawnStart) {
 
             Point currPoint = pointsListAnimatePawn.get(indexPointsListAnimatePawn);
+            Log.d("TEST_GAME", "3 getMoveOrOptionalPath");
 
             pawnViewStart
                     .animate()
@@ -193,12 +194,13 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             pawnViewStart.setElevation(10f);
+                            checkersViewModel.removePawnIfNeeded();
+
                         }
                     })
                     .withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            checkersViewModel.removePawnIfNeeded();
 
                             pawnViewStart.setElevation(0);
                             indexPointsListAnimatePawn++;

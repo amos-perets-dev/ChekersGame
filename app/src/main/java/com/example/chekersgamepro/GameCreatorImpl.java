@@ -44,6 +44,8 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private boolean isPlayerOneTurn;
 
+    private CellDataImpl cellDataSrcCurrently;
+
     public void clearData(){
         cellsRelevantStart.clear();
 
@@ -103,16 +105,17 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         }
 
         this.prevCellData = currCellData;
+        this.cellDataSrcCurrently = currCellData;
 
         // add the first/root cell
         addDataOptionalPath(true, currCellData);
 
         // add the first/root cell
-        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
+//        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, true), true);
 
         // add the first/root cell
-        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
+//        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, false), true);
 
         isLastOptionalPathValid = true;
@@ -200,10 +203,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     }
 
-    private @ Nullable Object addDataOptionalPath(boolean isClickValid, @Nullable CellDataImpl cellData) {
-        if (cellData == null)return null;
+    private void addDataOptionalPath(boolean isClickValid, @Nullable CellDataImpl cellData) {
+        if (cellData == null)return;
         dataOptionalPathByView.add(new DataCellViewClick(isClickValid,cellData.getPoint(), dataOptionalPathByView.size() == 0, cellData.isEmpty()));
-        return new Object();
     }
 
     @Override
@@ -272,43 +274,35 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         Point currPointFromUser = new Point((int) x, (int) y);
         Pair<List<Point>, List<PawnDataImpl>> listPair = listsAllOptionalPathByCell.get(currPointFromUser);
-        List<Point> pointListMovePawnPath = listPair.first;
-        List<PawnDataImpl> pawnDataListToRemove = listPair.second;
 
-        cellDataSrc =  dataGame.getCellByPoint(dataGame.getPawnByPoint(pointListMovePawnPath.get(0)).getContainerCellXY());
         cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
 
-        pawnDataStart = dataGame.getPawnByPoint(cellDataSrc.getPointStartPawn());
-
-        // check if the pawn is null
-        // because if the user click when another process is running the pawn is null
-        if (pawnDataStart == null) return null;
-
-//        Point pointStartPawn = pawnDataStart.getStartXY();
-
         //create list, for the move the pawn on the empties cells
-        FluentIterable.from(pawnDataListToRemove)
-                .transform(removeListPawn::add)
+        FluentIterable.from(listPair.second)
+                .transform(new Function<PawnDataImpl, Object>() {
+                    @Nullable
+                    @Override
+                    public Object apply(@Nullable PawnDataImpl pawnData) {
+                        removeListPawn.add(pawnData);
+                        dataGame.updatePawnKilled(pawnData);
+                        return "";
+                    }
+                })
                 .toList();
 
-        Pair<Point, List<Point>> pointListPair = new Pair<>(pawnDataStart.getStartXY(), pointListMovePawnPath);
+        setCurrentTurnData();
 
-        //SET DATA <<<
-        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
-        dataGame.updateCell(cellDataSrc, true, false);
-        dataGame.updatePawn(pawnDataStart, cellDataDst);
-        //SET DATA >>>
-
-
-        return pointListPair;
+        return new Pair<>(cellDataSrcCurrently.getPointStartPawn(), listPair.first);
     }
 
     public void setCurrentTurnData(){
-//        //SET DATA <<<
-//        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
-//        dataGame.updateCell(cellDataSrc, true, false);
-//        dataGame.updatePawn(pawnDataStart, cellDataDst);
-//        //SET DATA >>>
+        //SET DATA <<<
+        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
+        // cell data src
+        dataGame.updateCell(dataGame.getCellByPoint(cellDataSrcCurrently.getPoint()), true, false);
+        // pawn data src
+        dataGame.updatePawn(dataGame.getPawnByPoint(cellDataSrcCurrently.getPointStartPawn()), cellDataDst);
+        //SET DATA >>>
     }
 
     private int indexRemovePawnList = 0;
@@ -326,14 +320,14 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (indexRemovePawnList < removeListPawn.size()){
             pawnData = removeListPawn.get(indexRemovePawnList);
             indexRemovePawnList++;
-            dataGame.updatePawnKilled(pawnData);
+//            dataGame.updatePawnKilled(pawnData);
 
         }
         return pawnData;
 
     }
 
-    public void updatePawnKilled(PawnDataImpl pawnData) {
+//    public void updatePawnKilled(PawnDataImpl pawnData) {
 //        dataGame.updatePawnKilled(pawnData);
-    }
+//    }
 }
