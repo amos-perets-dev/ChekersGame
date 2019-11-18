@@ -269,9 +269,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         removeListPawn.clear();
 
         Point currPointFromUser = new Point((int) x, (int) y);
-        Pair<List<Point>, List<PawnDataImpl>> listListPair = listsAllOptionalPathByCell.get(currPointFromUser);
-        List<Point> pointListMovePawnPath = listListPair.first;
-        List<PawnDataImpl> pawnDataListToRemove = listsAllOptionalPathByCell.get(currPointFromUser).second;
+        Pair<List<Point>, List<PawnDataImpl>> listPair = listsAllOptionalPathByCell.get(currPointFromUser);
+        List<Point> pointListMovePawnPath = listPair.first;
+        List<PawnDataImpl> pawnDataListToRemove = listPair.second;
 
         cellDataSrc =  dataGame.getCellByPoint(dataGame.getPawnByPoint(pointListMovePawnPath.get(0)).getContainerCellXY());
         cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
@@ -282,7 +282,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         // because if the user click when another process is running the pawn is null
         if (pawnDataStart == null) return null;
 
-        Point pointStartPawn = pawnDataStart.getStartXY();
+//        Point pointStartPawn = pawnDataStart.getStartXY();
 
         //create list, for the move the pawn on the empties cells
         FluentIterable.from(pawnDataListToRemove)
@@ -296,7 +296,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 //        //SET DATA >>>
 
 
-        return new Pair<>(pointStartPawn, pointListMovePawnPath);
+        return new Pair<>(pawnDataStart.getStartXY(), pointListMovePawnPath);
     }
 
     public void setCurrentTurnData(){
@@ -322,9 +322,12 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (indexRemovePawnList < removeListPawn.size()){
             pawnData = removeListPawn.get(indexRemovePawnList);
             indexRemovePawnList++;
-            dataGame.updatePawnKilled(pawnData);
         }
         return pawnData;
 
+    }
+
+    public void updatePawnKilled(PawnDataImpl pawnData) {
+        dataGame.updatePawnKilled(pawnData);
     }
 }

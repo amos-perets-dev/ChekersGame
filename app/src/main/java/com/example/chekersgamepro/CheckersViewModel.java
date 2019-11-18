@@ -132,6 +132,7 @@ public class CheckersViewModel extends ViewModel {
         PawnDataImpl pawnData = gameManager.removePawnIfNeeded();
         if (pawnData!=null){
             removePawn.postValue(pawnData.getStartXY());
+            gameManager.updatePawnKilled(pawnData);
         }
 
     }
