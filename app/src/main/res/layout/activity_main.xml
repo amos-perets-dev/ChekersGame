@@ -19,7 +19,7 @@
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_test_start"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="190dp"
         android:textSize="20dp"
         android:gravity="center"/>
 
@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.15"/>
+        app:layout_constraintGuide_percent="0.35"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_board"

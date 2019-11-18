@@ -211,15 +211,9 @@ public class GameInitialImpl {
                 isMasterSquare = ((i == GAME_BOARD_SIZE - 1) || (i == 0));
                 isEmpty = !(isValidSquare && !isEmptyFirstTimeDraw);
 
-                if (isValidSquare){
-                    if (i < GAME_BOARD_SIZE / 2 - 1){
-                        isPlayerOnCurrently = true;
-                    } else if (i > GAME_BOARD_SIZE / 2){
-                        isPlayerOnCurrently = false;
-                    }
+                if (isValidSquare && !isEmpty){
+                    isPlayerOnCurrently = i < GAME_BOARD_SIZE / 2 - 1;
                 }
-
-
 
                 Point pointStartPawn = new Point(point.x + factorDecreaseSizeCell / 2, (point.y + factorDecreaseSizeCell / 2));
 
@@ -235,6 +229,8 @@ public class GameInitialImpl {
                 , pointStartPawn);
 
                 dataGame.putCellByPlayer(cellData);
+
+                isPlayerOnCurrently = false;
 
                 // initGameBoard the nex column
                 tmpX += widthCell;

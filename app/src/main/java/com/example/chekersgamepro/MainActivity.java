@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
@@ -102,13 +99,27 @@ public class MainActivity extends AppCompatActivity {
                 .doOnNext(new Consumer<View>() {
                     @Override
                     public void accept(View view) throws Exception {
-                        textViewTestStart.setText("X: " + view.getX() + ", Y: " + view.getY());
+                        DataGame dataGame = DataGame.getInstance();
+                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        String infoPawn = "";
+                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
+                        if (pawnByPoint != null){
+                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
+                        }
+                        textViewTestStart.setText(
+                                "" + infoCell + infoPawn
+                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
+                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
+                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
+                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
+                                        + "ALL CELL: " + dataGame.getCells().size());
                     }
                 })
                 .doOnNext(new Consumer<View>() {
                     @Override
                     public void accept(View view) throws Exception {
-                        setClickableViews(false);
+//                        setClickableViews(false);
                     }
                 })
                 .subscribe(this::onClickCell));
@@ -164,15 +175,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setClickableViews(boolean isClickable){
-        FluentIterable.from(pawnViewMap.values())
-                .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
-                .toList();
-
-        FluentIterable.from(cellViewMap.values())
-                .transform(cellView -> cellView.setEnabledCell(isClickable))
-                .toList();
-    }
+//    private void setClickableViews(boolean isClickable){
+//        FluentIterable.from(pawnViewMap.values())
+//                .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
+//                .toList();
+//
+//        FluentIterable.from(cellViewMap.values())
+//                .transform(cellView -> cellView.setEnabledCell(isClickable))
+//                .toList();
+//    }
 
     private void animatePawnMove(PawnView pawnViewStart, Point pointPawnStart) {
 
@@ -257,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
             initViewsClicksPrev(dataCellViewClicks);
         }
 
-        setClickableViews(true);
+//        setClickableViews(true);
     }
 
     private void initViewsClicksPrev(List<DataCellViewClick> dataCellViewClicks){
@@ -310,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void nextTurn(){
-        setClickableViews(true);
+//        setClickableViews(true);
         indexPointsListAnimatePawn = 0;
         pointsListAnimatePawn.clear();
         clearCheckedOptionalPathViews();

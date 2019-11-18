@@ -1,5 +1,7 @@
 package com.example.chekersgamepro.data.game_validation;
 
+import android.util.Log;
+
 import com.example.chekersgamepro.GameManager;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 
@@ -28,14 +30,14 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         // 1. check if there is normal turn
         // 2. check if there is attack turn
         if ((nextCellLeft != null && nextCellLeft.isEmpty())
-                ||  (nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(currCellData) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+                ||  (nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
             return true;
         }
 
         // 1. check if there is normal turn
         // 2. check if there is attack turn
         if ((nextCellRight != null && nextCellRight.isEmpty())
-                ||  (nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(currCellData) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
+                ||  (nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
             return true;
         }
 
@@ -57,14 +59,14 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
         // check if there is attack path
         if (nextCellLeft != null && nextCellLeftByNextCell != null){
-            if (!nextCellLeft.isEmpty() && !isEqualPlayerCells(currCell) && nextCellLeftByNextCell.isEmpty()){
+            if (!nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellLeftByNextCell.isEmpty()){
                 return false;
             }
         }
 
         // check if there is attack path
         if (nextCellRight != null && nextCellRightByNextCell != null){
-            if (!nextCellRight.isEmpty() && !isEqualPlayerCells(currCell) && nextCellRightByNextCell.isEmpty()){
+            if (!nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellRightByNextCell.isEmpty()){
                 return false;
             }
         }

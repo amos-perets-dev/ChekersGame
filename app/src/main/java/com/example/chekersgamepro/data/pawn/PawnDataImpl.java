@@ -3,7 +3,6 @@ package com.example.chekersgamepro.data.pawn;
 import android.graphics.Point;
 
 import com.example.chekersgamepro.R;
-import com.example.chekersgamepro.data.cell.CellDataImpl;
 
 public class PawnDataImpl {
 
@@ -19,13 +18,13 @@ public class PawnDataImpl {
 
     private boolean isMasterPawn = false;
     private boolean isKilled = false;
-    private boolean isPlayerOneCurrently;
+    private boolean isPlayerOne;
 
 
-    public PawnDataImpl(int idPawn, Point containerCellXY, boolean isPlayerOneCurrently, Point startXY, int width, int height ) {
+    public PawnDataImpl(int idPawn, Point containerCellXY, boolean isPlayerOne, Point startXY, int width, int height ) {
         this.idPawn = idPawn;
         this.containerCellXY = containerCellXY;
-        this.isPlayerOneCurrently = isPlayerOneCurrently;
+        this.isPlayerOne = isPlayerOne;
         this.startXY = startXY;
         this.width = width;
         this.height = height;
@@ -67,12 +66,8 @@ public class PawnDataImpl {
         return this;
     }
 
-    public boolean isPlayerOneCurrently() {
-        return isPlayerOneCurrently;
-    }
-
-    public void setPlayerOne(boolean isPlayerOneCurrently) {
-        isPlayerOneCurrently = isPlayerOneCurrently;
+    public boolean isPlayerOne() {
+        return isPlayerOne;
     }
 
     public boolean isKilled() {
@@ -120,11 +115,6 @@ public class PawnDataImpl {
     }
 
     public int getIcon() {
-        return isPlayerOneCurrently ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
-    }
-
-    public PawnDataImpl setIcon(int icon) {
-        this.icon = icon;
-        return this;
+        return isPlayerOne ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
     }
 }

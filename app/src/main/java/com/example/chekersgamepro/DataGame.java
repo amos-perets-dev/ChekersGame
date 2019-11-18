@@ -44,6 +44,14 @@ public class DataGame {
         return instance;
     }
 
+    public Map<Point, CellDataImpl> getCellsPlayerOne() {
+        return cellsPlayerOne;
+    }
+
+    public Map<Point, CellDataImpl> getCellsPlayerTwo() {
+        return cellsPlayerTwo;
+    }
+
     public Map<Point, CellDataImpl> getCells() {
         return cells;
     }
@@ -61,7 +69,7 @@ public class DataGame {
     }
 
     public void removePawnByPlayer(PawnDataImpl pawnData) {
-        if(pawnData.isPlayerOneCurrently()){
+        if(pawnData.isPlayerOne()){
             pawnsPlayerOne.remove(pawnData.getStartXY());
         } else{
             pawnsPlayerTwo.remove(pawnData.getStartXY());
@@ -70,7 +78,7 @@ public class DataGame {
     }
 
     public void putPawnByPlayer(PawnDataImpl pawnData) {
-        if (pawnData.isPlayerOneCurrently()) {
+        if (pawnData.isPlayerOne()) {
             pawnsPlayerOne.put(pawnData.getStartXY(), pawnData);
         } else {
             pawnsPlayerTwo.put(pawnData.getStartXY(), pawnData);
@@ -79,12 +87,20 @@ public class DataGame {
     }
 
     public void putCellByPlayer(CellDataImpl cellDataImpl) {
-        if (cellDataImpl.isPlayerOneCurrently()) {
+        if (cellDataImpl.isPlayerOneCurrently()&& !cellDataImpl.isEmpty()) {
             cellsPlayerOne.put(cellDataImpl.getPoint(), cellDataImpl);
-        } else if (!cellDataImpl.isEmpty()) {
+        } else if (!cellDataImpl.isPlayerOneCurrently() && !cellDataImpl.isEmpty()) {
             cellsPlayerTwo.put(cellDataImpl.getPoint(), cellDataImpl);
         }
         cells.put(cellDataImpl.getPoint(), cellDataImpl);
+    }
+
+    public void removeCellByPlayer(CellDataImpl cellDataImpl) {
+        if (cellDataImpl.isPlayerOneCurrently()) {
+            cellsPlayerOne.remove(cellDataImpl.getPoint());
+        } else if (!cellDataImpl.isPlayerOneCurrently() ) {
+            cellsPlayerTwo.remove(cellDataImpl.getPoint());
+        }
     }
 
     /**
@@ -110,9 +126,10 @@ public class DataGame {
      * @param isPlayerOneCurrently the player one currently
      */
     public void updateCell(CellDataImpl cellData, boolean isEmpty, boolean isPlayerOneCurrently){
+        // firstable remove the cell because after it the cell change the data/value
         cellData.setEmpty(isEmpty);
         cellData.setPlayerOneCurrently(isPlayerOneCurrently);
-        putCellByPlayer(cellData);
+        cells.put(cellData.getPoint(), cellData);
     }
 
     public PawnDataImpl getPawnByPoint(Point point) {
@@ -129,11 +146,14 @@ public class DataGame {
     }
 
     public DataGame updatePawnKilled(PawnDataImpl pawnData) {
+        CellDataImpl cellByPoint = getCellByPoint(pawnData.getContainerCellXY());
 
         // update that the cell is change to empty because the pawn killed
-        updateCell(getCellByPoint(pawnData.getContainerCellXY()), true, false);
+        updateCell(cellByPoint, true, false);
         pawnData.setKilled(true);
         removePawnByPlayer(pawnData);
+        removeCellByPlayer(cellByPoint);
+
         return this;
     }
 }

@@ -257,13 +257,11 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
     }
 
     public void setCurrentTurnData(CellDataImpl cellDataDst){
-        //SET DATA <<<
         dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
         // cell data src
-        dataGame.updateCell(dataGame.getCellByPoint(cellDataSrcCurrently.getPoint()), true, false);
+        dataGame.updateCell(cellDataSrcCurrently, true, false);
         // pawn data src
         dataGame.updatePawn(dataGame.getPawnByPoint(cellDataSrcCurrently.getPointStartPawn()), cellDataDst);
-        //SET DATA >>>
     }
 
     private int indexRemovePawnList = 0;
