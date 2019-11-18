@@ -21,23 +21,33 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
     public boolean isCanCellStart(CellDataImpl currCellData){
 
+        //Check the left direction
         CellDataImpl nextCellLeft = getNextCell(currCellData, true);
-        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
 
-        CellDataImpl nextCellRight = getNextCell(currCellData, false);
-        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
-
-        // 1. check if there is normal turn
-        // 2. check if there is attack turn
-        if ((nextCellLeft != null && nextCellLeft.isEmpty())
-                ||  (nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+        if (nextCellLeft != null && nextCellLeft.isEmpty()){
             return true;
         }
 
+        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
+
         // 1. check if there is normal turn
         // 2. check if there is attack turn
-        if ((nextCellRight != null && nextCellRight.isEmpty())
-                ||  (nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
+        if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+            return true;
+        }
+
+        //Check the right direction
+        CellDataImpl nextCellRight = getNextCell(currCellData, false);
+
+        if (nextCellRight != null && nextCellRight.isEmpty()){
+            return true;
+        }
+
+        CellDataImpl nextCellChildRight = getNextCell(nextCellLeft, false);
+
+        // 1. check if there is normal turn
+        // 2. check if there is attack turn
+        if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
             return true;
         }
 
@@ -52,21 +62,21 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         }
 
         CellDataImpl nextCellLeft = getNextCell(currCell, true);
-        CellDataImpl nextCellLeftByNextCell = getNextCell(nextCellLeft, true);
-
-        CellDataImpl nextCellRight = getNextCell(currCell, false);
-        CellDataImpl nextCellRightByNextCell = getNextCell(nextCellRight, false);
 
         // check if there is attack path
-        if (nextCellLeft != null && nextCellLeftByNextCell != null){
-            if (!nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellLeftByNextCell.isEmpty()){
+        if (nextCellLeft != null){
+            CellDataImpl nextCellLeftByNextCell = getNextCell(nextCellLeft, true);
+            if (nextCellLeftByNextCell != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellLeftByNextCell.isEmpty()){
                 return false;
             }
         }
 
+        CellDataImpl nextCellRight = getNextCell(currCell, false);
+
         // check if there is attack path
-        if (nextCellRight != null && nextCellRightByNextCell != null){
-            if (!nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellRightByNextCell.isEmpty()){
+        if (nextCellRight != null){
+            CellDataImpl nextCellRightByNextCell = getNextCell(nextCellRight, false);
+            if (nextCellRightByNextCell != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellRightByNextCell.isEmpty()){
                 return false;
             }
         }
