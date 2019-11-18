@@ -22,6 +22,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private Map<Point, Pair<List<Point>, List<PawnDataImpl>>> listsAllOptionalPathByCell = new HashMap<>();
 
+    /**
+     * The optional cells that the pawn can move on it
+     */
     private List<Point> listOptionalCellsPathTmp = new ArrayList<>();//
 
     private List<PawnDataImpl> removeListPawnTmp = new ArrayList<>();
@@ -104,11 +107,11 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         addDataOptionalPath(true, currCellData);
 
         // add the first/root cell
-        listOptionalCellsPathTmp.add(currCellData.getPoint());
+        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, true), true);
 
         // add the first/root cell
-        listOptionalCellsPathTmp.add(currCellData.getPoint());
+        listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
         createOptionalPathByCell(getNextCell(currCellData, false), true);
 
         isLastOptionalPathValid = true;
@@ -152,7 +155,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                     removeListPawnTmp.add(dataGame.getPawnByPoint(currCellData.getPointStartPawn()));
 
-                    listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
+//                    listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
                     prevCellData = currCellData;
                     createOptionalPathByCell(nextCellDataByCell, false);
                 }
@@ -227,7 +230,13 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         Point currPoint = cellByPoint.getPointStartPawn();
 
         return FluentIterable.from(listsAllOptionalPathByCell.values())
-                .transform(pair -> pair.first)
+                .transform(new Function<Pair<List<Point>, List<PawnDataImpl>>, List<Point>>() {
+                    @Nullable
+                    @Override
+                    public List<Point> apply(@Nullable Pair<List<Point>, List<PawnDataImpl>> input) {
+                        return input.first;
+                    }
+                })
                 .filter(list -> list.contains(currPoint))
                 .first()
                 .isPresent();
@@ -245,6 +254,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
       return listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) != null;
     }
 
+    CellDataImpl cellDataSrc;
+    CellDataImpl cellDataDst;
+    PawnDataImpl pawnDataStart;
     /**
      *
      *
@@ -256,12 +268,15 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         indexRemovePawnList = 0;
         removeListPawn.clear();
 
-        List<Point> pointListMovePawnPath = listsAllOptionalPathByCell.get(new Point((int) x, (int) y)).first;
+        Point currPointFromUser = new Point((int) x, (int) y);
+        Pair<List<Point>, List<PawnDataImpl>> listListPair = listsAllOptionalPathByCell.get(currPointFromUser);
+        List<Point> pointListMovePawnPath = listListPair.first;
+        List<PawnDataImpl> pawnDataListToRemove = listsAllOptionalPathByCell.get(currPointFromUser).second;
 
-        CellDataImpl cellDataSrc =  dataGame.getCellByPoint(pointListMovePawnPath.get(0));
-        CellDataImpl cellDataDst =  dataGame.getCellByPoint(pointListMovePawnPath.get(pointListMovePawnPath.size() - 1));
+        cellDataSrc =  dataGame.getCellByPoint(dataGame.getPawnByPoint(pointListMovePawnPath.get(0)).getContainerCellXY());
+        cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
 
-        PawnDataImpl pawnDataStart = dataGame.getPawnByPoint(cellDataSrc.getPointStartPawn());
+        pawnDataStart = dataGame.getPawnByPoint(cellDataSrc.getPointStartPawn());
 
         // check if the pawn is null
         // because if the user click when another process is running the pawn is null
@@ -269,35 +284,27 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         Point pointStartPawn = pawnDataStart.getStartXY();
 
-//        //create list, for the move the pawn on the empties cells
-//        FluentIterable.from(pointCellsListByEndPoint)
-//                .transform(dataGame::getCellByPoint)
-//                .filter(CellDataImpl::isEmpty)
-//                .transform(CellDataImpl::getPointStartPawn)
-//                .transform(pointListMovePawnPath::add)
-//                .toList();
-
-        //create list, for remove pawns in the path
-        FluentIterable.from(listsAllOptionalPathByCell.get(new Point((int) x, (int) y)).second)
-                .transform(new Function<PawnDataImpl, Object>() {
-                    @Nullable
-                    @Override
-                    public Object apply(@Nullable PawnDataImpl pawnData) {
-                        dataGame.updatePawnKilled(pawnData);
-                        return "";
-                    }
-                })
+        //create list, for the move the pawn on the empties cells
+        FluentIterable.from(pawnDataListToRemove)
+                .transform(removeListPawn::add)
                 .toList();
 
+//        //SET DATA <<<
+//        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
+//        dataGame.updateCell(cellDataSrc, true, false);
+//        dataGame.updatePawn(pawnDataStart, cellDataDst);
+//        //SET DATA >>>
 
+
+        return new Pair<>(pointStartPawn, pointListMovePawnPath);
+    }
+
+    public void setCurrentTurnData(){
         //SET DATA <<<
         dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
         dataGame.updateCell(cellDataSrc, true, false);
         dataGame.updatePawn(pawnDataStart, cellDataDst);
         //SET DATA >>>
-
-
-        return new Pair<>(pointStartPawn, pointListMovePawnPath);
     }
 
     private int indexRemovePawnList = 0;
@@ -315,6 +322,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (indexRemovePawnList < removeListPawn.size()){
             pawnData = removeListPawn.get(indexRemovePawnList);
             indexRemovePawnList++;
+            dataGame.updatePawnKilled(pawnData);
         }
         return pawnData;
 

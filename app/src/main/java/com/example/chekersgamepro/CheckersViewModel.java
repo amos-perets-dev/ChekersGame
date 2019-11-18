@@ -117,6 +117,7 @@ public class CheckersViewModel extends ViewModel {
                 Pair<Point,  List<Point>> movePawnPath = gameManager.getMovePawnPath(x, y);
                 if (movePawnPath != null){
                     movePawn.postValue(movePawnPath);
+                    gameManager.setCurrentTurnData();
                 }
             } else {
                 optionalPath.postValue( Collections.EMPTY_LIST );

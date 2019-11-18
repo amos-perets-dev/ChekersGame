@@ -190,56 +190,39 @@ public class PawnView extends ImageView{
 
         indexRemovePawn = 1;
 
-        if (disposableRemovePawn != null){
-            disposableRemovePawn.dispose();
-        }
-
-        disposableRemovePawn = Observable.interval(10, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(input -> indexRemovePawn = indexRemovePawn - 0.2f)
-                .subscribe(new Consumer<Long>() {
-                    @Override
-                    public void accept(Long aLong) throws Exception {
-                        if (indexRemovePawn > 0) {
-                            setAlpha(indexRemovePawn);
-                            invalidate();
-                        } else {
-                            setVisibility(GONE);
-                        }
-                    }
-                });
-
-
-//                animate()
-//                .withLayer()
-//                /* .translationY(y)
-//                 .translationX(x)*/
-//                .alpha(0)
-//                .setDuration(400)
-//                .withEndAction(new Runnable() {
+//        if (disposableRemovePawn != null){
+//            disposableRemovePawn.dispose();
+//        }
+//
+//        disposableRemovePawn = Observable.interval(10, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnNext(input -> indexRemovePawn = indexRemovePawn - 0.2f)
+//                .subscribe(new Consumer<Long>() {
 //                    @Override
-//                    public void run() {
-//                        // set the pawn view
-//                        setVisibility(GONE);
-////                        setClickable(false);
-////                        setEnabled(false);
-//
-//                        x += 120;
-//
-//                        if (x >= 600) {
-//                            y = 120;
+//                    public void accept(Long aLong) throws Exception {
+//                        if (indexRemovePawn > 0) {
+//                            setAlpha(indexRemovePawn);
+//                            invalidate();
+//                        } else {
+//                            setVisibility(GONE);
 //                        }
 //                    }
-//                })
-//                .withStartAction(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        isAnimationProcess = true;
-//                        prevPawnView = PawnView.this;
-//                    }
-//                })
-//                .start();
+//                });
+
+
+            animate()
+                .withLayer()
+                .alpha(0)
+                .setDuration(400)
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        // set the pawn view
+                        setVisibility(GONE);
+                    }
+                })
+                .start();
     }
 
     public Bitmap drawableToBitmap (Drawable drawable) {

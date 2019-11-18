@@ -118,6 +118,12 @@ public class GameManager {
         return gameCreatorChecked.isInOptionalPathValidCell(x, y);
     }
 
+    public void setCurrentTurnData() {
+
+        gameCreatorChecked.setCurrentTurnData();
+
+    }
+
     public interface ChangePlayerListener{
         void onChangePlayer(boolean isPlayerOneTurn);
     }
