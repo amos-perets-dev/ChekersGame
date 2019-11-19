@@ -1,7 +1,6 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
-import android.util.Pair;
 
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -25,6 +24,8 @@ public class GameManager {
     private boolean isPlayerOneTurn;
 
     private List<ChangePlayerListener> changePlayerListListeners = new ArrayList<>();
+
+    private DataGame dataGame = DataGame.getInstance();
 
     public void initGame(int x, int y, int width, int height) {
 
@@ -98,7 +99,7 @@ public class GameManager {
         return gameCreatorChecked.createOptionalPath(x, y);
     }
 
-    public Pair<Point,  List<Point>> getMovePawnPath(float x, float y) {
+    public List<Point> getMovePawnPath(float x, float y) {
         return gameCreatorChecked.getMovePawnPath(x, y);
     }
 
@@ -110,18 +111,17 @@ public class GameManager {
         gameCreatorChecked.clearData();
     }
 
-//    public boolean isInOptionalPathValid(float x, float y) {
-//        return gameCreatorChecked.isInOptionalPathValidCell(x, y);
-//    }
-
     public void updatePawnKilled() {
         gameCreatorChecked.updatePawnKilled();
     }
 
-    public void setCurrentSrcDstCellData() {
+    public void actionAfterPublishMovePawnPath() {
+        gameCreatorChecked.actionAfterPublishMovePawnPath();
+    }
 
-        gameCreatorChecked.setCurrentSrcDstCellData();
-
+    public Point getPointPawnByCell(Point pointByCell) {
+        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(dataGame.getCellByPoint(pointByCell).getPointStartPawn());
+        return pawnByPoint != null ? pawnByPoint.getStartXY() : null;
     }
 
     public interface ChangePlayerListener{

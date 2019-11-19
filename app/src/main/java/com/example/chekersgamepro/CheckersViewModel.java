@@ -31,7 +31,7 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<List<DataCellViewClick>> optionalPath = new MutableLiveData<>();
 
-    private MutableLiveData<Pair<Point,  List<Point>>> movePawn = new MutableLiveData<>();
+    private MutableLiveData<List<Point>> movePawn = new MutableLiveData<>();
 
     private MutableLiveData<Point> removePawn = new MutableLiveData<>();
 
@@ -43,7 +43,7 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
-    public Observable<Pair<Point,  List<Point>>> getMovePawn(LifecycleOwner lifecycleOwner){
+    public Observable<List<Point>> getMovePawn(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, movePawn));
     }
 
@@ -113,10 +113,10 @@ public class CheckersViewModel extends ViewModel {
 
 /*        if (isInOptionalPathValid){*/
                 // x,y from cell
-                Pair<Point,  List<Point>> movePawnPath = gameManager.getMovePawnPath(x, y);
+                List<Point> movePawnPath = gameManager.getMovePawnPath(x, y);
                 if (movePawnPath != null){
                     movePawn.postValue(movePawnPath);
-                    gameManager.setCurrentSrcDstCellData();
+                    gameManager.actionAfterPublishMovePawnPath();
                 }
        /* } */else {
             List<DataCellViewClick> optionalPathByCell = gameManager.createOptionalPathByCell(x, y);
@@ -130,6 +130,12 @@ public class CheckersViewModel extends ViewModel {
             removePawn.postValue(pawnData.getStartXY());
             gameManager.updatePawnKilled();
         }
+
+    }
+
+    public Point getPointPawnByCell(Point pointByCell) {
+
+        return gameManager.getPointPawnByCell(pointByCell);
 
     }
 }

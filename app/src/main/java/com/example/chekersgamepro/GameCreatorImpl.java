@@ -1,7 +1,6 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
-import android.util.Log;
 import android.util.Pair;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -44,8 +43,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
     private CellDataImpl cellDataSrcCurrently;
 
     private boolean isAttackMove = false;
-
-    private int prevSizeDataOptionalPathByView = 0;
 
     public void clearData(){
         cellsPointRelevantStart.clear();
@@ -237,6 +234,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 //      return listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) != null;
 //    }
 
+    Point endPointPathFromUser;
     /**
      *
      *
@@ -244,23 +242,24 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
      * @param y point of the dst cell
      * @return
      */
-    public Pair<Point,  List<Point>> getMovePawnPath(float x, float y) {
+    public List<Point> getMovePawnPath(float x, float y) {
         //check if the point in the path and in the valid cell(end point)
         if (listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) == null) return null;
-        indexRemovePawnList = 0;
 
+        endPointPathFromUser = new Point((int) x, (int) y);
 
-        Point currPointFromUser = new Point((int) x, (int) y);
-        Pair<List<Point>, List<PawnDataImpl>> listPair = listsAllOptionalPathByCell.get(currPointFromUser);
-
-        cellDataDst =  dataGame.getCellByPoint(currPointFromUser);
-
-        listPawnsNeededKilled = new ArrayList<>(listPair.second);
-
-        return new Pair<>(cellDataSrcCurrently.getPointStartPawn(), listPair.first);
+        return listsAllOptionalPathByCell.get(endPointPathFromUser).first;
     }
 
-    public void setCurrentSrcDstCellData(){
+    public void actionAfterPublishMovePawnPath(){
+        indexRemovePawnList = 0;
+
+        listPawnsNeededKilled = new ArrayList<>(listsAllOptionalPathByCell.get(endPointPathFromUser).second);
+
+        setCurrentSrcDstCellData(dataGame.getCellByPoint(endPointPathFromUser));
+    }
+
+    public void setCurrentSrcDstCellData(CellDataImpl cellDataDst){
         dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
         // cell data src
         dataGame.updateCell(cellDataSrcCurrently, true, false);
@@ -272,7 +271,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private PawnDataImpl currPawnDataNeededKilled;
     private List<PawnDataImpl> listPawnsNeededKilled;
-    private CellDataImpl cellDataDst;
 
     /**
      * Remove the relevant pawn from the data

@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
 
     private List<DataCellViewClick> cellsViewOptionalPath = new ArrayList<>();
 
+    private PawnView currPawnViewStartPath;
+
+    private Point currPointPawnViewStartPath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,21 +103,21 @@ public class MainActivity extends AppCompatActivity {
                 .doOnNext(new Consumer<View>() {
                     @Override
                     public void accept(View view) throws Exception {
-                        DataGame dataGame = DataGame.getInstance();
-                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
-                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
-                        String infoPawn = "";
-                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
-                        if (pawnByPoint != null){
-                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
-                        }
-                        textViewTestStart.setText(
-                                "" + infoCell + infoPawn
-                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
-                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
-                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
-                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
-                                        + "ALL CELL: " + dataGame.getCells().size());
+//                        DataGame dataGame = DataGame.getInstance();
+//                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
+//                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
+//                        String infoPawn = "";
+//                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
+//                        if (pawnByPoint != null){
+//                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
+//                        }
+//                        textViewTestStart.setText(
+//                                "" + infoCell + infoPawn
+//                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
+//                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
+//                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
+//                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
+//                                        + "ALL CELL: " + dataGame.getCells().size());
                     }
                 })
                 .subscribe(this::onClickCell));
@@ -134,22 +138,21 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(Functions.actionConsumer(checkersViewModel::finishedCheckedRelevantCells)));
 
         compositeDisposable.add(checkersViewModel.getOptionalPath(this)
-               .doOnNext(this::checkedOptionalPathByClick)
-               .subscribe());
+                .doOnNext(this::checkedOptionalPathByClick)
+                .doOnNext(dataCellViewClicks -> {
+                    // set the pawn start in the current path
+                    if (dataCellViewClicks.size() > 0){
+                        currPawnViewStartPath = pawnViewMap.get(checkersViewModel.getPointPawnByCell(dataCellViewClicks.get(0).getPoint()));
+                    }
+                })
+                .subscribe());
 
         compositeDisposable.add(checkersViewModel.getMovePawn(this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(pointListPair -> {
-
-                    Point pointPawnStart = pointListPair.first;
-                    PawnView pawnViewStart = pawnViewMap.get(pointPawnStart);
-
-                    pointsListAnimatePawn.addAll(pointListPair.second);
-
-                    animatePawnMove(pawnViewStart, pointPawnStart);
-
-                }));
+                .doOnNext(pointsListAnimatePawn::addAll)
+                .doOnNext(this::setCurrPointPawnViewStartPath)
+                .subscribe(Functions.actionConsumer(this::animatePawnMove)));
 
 
         compositeDisposable.add(checkersViewModel
@@ -168,22 +171,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setClickableViews(boolean isClickable){
-//        FluentIterable.from(pawnViewMap.values())
-//                .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
-//                .toList();
-//
-//        FluentIterable.from(cellViewMap.values())
-//                .transform(cellView -> cellView.setEnabledCell(isClickable))
-//                .toList();
+    /**
+     * Set the point of the start pawn in the current path
+     *
+     * @param currentPointList of the path
+     */
+    public void setCurrPointPawnViewStartPath(List<Point> currentPointList) {
+        this.currPointPawnViewStartPath = currentPointList.get(0);
     }
 
-    private void animatePawnMove(PawnView pawnViewStart, Point pointPawnStart) {
+    private void setClickableViews(boolean isClickable){
+        FluentIterable.from(pawnViewMap.values())
+                .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
+                .toList();
+
+        FluentIterable.from(cellViewMap.values())
+                .transform(cellView -> cellView.setEnabledCell(isClickable))
+                .toList();
+    }
+
+    private void animatePawnMove() {
 
             Point currPoint = pointsListAnimatePawn.get(indexPointsListAnimatePawn);
             Log.d("TEST_GAME", "3 getMoveOrOptionalPath");
 
-            pawnViewStart
+        currPawnViewStartPath
                     .animate()
                     .withLayer()
                     .translationY(currPoint.y)
@@ -192,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                     .withStartAction(new Runnable() {
                         @Override
                         public void run() {
-                            pawnViewStart.setElevation(10f);
+                            currPawnViewStartPath.setElevation(10f);
                             checkersViewModel.removePawnIfNeeded();
 
                         }
@@ -201,15 +213,15 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            pawnViewStart.setElevation(0);
+                            currPawnViewStartPath.setElevation(0);
                             indexPointsListAnimatePawn++;
                             if (indexPointsListAnimatePawn < pointsListAnimatePawn.size()){
-                                animatePawnMove(pawnViewStart, pointPawnStart);
+                                animatePawnMove();
                             } else {
-                                pawnViewMap.remove(pointPawnStart);
-                                pawnViewStart.setXY(currPoint.x, currPoint.y);
+                                pawnViewMap.remove(currPointPawnViewStartPath);
+                                currPawnViewStartPath.setXY(currPoint.x, currPoint.y);
                                 // now the curr point is the end point
-                                pawnViewMap.put(currPoint, pawnViewStart);
+                                pawnViewMap.put(currPoint, currPawnViewStartPath);
                                 nextTurn();
                             }
                         }
