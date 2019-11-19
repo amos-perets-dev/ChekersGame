@@ -12,12 +12,14 @@ import androidx.lifecycle.ViewModel;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.google.common.base.Optional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Consumer;
 
 public class CheckersViewModel extends ViewModel {
 
@@ -109,16 +111,11 @@ public class CheckersViewModel extends ViewModel {
 
     public void getMoveOrOptionalPath(float x, float y) {
 
-//        boolean isInOptionalPathValid = gameManager.isInOptionalPathValid(x, y);
-
-/*        if (isInOptionalPathValid){*/
-                // x,y from cell
-                List<Point> movePawnPath = gameManager.getMovePawnPath(x, y);
-                if (movePawnPath != null){
-                    movePawn.postValue(movePawnPath);
-                    gameManager.actionAfterPublishMovePawnPath();
-                }
-       /* } */else {
+        List<Point> movePawnPath = gameManager.getMovePawnPath(x, y);
+        if (movePawnPath != null) {
+            movePawn.postValue(movePawnPath);
+            gameManager.actionAfterPublishMovePawnPath();
+        } else {
             List<DataCellViewClick> optionalPathByCell = gameManager.createOptionalPathByCell(x, y);
             optionalPath.postValue(optionalPathByCell == null ? Collections.EMPTY_LIST : optionalPathByCell);
         }

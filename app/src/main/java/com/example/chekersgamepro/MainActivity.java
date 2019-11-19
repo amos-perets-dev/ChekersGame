@@ -193,7 +193,6 @@ public class MainActivity extends AppCompatActivity {
     private void animatePawnMove() {
 
             Point currPoint = pointsListAnimatePawn.get(indexPointsListAnimatePawn);
-            Log.d("TEST_GAME", "3 getMoveOrOptionalPath");
 
         currPawnViewStartPath
                     .animate()
@@ -297,8 +296,6 @@ public class MainActivity extends AppCompatActivity {
 
         viewsByRelevantCellsList.clear();
     }
-
-    private CompositeDisposable compositeDisposableViews = new CompositeDisposable();
 
     private List<Observable<? extends View>> addViewsToObservable(){
         Log.d("TEST_GAME", "private List<Observable<? extends View>> addViewsToObservable(){");
@@ -457,4 +454,19 @@ public class MainActivity extends AppCompatActivity {
                 , checkersViewModel.getColorBorderCell());
     }
 
+    @Override
+    public void onBackPressed() {
+        compositeDisposable.dispose();
+        finish();
+        super.onBackPressed();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        compositeDisposable.dispose();
+        finish();
+        super.onDestroy();
+
+    }
 }

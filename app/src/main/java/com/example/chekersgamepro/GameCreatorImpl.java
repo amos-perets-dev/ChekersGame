@@ -1,6 +1,7 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
+import android.util.Log;
 import android.util.Pair;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -11,9 +12,14 @@ import com.google.common.collect.FluentIterable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.functions.Functions;
 
 class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
@@ -235,6 +241,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 //    }
 
     Point endPointPathFromUser;
+
     /**
      *
      *

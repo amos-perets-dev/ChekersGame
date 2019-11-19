@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import io.reactivex.Observable;
+
 public class GameManager {
 
     private GameInitialImpl gameInitialImpl = new GameInitialImpl();
