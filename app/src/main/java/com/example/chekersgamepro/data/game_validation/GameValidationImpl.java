@@ -23,14 +23,13 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
         //Check the left direction
         CellDataImpl nextCellLeft = getNextCell(currCellData, true);
-
+        // 1. check if there is normal turn
         if (nextCellLeft != null && nextCellLeft.isEmpty()){
             return true;
         }
 
         CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
 
-        // 1. check if there is normal turn
         // 2. check if there is attack turn
         if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
             return true;
@@ -38,14 +37,13 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
         //Check the right direction
         CellDataImpl nextCellRight = getNextCell(currCellData, false);
-
+        // 1. check if there is normal turn
         if (nextCellRight != null && nextCellRight.isEmpty()){
             return true;
         }
 
-        CellDataImpl nextCellChildRight = getNextCell(nextCellLeft, false);
+        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
 
-        // 1. check if there is normal turn
         // 2. check if there is attack turn
         if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
             return true;
@@ -110,4 +108,40 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         this.isPlayerOneTurn = isPlayerOneTurn;
     }
 
+    public boolean isAttackMove(CellDataImpl currCellData) {
+
+        //Check the left direction
+        CellDataImpl nextCellLeft = getNextCell(currCellData, true);
+        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
+
+        // 2. check if there is attack turn
+        if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+            return true;
+        }
+
+        //Check the right direction
+        CellDataImpl nextCellRight = getNextCell(currCellData, false);
+        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
+
+        // 2. check if there is attack turn
+        if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
+            return true;
+        }
+
+        return false;
+
+    }
+
+    public boolean isAttackMoveByDirection(CellDataImpl currCellData, boolean isLeft) {
+        //Check the right direction
+        CellDataImpl nextCell = getNextCell(currCellData, isLeft);
+        CellDataImpl nextCellChild = getNextCell(nextCell, isLeft);
+
+        // 2. check if there is attack turn
+        if ((nextCell != null && !nextCell.isEmpty() && !isEqualPlayerCells(nextCell) && nextCellChild != null && nextCellChild.isEmpty())){
+            return true;
+        }
+
+        return false;
+    }
 }

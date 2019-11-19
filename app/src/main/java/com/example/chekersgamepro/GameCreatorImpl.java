@@ -18,7 +18,7 @@ import java.util.Map;
 
 class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
-    private List<Point> cellsRelevantStart = new ArrayList<>();
+    private List<Point> cellsPointRelevantStart = new ArrayList<>();
 
     private Map<Point, Pair<List<Point>, List<PawnDataImpl>>> listsAllOptionalPathByCell = new HashMap<>();
 
@@ -30,8 +30,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
     private List<PawnDataImpl> removeListPawnTmp = new ArrayList<>();
 
     private List<DataCellViewClick> dataOptionalPathByView = new ArrayList<>();//
-
-//    private List<PawnDataImpl> removeListPawn = new ArrayList<>();//
 
     private DataGame dataGame = DataGame.getInstance();
 
@@ -45,8 +43,12 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private CellDataImpl cellDataSrcCurrently;
 
+    private boolean isAttackMove = false;
+
+    private int prevSizeDataOptionalPathByView = 0;
+
     public void clearData(){
-        cellsRelevantStart.clear();
+        cellsPointRelevantStart.clear();
 
         listsAllOptionalPathByCell.clear();
 
@@ -54,7 +56,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         dataOptionalPathByView.clear();
 
-//        removeListPawn.clear();
+        isAttackMove = false;
 
     }
 
@@ -66,29 +68,39 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         changePlayerListListeners.add(this);
     }
 
-
     public List<Point> createRelevantCellsStart() {
-        cellsRelevantStart.clear();
+        cellsPointRelevantStart.clear();
 
-        // TODO check the start cell
+        // Check if there is attack path
+        isAttackMove = FluentIterable.from(isPlayerOneTurn
+                ? dataGame.getPawnsPlayerOne().values()
+                : dataGame.getPawnsPlayerTwo().values())
+                .transform(PawnDataImpl::getContainerCellXY)
+                .transform(dataGame::getCellByPoint)
+                .filter(gameValidation::isAttackMove)
+                .first()
+                .isPresent();
+
         FluentIterable.from((isPlayerOneTurn
                     ? dataGame.getPawnsPlayerOne().values()
                     : dataGame.getPawnsPlayerTwo().values()))
                 .transform(PawnDataImpl::getContainerCellXY)
                 .transform(dataGame::getCellByPoint)
                 .filter(gameValidation::isCanCellStart)
-                .filter(cell -> !cell.isEmpty())
+                .filter(cellData -> !isAttackMove || gameValidation.isAttackMove(cellData))
                 .transform(CellDataImpl::getPoint)
-                .transform(cellsRelevantStart::add)
+                .transform(cellsPointRelevantStart::add)
                 .toList();
 
-        return cellsRelevantStart;
+        return cellsPointRelevantStart;
     }
 
     public List<DataCellViewClick> createOptionalPath(float x, float y){
 
         dataOptionalPathByView.clear();
         listsAllOptionalPathByCell.clear();
+        listOptionalCellsPathTmp.clear();
+        removeListPawnTmp.clear();
 
         CellDataImpl currCellData =  dataGame.getCellByPoint(new Point((int) x, (int) y));
 
@@ -97,7 +109,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (currCellData == null) return null;
 
         // check if point contains in the can be start cells
-        if (!cellsRelevantStart.contains(currCellData.getPoint())) {
+        if (!cellsPointRelevantStart.contains(currCellData.getPoint())) {
             addDataOptionalPath(false, currCellData);
             return dataOptionalPathByView;
         }
@@ -108,15 +120,23 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         // add the first/root cell
         addDataOptionalPath(true, currCellData);
 
-        // add the first/root cell
-        createOptionalPathByCell(getNextCell(currCellData, true), true);
+        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true)){
+            // add the first/root cell
+            createOptionalPathByCell(getNextCell(currCellData, true), true);
+        }
 
-        // add the first/root cell
-        createOptionalPathByCell(getNextCell(currCellData, false), true);
+        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false)){
+            // add the first/root cell
+            createOptionalPathByCell(getNextCell(currCellData, false), true);
+        }
+
+
 
         return dataOptionalPathByView;
 
     }
+
+
 
     private void createOptionalPathByCell(CellDataImpl currCellData, boolean isFromRoot){
 
@@ -152,7 +172,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                     removeListPawnTmp.add(dataGame.getPawnByPoint(currCellData.getPointStartPawn()));
 
-//                    listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
                     prevCellData = currCellData;
                     createOptionalPathByCell(nextCellDataByCell, false);
                 }
@@ -229,7 +248,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         //check if the point in the path and in the valid cell(end point)
         if (listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) == null) return null;
         indexRemovePawnList = 0;
-//        removeListPawn.clear();
+
 
         Point currPointFromUser = new Point((int) x, (int) y);
         Pair<List<Point>, List<PawnDataImpl>> listPair = listsAllOptionalPathByCell.get(currPointFromUser);

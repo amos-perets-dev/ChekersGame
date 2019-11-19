@@ -99,21 +99,21 @@ public class MainActivity extends AppCompatActivity {
                 .doOnNext(new Consumer<View>() {
                     @Override
                     public void accept(View view) throws Exception {
-//                        DataGame dataGame = DataGame.getInstance();
-//                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
-//                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
-//                        String infoPawn = "";
-//                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
-//                        if (pawnByPoint != null){
-//                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
-//                        }
-//                        textViewTestStart.setText(
-//                                "" + infoCell + infoPawn
-//                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
-//                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
-//                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
-//                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
-//                                        + "ALL CELL: " + dataGame.getCells().size());
+                        DataGame dataGame = DataGame.getInstance();
+                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        String infoPawn = "";
+                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
+                        if (pawnByPoint != null){
+                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
+                        }
+                        textViewTestStart.setText(
+                                "" + infoCell + infoPawn
+                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
+                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
+                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
+                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
+                                        + "ALL CELL: " + dataGame.getCells().size());
                     }
                 })
                 .subscribe(this::onClickCell));
