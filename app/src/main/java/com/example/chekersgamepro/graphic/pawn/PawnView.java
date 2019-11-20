@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.example.chekersgamepro.R;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,7 @@ public class PawnView extends ImageView{
     private float indexTranslatePawn = 1;
 
     private Disposable disposableRemovePawn;
+    private Bitmap bitmapSpeical;
 
     public PawnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -73,6 +75,12 @@ public class PawnView extends ImageView{
         bitmap = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
         return this;
     }
+
+    public PawnView setIconSpeical(int drawable){
+        bitmapSpeical = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
+        return this;
+    }
+
 
     @SuppressLint("DrawAllocation")
     @Override
@@ -249,4 +257,11 @@ public class PawnView extends ImageView{
         return bitmap;
     }
 
+
+    public void setKing() {
+
+        bitmap = bitmapSpeical;
+
+        invalidate();
+    }
 }

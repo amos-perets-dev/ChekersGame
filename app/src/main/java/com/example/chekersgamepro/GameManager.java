@@ -126,6 +126,10 @@ public class GameManager {
         return pawnByPoint != null ? pawnByPoint.getStartXY() : null;
     }
 
+    public boolean isKingPawn(Point currPointPawn) {
+        return dataGame.getPawnByPoint(currPointPawn).isMasterPawn();
+    }
+
     public interface ChangePlayerListener{
         void onChangePlayer(boolean isPlayerOneTurn);
     }

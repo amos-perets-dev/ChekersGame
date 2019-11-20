@@ -117,4 +117,10 @@ public class PawnDataImpl {
     public int getIcon() {
         return isPlayerOne ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
     }
+
+    public int getIconSpeical() {
+
+        return isPlayerOne ? R.drawable.ic_king_pawn_one : R.drawable.ic_king_pawn_two;
+
+    }
 }

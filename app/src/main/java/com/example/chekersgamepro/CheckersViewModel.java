@@ -135,4 +135,10 @@ public class CheckersViewModel extends ViewModel {
         return gameManager.getPointPawnByCell(pointByCell);
 
     }
+
+    public boolean isKingPawn(Point currPoint) {
+
+        return gameManager.isKingPawn(currPoint);
+
+    }
 }

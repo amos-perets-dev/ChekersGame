@@ -7,6 +7,9 @@ import android.util.Pair;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -98,6 +101,34 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         return cellsPointRelevantStart;
     }
 
+    private CellDataImpl getNextCellByKing(CellDataImpl cellData, boolean isLeft){
+
+        if (cellData != null){
+            if (isLeft){
+                if (cellData.getNextCellDataLeftPlayerOne() != null){
+                    return cellData.getNextCellDataLeftPlayerOne();
+                }
+
+                if (cellData.getNextCellDataLeftPlayerTwo() != null){
+                    return cellData.getNextCellDataLeftPlayerTwo();
+                }
+            } else {
+                if (cellData.getNextCellDataRightPlayerOne() != null){
+                    return cellData.getNextCellDataRightPlayerOne();
+                }
+
+                if (cellData.getNextCellDataRightPlayerTwo() != null){
+                    return cellData.getNextCellDataRightPlayerTwo();
+                }
+            }
+        }
+
+
+        return null;
+
+    }
+    private boolean isMasterPawn;
+
     public List<DataCellViewClick> createOptionalPath(float x, float y){
 
         dataOptionalPathByView.clear();
@@ -117,23 +148,46 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
             return dataOptionalPathByView;
         }
 
+        isMasterPawn = dataGame.getPawnByPoint(currCellData.getPointStartPawn()).isMasterPawn();
+
         this.prevCellData = currCellData;
         this.cellDataSrcCurrently = currCellData;
 
         // add the first/root cell
         addDataOptionalPath(true, currCellData);
 
-        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true)){
-            // add the first/root cell
-            createOptionalPathByCell(getNextCell(currCellData, true), true);
+
+        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true, isMasterPawn)){
+            if (isMasterPawn){
+
+                if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false, true)){
+                    createOptionalPathByCell(currCellData.getNextCellDataLeftPlayerOne(), true);
+                }
+
+                if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false, true)){
+                    createOptionalPathByCell(currCellData.getNextCellDataLeftPlayerTwo(), true);
+                }
+
+            } else {
+                createOptionalPathByCell(getNextCell(currCellData, true), true);
+            }
+
         }
 
-        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false)){
-            // add the first/root cell
-            createOptionalPathByCell(getNextCell(currCellData, false), true);
+        if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false, isMasterPawn)) {
+            if (isMasterPawn) {
+                if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false, true)) {
+                    createOptionalPathByCell(currCellData.getNextCellDataRightPlayerOne(), true);
+                }
+
+                if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false, true)) {
+                    createOptionalPathByCell(currCellData.getNextCellDataRightPlayerTwo(), true);
+                }
+            } else {
+
+                createOptionalPathByCell(getNextCell(currCellData, false), true);
+            }
         }
-
-
 
         return dataOptionalPathByView;
 
@@ -147,7 +201,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         // check the curr cell after the root if is empty is valid but the end.
         // if the curr cell is leaf is valid but the end
-        if ((currCellData.isEmpty() && isFromRoot) || gameValidation.isLeaf(currCellData)){
+        if ((currCellData.isEmpty() && isFromRoot) || gameValidation.isLeaf(currCellData, isMasterPawn)){
             addDataOptionalPath(true, currCellData);
             listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
 
@@ -164,10 +218,11 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                 //calculate the diagonal direction
                 boolean isRightDiagonal = currCellData.getPoint().x > prevCellData.getPoint().x;
+
                 if (isRightDiagonal){
-                    nextCellDataByCell = getNextCell(currCellData, false);
+                    nextCellDataByCell =  isMasterPawn ? getNextCellByKing(currCellData, false): getNextCell(currCellData, false);
                 } else {
-                    nextCellDataByCell = getNextCell(currCellData, true);
+                    nextCellDataByCell = isMasterPawn ? getNextCellByKing(currCellData, true): getNextCell(currCellData, true);
                 }
                 if (nextCellDataByCell != null && nextCellDataByCell.isEmpty()){
 
@@ -189,14 +244,14 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                 prevCellData = currCellData;
                 prevCellDataTmp = currCellData;
-                CellDataImpl nextCellDataByCellRight = getNextCell(currCellData, false);
+                CellDataImpl nextCellDataByCellRight = isMasterPawn ? getNextCellByKing(currCellData, false): getNextCell(currCellData, false);
                 if (nextCellDataByCellRight != null && !nextCellDataByCellRight.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellRight)){
                     createOptionalPathByCell(nextCellDataByCellRight, true);
                 }
                 prevCellData = prevCellDataTmp;
                 listOptionalCellsPathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
 
-                CellDataImpl nextCellDataByCellLeft = getNextCell(currCellData, true);
+                CellDataImpl nextCellDataByCellLeft = isMasterPawn ? getNextCellByKing(currCellData, true): getNextCell(currCellData, true);
                 if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
                     createOptionalPathByCell(nextCellDataByCellLeft, true);
                 }
