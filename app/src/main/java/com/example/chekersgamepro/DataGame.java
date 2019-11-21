@@ -14,6 +14,13 @@ import java.util.Map;
 
 public class DataGame {
 
+    public static final int CHECKED_PAWN_START_END = Color.argb(155, 45, 170, 0);
+    public static final int INVALID_CHECKED = Color.argb(155, 170, 0, 0);
+    public static final int CAN_CELL_START = Color.argb(155, 243, 215, 0);
+    public static final int INSIDE_PATH = Color.argb(155, 0, 43, 170);
+    public static final int CLEAR_CHECKED = R.drawable.cell_1;
+
+
     private static DataGame instance = null;
     public static final int RIGHT = 1;
     public static final int LEFT = -1;

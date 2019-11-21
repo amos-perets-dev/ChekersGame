@@ -118,7 +118,7 @@ public class PawnView extends ImageView{
         return this;
     }
 
-    public Observable<PawnView> getPawn(){
+    public Observable<PawnView> getPawnClick(){
         return RxView.touches(this)
                 .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                 .switchMap(ignored -> Observable.just(this));

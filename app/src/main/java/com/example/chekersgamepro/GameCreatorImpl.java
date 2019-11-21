@@ -1,29 +1,24 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
-import android.util.Log;
 import android.util.Pair;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.internal.functions.Functions;
-
 class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
-    private List<Point> cellsPointRelevantStart = new ArrayList<>();
+    private List<DataCellViewClick> cellsPointRelevantStart = new ArrayList<>();
 
     private Map<Point, Pair<List<Point>, List<PawnDataImpl>>> listsAllOptionalPathByCell = new HashMap<>();
 
@@ -71,7 +66,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         changePlayerListListeners.add(this);
     }
 
-    public List<Point> createRelevantCellsStart() {
+    public List<DataCellViewClick> createRelevantCellsStart() {
         cellsPointRelevantStart.clear();
 
         // Check if there is attack path
@@ -92,6 +87,13 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 .filter(gameValidation::isCanCellStart)
                 .filter(cellData -> !isAttackMove || gameValidation.isAttackMove(cellData))
                 .transform(CellDataImpl::getPoint)
+                .transform(new Function<Point, DataCellViewClick>() {
+                    @Nullable
+                    @Override
+                    public DataCellViewClick apply(@Nullable Point point) {
+                        return new DataCellViewClick (point, DataGame.CAN_CELL_START, DataGame.CLEAR_CHECKED);
+                    }
+                })
                 .transform(cellsPointRelevantStart::add)
                 .toList();
 
@@ -112,8 +114,13 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         if (currCellData == null) return null;
 
         // check if point contains in the can be start cells
-        if (!cellsPointRelevantStart.contains(currCellData.getPoint())) {
-            addDataOptionalPath(false, currCellData);
+        boolean isPointInRelevantCell = FluentIterable.from(cellsPointRelevantStart)
+                .transform(DataCellViewClick::getPoint)
+                .filter(point -> point.x == currCellData.getPoint().x && point.y == currCellData.getPoint().y)
+                .first()
+                .isPresent();
+        if (!isPointInRelevantCell) {
+            addDataOptionalPath( currCellData, DataGame.INVALID_CHECKED, DataGame.CLEAR_CHECKED);
             return dataOptionalPathByView;
         }
 
@@ -121,7 +128,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         this.cellDataSrcCurrently = currCellData;
 
         // add the first/root cell
-        addDataOptionalPath(true, currCellData);
+        addDataOptionalPath( currCellData, DataGame.CHECKED_PAWN_START_END, DataGame.CAN_CELL_START);
 
         if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true)){
             // add the first/root cell
@@ -148,7 +155,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         // check the curr cell after the root if is empty is valid but the end.
         // if the curr cell is leaf is valid but the end
         if ((currCellData.isEmpty() && isFromRoot) || gameValidation.isLeaf(currCellData)){
-            addDataOptionalPath(true, currCellData);
+            addDataOptionalPath( currCellData, DataGame.CHECKED_PAWN_START_END, DataGame.CLEAR_CHECKED);
             listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
 
             listsAllOptionalPathByCell.put(
@@ -171,7 +178,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 }
                 if (nextCellDataByCell != null && nextCellDataByCell.isEmpty()){
 
-                    addDataOptionalPath(true, currCellData);
+                    addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
 
                     removeListPawnTmp.add(dataGame.getPawnByPoint(currCellData.getPointStartPawn()));
 
@@ -183,7 +190,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
             // check the cell is empty but not leaf(maybe it a node)
             // need to check the right and left next cell
             if (currCellData.isEmpty()){
-                addDataOptionalPath(true, currCellData);
+                addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
                 listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
                 List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalCellsPathTmp);
 
@@ -219,10 +226,15 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     }
 
-    private void addDataOptionalPath(boolean isClickValid, @Nullable CellDataImpl cellData) {
+    private void addDataOptionalPath( @Nullable CellDataImpl cellData, int colorChecked, int colorClearChecked) {
         if (cellData == null)return;
-        dataOptionalPathByView.add(new DataCellViewClick(isClickValid,cellData.getPoint(), dataOptionalPathByView.size() == 0, cellData.isEmpty()));
+        dataOptionalPathByView.add(new DataCellViewClick(cellData.getPoint(), colorChecked, colorClearChecked));
     }
+
+//    private void addDataRellevanrCells(boolean isClickValid, @Nullable CellDataImpl cellData, int color) {
+//        if (cellData == null)return;
+//        dataOptionalPathByView.add(new DataCellViewClick(isClickValid,cellData.getPoint(), dataOptionalPathByView.size() == 0, cellData.isEmpty(), color));
+//    }
 
     @Override
     public void onChangePlayer(boolean isPlayerOneTurn) {

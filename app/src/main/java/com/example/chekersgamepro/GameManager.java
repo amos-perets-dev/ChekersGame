@@ -80,7 +80,7 @@ public class GameManager {
         return gameInitialImpl.getCells();
     }
 
-    public List<Point> createRelevantCellsStart() {
+    public List<DataCellViewClick> createRelevantCellsStart() {
         return gameCreatorChecked.createRelevantCellsStart();
 
     }

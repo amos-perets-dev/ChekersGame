@@ -23,7 +23,7 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> initRelevantCellsFinish = new MutableLiveData<>();
 
-    private MutableLiveData<List<Point>> relevantCells = new MutableLiveData<>();
+    private MutableLiveData<List<DataCellViewClick>> relevantCells = new MutableLiveData<>();
 
     private MutableLiveData<String> playerName = new MutableLiveData<>();
 
@@ -49,7 +49,7 @@ public class CheckersViewModel extends ViewModel {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, initFinish));
     }
 
-    public Observable<List<Point>> getRelevantCells(LifecycleOwner lifecycleOwner){
+    public Observable<List<DataCellViewClick>> getRelevantCells(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, relevantCells));
     }
 

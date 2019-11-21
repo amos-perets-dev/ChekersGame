@@ -5,50 +5,32 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.MaskFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-import android.widget.Filter;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 
+import com.example.chekersgamepro.DataGame;
 import com.example.chekersgamepro.R;
-import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.jakewharton.rxbinding2.view.RxView;
 
-import io.reactivex.Notification;
 import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
 
 @SuppressLint("AppCompatCustomView")
 public class CellView extends ImageView{
-
-    private final int COLOR_CAN_START = Color.YELLOW;
-
-    private final int COLOR_CAN_KIELLD = Color.BLUE;
-
-    private final int COLOR_CHECKED = Color.GREEN;
 
     private final int DRAWABLE_ID = R.drawable.cell_1;
 
     private Paint paint = new Paint();
 
-    private Bitmap bitmap = null;
-
-    private int color;
-
-    private boolean drawDefault = true;
+    private Bitmap crownIcon;
 
     public CellView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -69,20 +51,6 @@ public class CellView extends ImageView{
         return this;
     }
 
-    public CellView invalidateSelf() {
-        invalidate();
-        return this;
-    }
-
-
-    public int getColorCellCanStart(){
-        return COLOR_CAN_START;
-    }
-
-    public int getColorCheckedByUser(){
-        return COLOR_CHECKED;
-    }
-
     public CellView setColor(int color) {
         paint.setColor(color);
         return this;
@@ -96,10 +64,11 @@ public class CellView extends ImageView{
         return this;
     }
 
-    public CellView setBg(float alpha){
+    public CellView setBg(float alpha, boolean isMasterCell){
 
-//        setBackgroundResource(DRAWABLE_ID);
-        bitmap = drawableToBitmap(ContextCompat.getDrawable(getContext(), DRAWABLE_ID));
+        crownIcon = isMasterCell ? drawableToBitmap(getContext().getDrawable(R.drawable.ic_crown)) : null;
+
+        setBackgroundResource(DRAWABLE_ID);
         setAlpha(alpha);
 
         return this;
@@ -109,21 +78,12 @@ public class CellView extends ImageView{
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-         Rect clipBounds = canvas.getClipBounds();
-
-//        canvas.drawRect(canvas.getClipBounds(), paint);
-
-
-        if (drawDefault){
-            //draw bitmap
-            RectF rectF = new RectF(clipBounds);
-            if (bitmap != null){
-                canvas.drawBitmap(bitmap, null, rectF, null );
-            }
-        } else {
-            paint.setColor(color);
-            canvas.drawRect(clipBounds, paint);
+        Rect clipBounds = canvas.getClipBounds();
+        RectF rectF = new RectF(clipBounds.left + 17, clipBounds.top + 17, clipBounds.right - 17, clipBounds.bottom - 17);
+        if (crownIcon != null) {
+            canvas.drawBitmap(crownIcon, null, rectF, null);
         }
+
     }
 
     public CellView setWidth(int widthCell) {
@@ -142,38 +102,18 @@ public class CellView extends ImageView{
         return this;
     }
 
-
-    public Observable<CellView> getCell(){
-        Log.d("TEST_GAME", " public Observable<CellView> getCell(){");
+    public Observable<CellView> getCellClick(){
         return RxView.touches(this)
                 .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                 .switchMap(ignored -> Observable.just(this));
     }
 
-    public CellView clearChecked(boolean isValid, boolean isParent){
-
-        if (isParent && isValid){
-            color = Color.YELLOW;
-            drawDefault = false;
-        } else {
-            drawDefault = true;
-        }
-        invalidate();
-        return this;
-    }
-
-    public CellView clearChecked(){
-        drawDefault = true;
-        invalidate();
-
-        return this;
-    }
-
     public CellView checked(int color){
-        this.color = color;
-        drawDefault = false;
-        invalidate();
-
+        if (color == DataGame.CLEAR_CHECKED){
+            setBackgroundResource(DataGame.CLEAR_CHECKED);
+        } else {
+            setBackgroundColor(color);
+        }
         return this;
     }
 

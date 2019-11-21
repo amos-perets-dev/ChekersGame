@@ -17,7 +17,6 @@ import com.example.chekersgamepro.graphic.game_board.GameBoardView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -130,14 +129,17 @@ public class MainActivity extends AppCompatActivity {
                 .doOnNext(Functions.actionConsumer(this::clearPrevRelevantCells))
                 .doOnNext(this::addViewsByRelevantCells)
                 .flatMap(Observable::fromIterable)
-                .map(cellViewMap::get)
-                .map(Optional::fromNullable)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .doOnNext(cellView -> cellView.checked(cellView.getColorCellCanStart()))
+                .doOnNext(new Consumer<DataCellViewClick>() {
+                    @Override
+                    public void accept(DataCellViewClick dataCellViewClick) throws Exception {
+                        CellView cellView = cellViewMap.get(dataCellViewClick.getPoint());
+                        cellView.checked(dataCellViewClick.getColorChecked());
+                    }
+                })
                 .subscribe(Functions.actionConsumer(checkersViewModel::finishedCheckedRelevantCells)));
 
-        compositeDisposable.add(checkersViewModel.getOptionalPath(this)
+        compositeDisposable.add(checkersViewModel
+                .getOptionalPath(this)
                 .doOnNext(this::checkedOptionalPathByClick)
                 .doOnNext(dataCellViewClicks -> {
                     // set the pawn start in the current path
@@ -147,14 +149,16 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .subscribe());
 
-        compositeDisposable.add(checkersViewModel.getMovePawn(this)
+        // animate the move of the relevant pawn
+        compositeDisposable.add(checkersViewModel
+                .getMovePawn(this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(pointsListAnimatePawn::addAll)
                 .doOnNext(this::setCurrPointPawnViewStartPath)
                 .subscribe(Functions.actionConsumer(this::animatePawnMove)));
 
-
+        // remove the relevant pawns that need to be killed
         compositeDisposable.add(checkersViewModel
                 .removePawn(this)
                 .subscribeOn(Schedulers.io())
@@ -192,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void animatePawnMove() {
 
-            Point currPoint = pointsListAnimatePawn.get(indexPointsListAnimatePawn);
+        Point currPoint = pointsListAnimatePawn.get(indexPointsListAnimatePawn);
 
         currPawnViewStartPath
                     .animate()
@@ -205,7 +209,6 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             currPawnViewStartPath.setElevation(10f);
                             checkersViewModel.removePawnIfNeeded();
-
                         }
                     })
                     .withEndAction(new Runnable() {
@@ -217,11 +220,7 @@ public class MainActivity extends AppCompatActivity {
                             if (indexPointsListAnimatePawn < pointsListAnimatePawn.size()){
                                 animatePawnMove();
                             } else {
-                                pawnViewMap.remove(currPointPawnViewStartPath);
-                                currPawnViewStartPath.setXY(currPoint.x, currPoint.y);
-                                // now the curr point is the end point
-                                pawnViewMap.put(currPoint, currPawnViewStartPath);
-                                currPawnViewStartPath.setIcon(checkersViewModel.isQueenPawn(currPoint));
+                                updatePawnViewStart(currPoint);
                                 nextTurn();
                             }
                         }
@@ -229,16 +228,24 @@ public class MainActivity extends AppCompatActivity {
                     .start();
     }
 
-    private void clearCheckedOptionalPathViews() {
+    /**
+     * Update the pawn view point when the animate move finished
+     *
+     * @param point the path end point
+     */
+    private void updatePawnViewStart(Point point){
+        pawnViewMap.remove(currPointPawnViewStartPath);
+        currPawnViewStartPath.setXY(point.x, point.y);
+        // now the curr point is the end point
+        pawnViewMap.put(point, currPawnViewStartPath);
+        currPawnViewStartPath.setIcon(checkersViewModel.isQueenPawn(point));
+    }
 
+    private void clearCheckedOptionalPathViewsAfterEndTurn() {
         FluentIterable.from(cellsViewOptionalPath)
-                .transform(new Function<DataCellViewClick, Object>() {
-                    @Nullable
-                    @Override
-                    public Object apply(@Nullable DataCellViewClick dataCellViewClick) {
-                        return cellViewMap.get(dataCellViewClick.getPoint()).clearChecked(dataCellViewClick.isClickValid(), dataCellViewClick.isParent());
-                    }
-                }).toList();
+                .transform(dataCellViewClick -> cellViewMap.get(dataCellViewClick.getPoint())
+                        .checked(DataGame.CLEAR_CHECKED))
+                .toList();
     }
 
     private void onClickCell(View view) {
@@ -251,30 +258,25 @@ public class MainActivity extends AppCompatActivity {
         // if the list empty need to only unblock the views
         // without cleared and checked the views
         if (dataCellViewClicks.size() > 0){
+            // clear the prev cells checked
             FluentIterable.from(cellsViewOptionalPath)
-                    .transform(new com.google.common.base.Function<DataCellViewClick, Object>() {
-                        @Nullable
-                        @Override
-                        public Object apply(@Nullable DataCellViewClick dataCellViewClick) {
-                            return cellViewMap.get(dataCellViewClick.getPoint())
-                                    .clearChecked(dataCellViewClick.isClickValid(), dataCellViewClick.isParent());
-                        }
-                    }).toList();
+                    .transform(dataCellViewClick -> checkCellView(dataCellViewClick.getPoint(), dataCellViewClick.getColorClearChecked()))
+                    .toList();
 
+            // checked the current cells
             FluentIterable.from(dataCellViewClicks)
-                    .transform(new com.google.common.base.Function<DataCellViewClick, Object>() {
-                        @Nullable
-                        @Override
-                        public Object apply(@Nullable DataCellViewClick dataCellViewClick) {
-                            return cellViewMap.get(dataCellViewClick.getPoint())
-                                    .checked(dataCellViewClick.getColor());
-                        }
-                    }).toList();
+                    .transform(dataCellViewClick -> checkCellView(dataCellViewClick.getPoint(), dataCellViewClick.getColorChecked()))
+                    .toList();
 
             initViewsClicksPrev(dataCellViewClicks);
         }
 
         setClickableViews(true);
+    }
+
+    private CellView checkCellView(Point point, int color) {
+        return cellViewMap.get(point)
+                .checked(color);
     }
 
     /**
@@ -292,44 +294,39 @@ public class MainActivity extends AppCompatActivity {
     private void clearPrevRelevantCells() {
 
         FluentIterable.from(viewsByRelevantCellsList)
-                .transform(CellView::clearChecked)
+                .transform(cellView -> cellView.checked(DataGame.CLEAR_CHECKED))
                 .toList();
 
         viewsByRelevantCellsList.clear();
     }
 
     private List<Observable<? extends View>> addViewsToObservable(){
-        Log.d("TEST_GAME", "private List<Observable<? extends View>> addViewsToObservable(){");
-
         FluentIterable.from(cellViewMap.values())
-                .transform(CellView::getCell)
+                .transform(CellView::getCellClick)
                 .transform(viewsObservableList::add)
                 .toList();
 
         FluentIterable.from(pawnViewMap.values())
-                .transform(PawnView::getPawn)
+                .transform(PawnView::getPawnClick)
                 .transform(viewsObservableList::add)
                 .toList();
 
         return viewsObservableList;
     }
 
-    private void addViewsByRelevantCells(List<Point> cellsViewList) {
+    private void addViewsByRelevantCells(List<DataCellViewClick> cellsViewList) {
 
         // add the relevant cells to the list
         FluentIterable.from(cellsViewList)
+                .transform(DataCellViewClick::getPoint)
                 .transform(cellViewMap::get)
                 .transform(viewsByRelevantCellsList::add)
                 .toList();
 
     }
 
-    private Observable<Boolean> startTurn() {
-        return checkersViewModel.startTurn(MainActivity.this);
-    }
-
     private void nextTurn(){
-        clearCheckedOptionalPathViews();
+        clearCheckedOptionalPathViewsAfterEndTurn();
         indexPointsListAnimatePawn = 0;
         pointsListAnimatePawn.clear();
         cellsViewOptionalPath.clear();
@@ -347,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                 .initFinish(this);
     }
 
-    private Observable<List<Point>> getRelevantCellsStart(){
+    private Observable<List<DataCellViewClick>> getRelevantCellsStart(){
         return checkersViewModel
                 .getRelevantCells(this);
     }
@@ -407,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
         CellView cellView = input.second
                 .setWidth(cellData.getWidth())
                 .setHeight(cellData.getHeight())
-                .setBg(cellData.getAlphaCell())
+                .setBg(cellData.getAlphaCell(), cellData.isMasterCell() && cellData.isValidCell())
                 .setXY(cellData.getPoint().x, (cellData.getPoint().y));
 
         return new Pair<>(cellData.getPoint(), cellView);
@@ -469,6 +466,5 @@ public class MainActivity extends AppCompatActivity {
         compositeDisposable.dispose();
         finish();
         super.onDestroy();
-
     }
 }

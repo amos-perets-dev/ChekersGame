@@ -5,36 +5,24 @@ import android.graphics.Point;
 
 public class DataCellViewClick {
 
-    private boolean isClickValid;
-    private boolean isParent;
-    private int color;
+    private int colorChecked;
+    private int colorClearChecked;
+
     private Point point;
-    private boolean isEmpty;
 
-    public DataCellViewClick(boolean isClickValid, Point point, boolean isParent, boolean isEmpty) {
-        this.isClickValid = isClickValid;
+    public DataCellViewClick(Point point, int colorChecked, int colorClearChecked) {
         this.point = point;
-        this.isParent = isParent;
-        this.isEmpty = isEmpty;
+        this.colorChecked = colorChecked;
+        this.colorClearChecked = colorClearChecked;
     }
 
-    public boolean isClickValid() {
-        return isClickValid;
+
+    public int getColorChecked() {
+        return colorChecked;
     }
 
-    public DataCellViewClick setClickValid(boolean clickValid) {
-        isClickValid = clickValid;
-        return this;
-    }
-
-    public int getColor() {
-        return isClickValid
-                ? isEmpty || isParent ? Color.GREEN : Color.BLUE
-                : Color.RED;
-    }
-
-    public DataCellViewClick setColor(int color) {
-        this.color = color;
+    public DataCellViewClick setColor(int colorChecked) {
+        this.colorChecked = colorChecked;
         return this;
     }
 
@@ -47,12 +35,7 @@ public class DataCellViewClick {
         return this;
     }
 
-    public boolean isParent() {
-        return isParent;
-    }
-
-    public DataCellViewClick setParent(boolean parent) {
-        isParent = parent;
-        return this;
+    public int getColorClearChecked() {
+        return colorClearChecked;
     }
 }
