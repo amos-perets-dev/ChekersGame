@@ -1,8 +1,6 @@
 package com.example.chekersgamepro;
 
 import android.graphics.Point;
-import android.util.Log;
-import android.util.Pair;
 
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveDataReactiveStreams;
@@ -12,14 +10,12 @@ import androidx.lifecycle.ViewModel;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
-import com.google.common.base.Optional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
 
 public class CheckersViewModel extends ViewModel {
 
@@ -130,9 +126,11 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
+    public boolean isQueenPawn(Point currPawnPoint) {
+        return gameManager.isQueenPawn(currPawnPoint);
+    }
+
     public Point getPointPawnByCell(Point pointByCell) {
-
         return gameManager.getPointPawnByCell(pointByCell);
-
     }
 }

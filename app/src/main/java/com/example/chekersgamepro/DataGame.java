@@ -115,6 +115,7 @@ public class DataGame {
         removePawnByPlayer(pawnData);
         pawnData.setContainerCellXY(cellDataDst.getPoint());
         pawnData.setStartXY(cellDataDst.getPointStartPawn());
+        pawnData.setMasterPawn(pawnData.isMasterPawn() || cellDataDst.isMasterCell());
         putPawnByPlayer(pawnData);
     }
 

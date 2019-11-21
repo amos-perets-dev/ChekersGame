@@ -114,7 +114,12 @@ public class PawnDataImpl {
         return this;
     }
 
-    public int getIcon() {
+    public int getRegularIcon() {
         return isPlayerOne ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
     }
+
+    public int getQueenIcon() {
+        return isPlayerOne ? R.drawable.ic_king_pawn_one : R.drawable.ic_king_pawn_two;
+    }
+
 }

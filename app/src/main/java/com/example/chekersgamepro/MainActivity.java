@@ -221,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
                                 currPawnViewStartPath.setXY(currPoint.x, currPoint.y);
                                 // now the curr point is the end point
                                 pawnViewMap.put(currPoint, currPawnViewStartPath);
+                                currPawnViewStartPath.setIcon(checkersViewModel.isQueenPawn(currPoint));
                                 nextTurn();
                             }
                         }
@@ -377,7 +378,8 @@ public class MainActivity extends AppCompatActivity {
         pawnView
                 .setWidth(pawnData.getWidth())
                 .setHeight(pawnData.getHeight())
-                .setIcon(pawnData.getIcon())
+                .setRegularIcon(pawnData.getRegularIcon())
+                .setQueenIcon(pawnData.getQueenIcon())
                 .setXY(pawnData.getStartXY().x, pawnData.getStartXY().y);
 
         return new Pair<>(pawnData.getStartXY(), pawnView);

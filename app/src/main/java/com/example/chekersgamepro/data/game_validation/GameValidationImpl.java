@@ -1,17 +1,18 @@
 package com.example.chekersgamepro.data.game_validation;
 
-import android.util.Log;
+import android.graphics.Point;
 
+import com.example.chekersgamepro.DataGame;
 import com.example.chekersgamepro.GameManager;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
     private boolean isPlayerOneTurn;
+
+    private DataGame dataGame = DataGame.getInstance();
 
     public GameValidationImpl( boolean isPlayerOneTurn
             , List<GameManager.ChangePlayerListener> changePlayerListListeners) {
@@ -143,5 +144,9 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         }
 
         return false;
+    }
+
+    public boolean isQueenPawn(Point currPawnPoint) {
+        return dataGame.getPawnByPoint(currPawnPoint).isMasterPawn();
     }
 }

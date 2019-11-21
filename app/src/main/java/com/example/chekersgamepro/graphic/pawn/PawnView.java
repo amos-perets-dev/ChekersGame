@@ -1,5 +1,7 @@
 package com.example.chekersgamepro.graphic.pawn;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,29 +22,18 @@ import androidx.core.content.ContextCompat;
 
 import com.jakewharton.rxbinding2.view.RxView;
 
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
 
 @SuppressLint("AppCompatCustomView")
 public class PawnView extends ImageView{
 
     private Paint paint = new Paint();
 
-    private Bitmap bitmap;
+    private Bitmap regularIcon;
 
-    private float indexRemovePawn = 1;
-    private float indexTranslatePawn = 1;
+    private Bitmap specialIcon;
 
-    private Disposable disposableRemovePawn;
+    private Bitmap icon;
 
     public PawnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -69,8 +60,13 @@ public class PawnView extends ImageView{
         return this;
     }
 
-    public PawnView setIcon(int drawable){
-        bitmap = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
+    public PawnView setRegularIcon(int drawable){
+        icon = regularIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
+        return this;
+    }
+
+    public PawnView setQueenIcon(int drawable) {
+        specialIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
         return this;
     }
 
@@ -89,8 +85,9 @@ public class PawnView extends ImageView{
 
         //draw bitmap
         RectF rectF = new RectF(clipBounds.left + 10, clipBounds.top  + 10, clipBounds.right  - 10, clipBounds.bottom - 10);
-        if (bitmap != null){
-            canvas.drawBitmap(bitmap, null, rectF, null );
+
+        if (icon != null){
+            canvas.drawBitmap(icon, null, rectF, null );
         }
     }
 
@@ -127,100 +124,14 @@ public class PawnView extends ImageView{
                 .switchMap(ignored -> Observable.just(this));
     }
 
-    public Observable<PawnView> getPawnLocationLayoutChange(){
-        return RxView.layoutChanges(this)
-                .distinctUntilChanged()
-                .switchMap(ignored -> Observable.just(this));
-    }
-
-
-    public Observable<PawnView> getPawnLocationDrags(){
-        return RxView.drags(this)
-                .distinctUntilChanged()
-                .switchMap(ignored -> Observable.just(this));
-    }
-
-    public Observable<PawnView> getPawnLocationGlobalLayouts(){
-        return RxView.globalLayouts(this)
-                .switchMap(ignored -> Observable.just(this));
-    }
-
-    public Completable translateView(int x, int y){
-
-        return Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) throws Exception {
-
-                for (indexTranslatePawn = 0.01f; (int)getY() != y || (int)getX() != x; indexTranslatePawn++){
-                    if ((int)getY() != y){
-                        setTranslationY(indexTranslatePawn);
-                    }
-
-                    if ((int)getX() != x){
-                        setTranslationX(indexTranslatePawn);
-                    }
-
-                }
-
-                emitter.onComplete();
-            }
-        });
-    }
-
-//    public Completable translateView(int x, int y){
-//        return Completable.create(new CompletableOnSubscribe() {
-//            @Override
-//            public void subscribe(CompletableEmitter emitter) throws Exception {
-//
-//                for (indexRemovePawn = 1; (int)getY() != y || (int)getX() != x; indexRemovePawn++){
-//                    if ((int)getY() != y){
-//                        setTranslationY(indexRemovePawn);
-//                    }
-//
-//                    if ((int)getX() != x){
-//                        setTranslationX(indexRemovePawn);
-//                    }
-//                }
-//                emitter.onComplete();
-//            }
-//        });
-//    }
-
     public void removePawn(){
-
-        indexRemovePawn = 1;
-
-//        if (disposableRemovePawn != null){
-//            disposableRemovePawn.dispose();
-//        }
-//
-//        disposableRemovePawn = Observable.interval(10, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .doOnNext(input -> indexRemovePawn = indexRemovePawn - 0.2f)
-//                .subscribe(new Consumer<Long>() {
-//                    @Override
-//                    public void accept(Long aLong) throws Exception {
-//                        if (indexRemovePawn > 0) {
-//                            setAlpha(indexRemovePawn);
-//                            invalidate();
-//                        } else {
-//                            setVisibility(GONE);
-//                        }
-//                    }
-//                });
-
-
             animate()
                 .withLayer()
                 .alpha(0)
                 .setDuration(400)
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        // set the pawn view
-                        setVisibility(GONE);
-                    }
+                .withEndAction(() -> {
+                    // set the pawn visibility
+                    setVisibility(GONE);
                 })
                 .start();
     }
@@ -249,4 +160,19 @@ public class PawnView extends ImageView{
         return bitmap;
     }
 
+    public void setIcon(boolean isSpecialIcon) {
+        icon = isSpecialIcon ? specialIcon : regularIcon;
+        if (isSpecialIcon){
+            ObjectAnimator animatePulse = ObjectAnimator.ofPropertyValuesHolder(this,
+                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
+                    PropertyValuesHolder.ofFloat("scaleY", 1.2f));
+            animatePulse.setDuration(300);
+
+            animatePulse.setRepeatCount(3);
+            animatePulse.setRepeatMode(ObjectAnimator.REVERSE);
+
+            animatePulse.start();
+
+        }
+    }
 }

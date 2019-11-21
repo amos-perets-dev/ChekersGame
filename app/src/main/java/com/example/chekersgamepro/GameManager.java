@@ -126,6 +126,10 @@ public class GameManager {
         return pawnByPoint != null ? pawnByPoint.getStartXY() : null;
     }
 
+    public boolean isQueenPawn(Point currPawnPoint) {
+        return gameValidation.isQueenPawn(currPawnPoint);
+    }
+
     public interface ChangePlayerListener{
         void onChangePlayer(boolean isPlayerOneTurn);
     }
