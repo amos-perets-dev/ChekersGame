@@ -153,7 +153,7 @@ public class DataGame {
                 : pawnData != null ? cells.get(pawnData.getContainerCellXY()) : null;
     }
 
-    public DataGame updatePawnKilled(PawnDataImpl pawnData) {
+    public void updatePawnKilled(PawnDataImpl pawnData) {
         CellDataImpl cellByPoint = getCellByPoint(pawnData.getContainerCellXY());
 
         // update that the cell is change to empty because the pawn killed
@@ -161,7 +161,5 @@ public class DataGame {
         pawnData.setKilled(true);
         removePawnByPlayer(pawnData);
         removeCellByPlayer(cellByPoint);
-
-        return this;
     }
 }
