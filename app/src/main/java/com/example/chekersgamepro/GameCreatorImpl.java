@@ -27,7 +27,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
      */
     private List<Point> listOptionalCellsPathTmp = new ArrayList<>();//
 
-    private List<PawnDataImpl> removeListPawnTmp = new ArrayList<>();
+    private List<PawnDataImpl> removeListPawn = new ArrayList<>();
 
     private List<DataCellViewClick> dataOptionalPathByView = new ArrayList<>();//
 
@@ -105,7 +105,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
         dataOptionalPathByView.clear();
         listsAllOptionalPathByCell.clear();
         listOptionalCellsPathTmp.clear();
-        removeListPawnTmp.clear();
+        removeListPawn.clear();
 
         CellDataImpl currCellData =  dataGame.getCellByPoint(new Point((int) x, (int) y));
 
@@ -159,9 +159,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
             listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
 
             listsAllOptionalPathByCell.put(
-                    currCellData.getPoint(), Pair.create(new ArrayList<>(listOptionalCellsPathTmp), new ArrayList<>(removeListPawnTmp)));
+                    currCellData.getPoint(), Pair.create(new ArrayList<>(listOptionalCellsPathTmp), new ArrayList<>(removeListPawn)));
             listOptionalCellsPathTmp.clear();
-            removeListPawnTmp.clear();
+            removeListPawn.clear();
             return;
         } else {
 
@@ -180,7 +180,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                     addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
 
-                    removeListPawnTmp.add(dataGame.getPawnByPoint(currCellData.getPointStartPawn()));
+                    removeListPawn.add(dataGame.getPawnByPoint(currCellData.getPointStartPawn()));
 
                     prevCellData = currCellData;
                     createOptionalPathByCell(nextCellDataByCell, false);
@@ -193,6 +193,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
                 listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
                 List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalCellsPathTmp);
+                List<PawnDataImpl> removeListPawnTmp = new ArrayList<>(removeListPawn);
 
                 prevCellData = currCellData;
                 prevCellDataTmp = currCellData;
@@ -202,6 +203,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 }
                 prevCellData = prevCellDataTmp;
                 listOptionalCellsPathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
+                removeListPawn = new ArrayList<>(removeListPawnTmp);
 
                 CellDataImpl nextCellDataByCellLeft = getNextCell(currCellData, true);
                 if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
