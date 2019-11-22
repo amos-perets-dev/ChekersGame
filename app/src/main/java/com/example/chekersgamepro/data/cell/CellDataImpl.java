@@ -184,41 +184,42 @@ public class CellDataImpl {
         return isLeaf;
     }
 
-
-    public CellDataImpl getNextCellDataLeftPlayerOne() {
+    @Nullable
+    public CellDataImpl getNextCellDataLeftBottom() {
         return nextCellDataLeftPlayerOne;
     }
 
-    public CellDataImpl setNextCellDataLeftPlayerOne(CellDataImpl nextCellDataLeftPlayerOne) {
+    public CellDataImpl setNextCellDataLeftBottom(CellDataImpl nextCellDataLeftPlayerOne) {
         this.nextCellDataLeftPlayerOne = nextCellDataLeftPlayerOne;
         return this;
     }
 
-    public CellDataImpl getNextCellDataRightPlayerOne() {
+    @Nullable
+    public CellDataImpl getNextCellDataRightBottom() {
         return nextCellDataRightPlayerOne;
     }
 
-    public CellDataImpl setNextCellDataRightPlayerOne(CellDataImpl nextCellDataLRight) {
+    public CellDataImpl setNextCellDataRightBottom(CellDataImpl nextCellDataLRight) {
         this.nextCellDataRightPlayerOne = nextCellDataLRight;
         return this;
     }
 
     @Nullable
-    public CellDataImpl getNextCellDataLeftPlayerTwo() {
+    public CellDataImpl getNextCellDataLeftTop() {
         return nextCellDataLeftPlayerTwo;
     }
 
-    public CellDataImpl setNextCellDataLeftPlayerTwo(@Nullable CellDataImpl nextCellDataLeftPlayerTwo) {
+    public CellDataImpl setNextCellDataLeftTop(@Nullable CellDataImpl nextCellDataLeftPlayerTwo) {
         this.nextCellDataLeftPlayerTwo = nextCellDataLeftPlayerTwo;
         return this;
     }
 
     @Nullable
-    public CellDataImpl getNextCellDataRightPlayerTwo() {
+    public CellDataImpl getNextCellDataRightTop() {
         return nextCellDataRightPlayerTwo;
     }
 
-    public CellDataImpl setNextCellDataRightPlayerTwo(@Nullable CellDataImpl nextCellDataRightPlayerTwo) {
+    public CellDataImpl setNextCellDataRightTop(@Nullable CellDataImpl nextCellDataRightPlayerTwo) {
         this.nextCellDataRightPlayerTwo = nextCellDataRightPlayerTwo;
         return this;
     }
@@ -266,9 +267,9 @@ public class CellDataImpl {
         CellDataImpl cellData = (CellDataImpl) o;
         return
                 isValidCell() == cellData.isValidCell() &&
-                isEmpty() == cellData.isEmpty() &&
-                isMasterCell() == cellData.isMasterCell() &&
-                getPoint().equals(cellData.getPoint());
+                        isEmpty() == cellData.isEmpty() &&
+                        isMasterCell() == cellData.isMasterCell() &&
+                        getPoint().x == cellData.getPoint().x && getPoint().y == cellData.getPoint().y;
     }
 
 }

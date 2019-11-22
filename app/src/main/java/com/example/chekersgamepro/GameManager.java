@@ -42,9 +42,11 @@ public class GameManager {
         this.gameInitialImpl.initGameBoard();
         this.gameInitialImpl.initPawns();
 
-        gameValidation = new GameValidationImpl(isPlayerOneTurn, changePlayerListListeners);
+        gameValidation = new GameValidationImpl();
 
-        gameCreatorChecked = new GameCreatorImpl(isPlayerOneTurn, gameValidation, changePlayerListListeners);
+        gameCreatorChecked = new GameCreatorImpl(gameValidation);
+
+        dataGame.addChanePlayerListener(changePlayerListListeners);
     }
 
     public int getWidthCell(){

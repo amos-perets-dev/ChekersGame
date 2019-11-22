@@ -173,28 +173,28 @@ public class GameInitialImpl {
         boolean isReplaceFirstColor;
         boolean isPlayerOnCurrently = false;
 
-       int  insideBorders = 0;
+        int  insideBorders = 0;
         // measure size cell without the border
         widthCell = ((width - insideBorders) / GAME_BOARD_SIZE) ;
         heightCell = ((height - insideBorders) / GAME_BOARD_SIZE) ;
 
         // initGameBoard the first x,y point
-          int tmpX = x ;
-         int tmpY = y ;
+        int tmpX = x ;
+        int tmpY = y ;
 
         /**
          * Get the start x,y pawn
          */
         int factorDecreaseSizeCell = (heightCell - BORDER_WIDTH) / DIV_SIZE_CELL;
 
-         for (int i = 0; i < GAME_BOARD_SIZE; i++) {
+        for (int i = 0; i < GAME_BOARD_SIZE; i++) {
 
             //check if need to replace the first color in the row
             isReplaceFirstColor = i % 2 == 0;
 
             for (int j = 0; j < GAME_BOARD_SIZE; j++) {
 
-            //change color
+                //change color
                 if (j % 2 == 0) {
                     isDarkCell = !isReplaceFirstColor;
                     isValidSquare = !isReplaceFirstColor;
@@ -223,10 +223,10 @@ public class GameInitialImpl {
                         , point
                         , isEmptyFirstTimeDraw
                         , isMasterSquare
-                , widthCell - BORDER_WIDTH
-                , heightCell - BORDER_WIDTH
-                , isPlayerOnCurrently
-                , pointStartPawn);
+                        , widthCell - BORDER_WIDTH
+                        , heightCell - BORDER_WIDTH
+                        , isPlayerOnCurrently
+                        , pointStartPawn);
 
                 dataGame.putCellByPlayer(cellData);
 
@@ -278,10 +278,10 @@ public class GameInitialImpl {
             pointY = pointCurrCell.y - heightCell;
             CellDataImpl nextCellRightPlayerTwo = dataGame.getCellByPoint(new Point(pointX, pointY));
 
-            cellData.setNextCellDataLeftPlayerOne(nextCellLeftPlayerOne)
-                    .setNextCellDataRightPlayerOne(nextCellRightPlayerOne)
-                    .setNextCellDataLeftPlayerTwo(nextCellLeftPlayerTwo)
-                    .setNextCellDataRightPlayerTwo(nextCellRightPlayerTwo);
+            cellData.setNextCellDataLeftBottom(nextCellLeftPlayerOne)
+                    .setNextCellDataRightBottom(nextCellRightPlayerOne)
+                    .setNextCellDataLeftTop(nextCellLeftPlayerTwo)
+                    .setNextCellDataRightTop(nextCellRightPlayerTwo);
         }
 
         dataGame.putCellByPlayer(cellData);

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataGame {
+public class DataGame implements GameManager.ChangePlayerListener{
 
     public static final int CHECKED_PAWN_START_END = Color.argb(155, 45, 170, 0);
     public static final int INVALID_CHECKED = Color.argb(155, 170, 0, 0);
@@ -40,6 +40,8 @@ public class DataGame {
     private Map<Point, PawnDataImpl> pawnsPlayerOne  = new HashMap<>();
     private Map<Point, PawnDataImpl> pawnsPlayerTwo = new HashMap<>();
 
+    private boolean isPlayerOneTurn;
+
     private DataGame() {
         // Exists only to defeat instantiation.
     }
@@ -49,6 +51,10 @@ public class DataGame {
             instance = new DataGame();
         }
         return instance;
+    }
+
+    public void addChanePlayerListener(List<GameManager.ChangePlayerListener> changePlayerListListeners){
+        changePlayerListListeners.add(this);
     }
 
     public Map<Point, CellDataImpl> getCellsPlayerOne() {
@@ -162,4 +168,54 @@ public class DataGame {
         removePawnByPlayer(pawnData);
         removeCellByPlayer(cellByPoint);
     }
+
+    @Override
+    public void onChangePlayer(boolean isPlayerOneTurn) {
+        this.isPlayerOneTurn = isPlayerOneTurn;
+    }
+
+    public boolean isPlayerOneTurn() {
+        return isPlayerOneTurn;
+    }
+
+    public CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft) {
+        return cellData != null
+                ? isPlayerOneTurn
+                ? isLeft
+                ? cellData.getNextCellDataLeftBottom()
+                : cellData.getNextCellDataRightBottom()
+                : isLeft
+                ? cellData.getNextCellDataLeftTop()
+                : cellData.getNextCellDataRightTop()
+                : null;
+
+    }
+
+    public CellDataImpl getNextCellsByQueen(CellDataImpl cellData, boolean isLeft, boolean isTop) {
+        if (cellData != null){
+            if (isLeft){
+                if (isTop){
+                    if (cellData.getNextCellDataLeftTop() != null){
+                        return cellData.getNextCellDataLeftTop();
+                    }
+                } else {
+                    if (cellData.getNextCellDataLeftBottom() != null){
+                        return cellData.getNextCellDataLeftBottom();
+                    }
+                }
+            } else {
+                if (isTop){
+                    if (cellData.getNextCellDataRightTop() != null){
+                        return cellData.getNextCellDataRightTop();
+                    }
+                } else {
+                    if (cellData.getNextCellDataRightBottom() != null){
+                        return cellData.getNextCellDataRightBottom();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class GameCreatorImpl implements GameManager.ChangePlayerListener {
+class GameCreatorImpl{
 
     private List<DataCellViewClick> cellsPointRelevantStart = new ArrayList<>();
 
@@ -39,8 +39,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     private CellDataImpl prevCellDataTmp;
 
-    private boolean isPlayerOneTurn;
-
     private CellDataImpl cellDataSrcCurrently;
 
     private boolean isAttackMove = false;
@@ -58,46 +56,38 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
     }
 
-    public GameCreatorImpl(boolean isPlayerOneTurn
-            , GameValidationImpl gameValidation
-            , List<GameManager.ChangePlayerListener> changePlayerListListeners) {
-        this.isPlayerOneTurn = isPlayerOneTurn;
+    public GameCreatorImpl(GameValidationImpl gameValidation) {
         this.gameValidation = gameValidation;
-        changePlayerListListeners.add(this);
     }
 
     public List<DataCellViewClick> createRelevantCellsStart() {
         cellsPointRelevantStart.clear();
 
+        FluentIterable<CellDataImpl> cellDataIterable = getCellsData();
+
         // Check if there is attack path
-        isAttackMove = FluentIterable.from(isPlayerOneTurn
-                ? dataGame.getPawnsPlayerOne().values()
-                : dataGame.getPawnsPlayerTwo().values())
-                .transform(PawnDataImpl::getContainerCellXY)
-                .transform(dataGame::getCellByPoint)
+        isAttackMove = cellDataIterable
                 .filter(gameValidation::isAttackMove)
                 .first()
                 .isPresent();
 
-        FluentIterable.from((isPlayerOneTurn
-                    ? dataGame.getPawnsPlayerOne().values()
-                    : dataGame.getPawnsPlayerTwo().values()))
-                .transform(PawnDataImpl::getContainerCellXY)
-                .transform(dataGame::getCellByPoint)
+        cellDataIterable
                 .filter(gameValidation::isCanCellStart)
                 .filter(cellData -> !isAttackMove || gameValidation.isAttackMove(cellData))
                 .transform(CellDataImpl::getPoint)
-                .transform(new Function<Point, DataCellViewClick>() {
-                    @Nullable
-                    @Override
-                    public DataCellViewClick apply(@Nullable Point point) {
-                        return new DataCellViewClick (point, DataGame.CAN_CELL_START, DataGame.CLEAR_CHECKED);
-                    }
-                })
+                .transform(point -> new DataCellViewClick (point, DataGame.CAN_CELL_START, DataGame.CLEAR_CHECKED))
                 .transform(cellsPointRelevantStart::add)
                 .toList();
 
         return cellsPointRelevantStart;
+    }
+
+    private FluentIterable<CellDataImpl> getCellsData() {
+        return FluentIterable.from((dataGame.isPlayerOneTurn()
+                ? dataGame.getPawnsPlayerOne().values()
+                : dataGame.getPawnsPlayerTwo().values()))
+                .transform(PawnDataImpl::getContainerCellXY)
+                .transform(dataGame::getCellByPoint);
     }
 
     public List<DataCellViewClick> createOptionalPath(float x, float y){
@@ -132,12 +122,12 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
         if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true)){
             // add the first/root cell
-            createOptionalPathByCell(getNextCell(currCellData, true), true);
+            createOptionalPathByCell(dataGame.getNextCell(currCellData, true), true);
         }
 
         if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false)){
             // add the first/root cell
-            createOptionalPathByCell(getNextCell(currCellData, false), true);
+            createOptionalPathByCell(dataGame.getNextCell(currCellData, false), true);
         }
 
 
@@ -172,9 +162,9 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 //calculate the diagonal direction
                 boolean isRightDiagonal = currCellData.getPoint().x > prevCellData.getPoint().x;
                 if (isRightDiagonal){
-                    nextCellDataByCell = getNextCell(currCellData, false);
+                    nextCellDataByCell = dataGame.getNextCell(currCellData, false);
                 } else {
-                    nextCellDataByCell = getNextCell(currCellData, true);
+                    nextCellDataByCell = dataGame.getNextCell(currCellData, true);
                 }
                 if (nextCellDataByCell != null && nextCellDataByCell.isEmpty()){
 
@@ -197,7 +187,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 
                 prevCellData = currCellData;
                 prevCellDataTmp = currCellData;
-                CellDataImpl nextCellDataByCellRight = getNextCell(currCellData, false);
+                CellDataImpl nextCellDataByCellRight = dataGame.getNextCell(currCellData, false);
                 if (nextCellDataByCellRight != null && !nextCellDataByCellRight.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellRight)){
                     createOptionalPathByCell(nextCellDataByCellRight, true);
                 }
@@ -205,26 +195,13 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
                 listOptionalCellsPathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
                 removeListPawn = new ArrayList<>(removeListPawnTmp);
 
-                CellDataImpl nextCellDataByCellLeft = getNextCell(currCellData, true);
+                CellDataImpl nextCellDataByCellLeft = dataGame.getNextCell(currCellData, true);
                 if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
                     createOptionalPathByCell(nextCellDataByCellLeft, true);
                 }
             }
 
         }
-
-    }
-
-    private CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft){
-            return cellData != null
-                    ? isPlayerOneTurn
-                        ? isLeft
-                            ? cellData.getNextCellDataLeftPlayerOne()
-                            : cellData.getNextCellDataRightPlayerOne()
-                        : isLeft
-                            ? cellData.getNextCellDataLeftPlayerTwo()
-                            : cellData.getNextCellDataRightPlayerTwo()
-                    : null;
 
     }
 
@@ -237,11 +214,6 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
 //        if (cellData == null)return;
 //        dataOptionalPathByView.add(new DataCellViewClick(isClickValid,cellData.getPoint(), dataOptionalPathByView.size() == 0, cellData.isEmpty(), color));
 //    }
-
-    @Override
-    public void onChangePlayer(boolean isPlayerOneTurn) {
-        this.isPlayerOneTurn = isPlayerOneTurn;
-    }
 
 //    /**
 //     * Check if the point is the end point in the path
@@ -281,7 +253,7 @@ class GameCreatorImpl implements GameManager.ChangePlayerListener {
     }
 
     public void setCurrentSrcDstCellData(CellDataImpl cellDataDst){
-        dataGame.updateCell(cellDataDst, false, isPlayerOneTurn );
+        dataGame.updateCell(cellDataDst, false, dataGame.isPlayerOneTurn() );
         // cell data src
         dataGame.updateCell(cellDataSrcCurrently, true, false);
         // pawn data src

@@ -8,28 +8,25 @@ import com.example.chekersgamepro.data.cell.CellDataImpl;
 
 import java.util.List;
 
-public class GameValidationImpl implements GameManager.ChangePlayerListener {
-
-    private boolean isPlayerOneTurn;
+public class GameValidationImpl {
 
     private DataGame dataGame = DataGame.getInstance();
 
-    public GameValidationImpl( boolean isPlayerOneTurn
-            , List<GameManager.ChangePlayerListener> changePlayerListListeners) {
-        this.isPlayerOneTurn = isPlayerOneTurn;
-        changePlayerListListeners.add(this);
+    public GameValidationImpl() {
+
     }
+
 
     public boolean isCanCellStart(CellDataImpl currCellData){
 
         //Check the left direction
-        CellDataImpl nextCellLeft = getNextCell(currCellData, true);
+        CellDataImpl nextCellLeft = dataGame.getNextCell(currCellData, true);
         // 1. check if there is normal turn
         if (nextCellLeft != null && nextCellLeft.isEmpty()){
             return true;
         }
 
-        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
+        CellDataImpl nextCellChildLeft = dataGame.getNextCell(nextCellLeft, true);
 
         // 2. check if there is attack turn
         if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
@@ -37,13 +34,13 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         }
 
         //Check the right direction
-        CellDataImpl nextCellRight = getNextCell(currCellData, false);
+        CellDataImpl nextCellRight = dataGame.getNextCell(currCellData, false);
         // 1. check if there is normal turn
         if (nextCellRight != null && nextCellRight.isEmpty()){
             return true;
         }
 
-        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
+        CellDataImpl nextCellChildRight = dataGame.getNextCell(nextCellRight, false);
 
         // 2. check if there is attack turn
         if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
@@ -60,21 +57,21 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
             return false;
         }
 
-        CellDataImpl nextCellLeft = getNextCell(currCell, true);
+        CellDataImpl nextCellLeft = dataGame.getNextCell(currCell, true);
 
         // check if there is attack path
         if (nextCellLeft != null){
-            CellDataImpl nextCellLeftByNextCell = getNextCell(nextCellLeft, true);
+            CellDataImpl nextCellLeftByNextCell = dataGame.getNextCell(nextCellLeft, true);
             if (nextCellLeftByNextCell != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellLeftByNextCell.isEmpty()){
                 return false;
             }
         }
 
-        CellDataImpl nextCellRight = getNextCell(currCell, false);
+        CellDataImpl nextCellRight = dataGame.getNextCell(currCell, false);
 
         // check if there is attack path
         if (nextCellRight != null){
-            CellDataImpl nextCellRightByNextCell = getNextCell(nextCellRight, false);
+            CellDataImpl nextCellRightByNextCell = dataGame.getNextCell(nextCellRight, false);
             if (nextCellRightByNextCell != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellRightByNextCell.isEmpty()){
                 return false;
             }
@@ -87,33 +84,15 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
     public boolean isEqualPlayerCells(CellDataImpl currCellData){
 
         boolean isPlayerOneCurrently = currCellData.isPlayerOneCurrently();
-        return isPlayerOneCurrently  && isPlayerOneTurn || !isPlayerOneCurrently && !isPlayerOneTurn;
+        return isPlayerOneCurrently  && dataGame.isPlayerOneTurn() || !isPlayerOneCurrently && ! dataGame.isPlayerOneTurn();
 
-    }
-
-    private CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft){
-        return cellData != null
-                ? isPlayerOneTurn
-                    ? isLeft
-                        ? cellData.getNextCellDataLeftPlayerOne()
-                        : cellData.getNextCellDataRightPlayerOne()
-                    : isLeft
-                        ? cellData.getNextCellDataLeftPlayerTwo()
-                        : cellData.getNextCellDataRightPlayerTwo()
-                : null;
-
-    }
-
-    @Override
-    public void onChangePlayer(boolean isPlayerOneTurn) {
-        this.isPlayerOneTurn = isPlayerOneTurn;
     }
 
     public boolean isAttackMove(CellDataImpl currCellData) {
 
         //Check the left direction
-        CellDataImpl nextCellLeft = getNextCell(currCellData, true);
-        CellDataImpl nextCellChildLeft = getNextCell(nextCellLeft, true);
+        CellDataImpl nextCellLeft = dataGame.getNextCell(currCellData, true);
+        CellDataImpl nextCellChildLeft = dataGame.getNextCell(nextCellLeft, true);
 
         // 2. check if there is attack turn
         if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
@@ -121,8 +100,8 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
         }
 
         //Check the right direction
-        CellDataImpl nextCellRight = getNextCell(currCellData, false);
-        CellDataImpl nextCellChildRight = getNextCell(nextCellRight, false);
+        CellDataImpl nextCellRight = dataGame.getNextCell(currCellData, false);
+        CellDataImpl nextCellChildRight = dataGame.getNextCell(nextCellRight, false);
 
         // 2. check if there is attack turn
         if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
@@ -135,8 +114,8 @@ public class GameValidationImpl implements GameManager.ChangePlayerListener {
 
     public boolean isAttackMoveByDirection(CellDataImpl currCellData, boolean isLeft) {
         //Check the right direction
-        CellDataImpl nextCell = getNextCell(currCellData, isLeft);
-        CellDataImpl nextCellChild = getNextCell(nextCell, isLeft);
+        CellDataImpl nextCell = dataGame.getNextCell(currCellData, isLeft);
+        CellDataImpl nextCellChild = dataGame.getNextCell(nextCell, isLeft);
 
         // 2. check if there is attack turn
         if ((nextCell != null && !nextCell.isEmpty() && !isEqualPlayerCells(nextCell) && nextCellChild != null && nextCellChild.isEmpty())){
