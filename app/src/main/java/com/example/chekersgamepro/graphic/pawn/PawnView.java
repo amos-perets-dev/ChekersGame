@@ -35,6 +35,8 @@ public class PawnView extends ImageView{
 
     private Bitmap icon;
 
+    private boolean isAlreadyChangeIcon = false;
+
     public PawnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
@@ -162,17 +164,19 @@ public class PawnView extends ImageView{
 
     public void setIcon(boolean isSpecialIcon) {
         icon = isSpecialIcon ? specialIcon : regularIcon;
-        if (isSpecialIcon){
-            ObjectAnimator animatePulse = ObjectAnimator.ofPropertyValuesHolder(this,
-                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-                    PropertyValuesHolder.ofFloat("scaleY", 1.2f));
-            animatePulse.setDuration(300);
 
-            animatePulse.setRepeatCount(3);
-            animatePulse.setRepeatMode(ObjectAnimator.REVERSE);
+            if (isSpecialIcon && !isAlreadyChangeIcon){
+                isAlreadyChangeIcon = true;
+                ObjectAnimator animatePulse = ObjectAnimator.ofPropertyValuesHolder(this,
+                        PropertyValuesHolder.ofFloat("scaleX", 1.2f),
+                        PropertyValuesHolder.ofFloat("scaleY", 1.2f));
+                animatePulse.setDuration(300);
 
-            animatePulse.start();
+                animatePulse.setRepeatCount(3);
+                animatePulse.setRepeatMode(ObjectAnimator.REVERSE);
 
-        }
+                animatePulse.start();
+
+            }
     }
 }

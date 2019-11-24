@@ -37,6 +37,8 @@ public class CellDataImpl {
     private @Nullable CellDataImpl nextCellDataLeftPlayerTwo;
     private @Nullable CellDataImpl nextCellDataRightPlayerTwo;
 
+    public CellDataImpl(){}
+
     public CellDataImpl(boolean isValidCell
             , boolean isEmpty
             , boolean isDarkCell
@@ -58,6 +60,21 @@ public class CellDataImpl {
         this.height = height;
         this.isPlayerOneCurrently = isPlayerOneCurrently;
         this.pointStartPawn = pointStartPawn;
+
+    }
+
+    public CellDataImpl (CellDataImpl cellData) {
+
+        this.isValidCell = cellData.isValidCell();
+        this.isEmpty = cellData.isEmpty();
+        this.isDarkCell = cellData.isDarkCell();
+        this.point = cellData.getPoint();
+        this.isEmptyFirstTimeDraw = cellData.isEmptyFirstTimeDraw();
+        this.isMasterCell = cellData.isMasterCell();
+        this.width = cellData.getWidth();
+        this.height = cellData.getHeight();
+        this.isPlayerOneCurrently = cellData.isPlayerOneCurrently();
+        this.pointStartPawn = cellData.getPointStartPawn();
 
     }
 

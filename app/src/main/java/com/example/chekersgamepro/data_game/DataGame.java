@@ -1,8 +1,11 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.data_game;
 
 import android.graphics.Color;
 import android.graphics.Point;
+import android.util.Log;
 
+import com.example.chekersgamepro.GameManager;
+import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
@@ -12,7 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataGame implements GameManager.ChangePlayerListener{
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+
+public class DataGame implements GameManager.ChangePlayerListener {
 
     public static final int CHECKED_PAWN_START_END = Color.argb(155, 45, 170, 0);
     public static final int INVALID_CHECKED = Color.argb(155, 170, 0, 0);
@@ -20,6 +26,10 @@ public class DataGame implements GameManager.ChangePlayerListener{
     public static final int INSIDE_PATH = Color.argb(155, 0, 43, 170);
     public static final int CLEAR_CHECKED = R.drawable.cell_1;
 
+    public static final int LEFT_TOP_DIRECTION = 1;
+    public static final int LEFT_BOTTOM_DIRECTION = 2;
+    public static final int RIGHT_TOP_DIRECTION = 3;
+    public static final int RIGHT_BOTTOM_DIRECTION = 4;
 
     private static DataGame instance = null;
     public static final int RIGHT = 1;
@@ -41,6 +51,8 @@ public class DataGame implements GameManager.ChangePlayerListener{
     private Map<Point, PawnDataImpl> pawnsPlayerTwo = new HashMap<>();
 
     private boolean isPlayerOneTurn;
+
+    private DataGameHelper dataGameHelper = new DataGameHelper();
 
     private DataGame() {
         // Exists only to defeat instantiation.
@@ -179,43 +191,15 @@ public class DataGame implements GameManager.ChangePlayerListener{
     }
 
     public CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft) {
-        return cellData != null
-                ? isPlayerOneTurn
-                ? isLeft
-                ? cellData.getNextCellDataLeftBottom()
-                : cellData.getNextCellDataRightBottom()
-                : isLeft
-                ? cellData.getNextCellDataLeftTop()
-                : cellData.getNextCellDataRightTop()
-                : null;
-
+        return dataGameHelper.getNextCell(cellData, isLeft, isPlayerOneTurn);
     }
 
-    public CellDataImpl getNextCellsByQueen(CellDataImpl cellData, boolean isLeft, boolean isTop) {
-        if (cellData != null){
-            if (isLeft){
-                if (isTop){
-                    if (cellData.getNextCellDataLeftTop() != null){
-                        return cellData.getNextCellDataLeftTop();
-                    }
-                } else {
-                    if (cellData.getNextCellDataLeftBottom() != null){
-                        return cellData.getNextCellDataLeftBottom();
-                    }
-                }
-            } else {
-                if (isTop){
-                    if (cellData.getNextCellDataRightTop() != null){
-                        return cellData.getNextCellDataRightTop();
-                    }
-                } else {
-                    if (cellData.getNextCellDataRightBottom() != null){
-                        return cellData.getNextCellDataRightBottom();
-                    }
-                }
-            }
-        }
-        return null;
+    public CellDataImpl getNextCell(CellDataImpl currCellData, CellDataImpl prevCellData) {
+        return dataGameHelper.getNextCell(currCellData, prevCellData);
+    }
+
+    public CellDataImpl getNextCellByDirection(CellDataImpl currCellData, int direction) {
+        return dataGameHelper.getNextCellByDirection(currCellData, direction);
     }
 
 }

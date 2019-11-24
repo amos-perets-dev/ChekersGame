@@ -17,7 +17,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
-import com.example.chekersgamepro.DataGame;
+import com.example.chekersgamepro.data_game.DataGame;
 import com.example.chekersgamepro.R;
 import com.jakewharton.rxbinding2.view.RxView;
 

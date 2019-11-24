@@ -7,6 +7,7 @@ import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_board.GameInitialImpl;
 import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data_game.DataGame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,6 @@ public class GameManager {
 
     public List<DataCellViewClick> createRelevantCellsStart() {
         return gameCreatorChecked.createRelevantCellsStart();
-
     }
 
     private String getPlayerName() {
@@ -130,6 +130,18 @@ public class GameManager {
 
     public boolean isQueenPawn(Point currPawnPoint) {
         return gameValidation.isQueenPawn(currPawnPoint);
+    }
+
+    public boolean isSomePlayerWin() {
+        return gameValidation.isSomePlayerWin();
+    }
+
+    public String getWinPlayerName() {
+        return "The winning player is " + (isPlayerOneTurn ? "PLAYER TWO" : "PLAYER ONE" );
+    }
+
+    public boolean isPlayerOneTurn() {
+        return isPlayerOneTurn;
     }
 
     public interface ChangePlayerListener{

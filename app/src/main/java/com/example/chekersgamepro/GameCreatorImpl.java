@@ -6,7 +6,7 @@ import android.util.Pair;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
-import com.google.common.base.Function;
+import com.example.chekersgamepro.data_game.DataGame;
 import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -25,7 +25,7 @@ class GameCreatorImpl{
     /**
      * The optional cells that the pawn can move on it
      */
-    private List<Point> listOptionalCellsPathTmp = new ArrayList<>();//
+    private List<Point> listOptionalPawnMovePathTmp = new ArrayList<>();//
 
     private List<PawnDataImpl> removeListPawn = new ArrayList<>();
 
@@ -37,18 +37,20 @@ class GameCreatorImpl{
 
     private CellDataImpl prevCellData;
 
-    private CellDataImpl prevCellDataTmp;
-
     private CellDataImpl cellDataSrcCurrently;
 
     private boolean isAttackMove = false;
+
+    private boolean isQueenPawn;
+
+    private Point endPointPathFromUser;
 
     public void clearData(){
         cellsPointRelevantStart.clear();
 
         listsAllOptionalPathByCell.clear();
 
-        listOptionalCellsPathTmp.clear();
+        listOptionalPawnMovePathTmp.clear();
 
         dataOptionalPathByView.clear();
 
@@ -63,15 +65,15 @@ class GameCreatorImpl{
     public List<DataCellViewClick> createRelevantCellsStart() {
         cellsPointRelevantStart.clear();
 
-        FluentIterable<CellDataImpl> cellDataIterable = getCellsData();
+        FluentIterable<CellDataImpl> cellsCanStart = getCellsData();
 
         // Check if there is attack path
-        isAttackMove = cellDataIterable
+        isAttackMove = cellsCanStart
                 .filter(gameValidation::isAttackMove)
                 .first()
                 .isPresent();
 
-        cellDataIterable
+        cellsCanStart
                 .filter(gameValidation::isCanCellStart)
                 .filter(cellData -> !isAttackMove || gameValidation.isAttackMove(cellData))
                 .transform(CellDataImpl::getPoint)
@@ -94,7 +96,7 @@ class GameCreatorImpl{
 
         dataOptionalPathByView.clear();
         listsAllOptionalPathByCell.clear();
-        listOptionalCellsPathTmp.clear();
+        listOptionalPawnMovePathTmp.clear();
         removeListPawn.clear();
 
         CellDataImpl currCellData =  dataGame.getCellByPoint(new Point((int) x, (int) y));
@@ -116,21 +118,53 @@ class GameCreatorImpl{
 
         this.prevCellData = currCellData;
         this.cellDataSrcCurrently = currCellData;
+        this.isQueenPawn = gameValidation.isQueenPawn(currCellData);
 
         // add the first/root cell
         addDataOptionalPath( currCellData, DataGame.CHECKED_PAWN_START_END, DataGame.CAN_CELL_START);
 
+        // check and create left direction
         if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, true)){
-            // add the first/root cell
-            createOptionalPathByCell(dataGame.getNextCell(currCellData, true), true);
+
+            if (isQueenPawn){
+                if (!isAttackMove || gameValidation.isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftTop(), DataGame.LEFT_TOP_DIRECTION)){
+                    createOptionalPathByCell(currCellData.getNextCellDataLeftTop(), true);
+                }
+
+                this.prevCellData = currCellData;
+
+                if (!isAttackMove || gameValidation.isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftBottom(), DataGame.LEFT_BOTTOM_DIRECTION)) {
+                    createOptionalPathByCell(currCellData.getNextCellDataLeftBottom(), true);
+                }
+
+                this.prevCellData = currCellData;
+
+            } else {
+                // add the first/root cell
+                createOptionalPathByCell(dataGame.getNextCell(currCellData, true), true);
+            }
+
         }
 
+        // check and create right direction
         if (!isAttackMove || gameValidation.isAttackMoveByDirection(currCellData, false)){
-            // add the first/root cell
-            createOptionalPathByCell(dataGame.getNextCell(currCellData, false), true);
+
+            if (isQueenPawn){
+                if (!isAttackMove || gameValidation.isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightBottom(), DataGame.RIGHT_BOTTOM_DIRECTION)) {
+                    createOptionalPathByCell(currCellData.getNextCellDataRightBottom(), true);
+                }
+                this.prevCellData = currCellData;
+
+                if (!isAttackMove || gameValidation.isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightTop(), DataGame.RIGHT_TOP_DIRECTION)) {
+                    createOptionalPathByCell(currCellData.getNextCellDataRightTop(), true);
+                }
+
+            } else {
+                // add the first/root cell
+                createOptionalPathByCell(dataGame.getNextCell(currCellData, false), true);
+            }
+
         }
-
-
 
         return dataOptionalPathByView;
 
@@ -144,28 +178,21 @@ class GameCreatorImpl{
 
         // check the curr cell after the root if is empty is valid but the end.
         // if the curr cell is leaf is valid but the end
-        if ((currCellData.isEmpty() && isFromRoot) || gameValidation.isLeaf(currCellData)){
+        if ((currCellData.isEmpty() && isFromRoot) || gameValidation.isLeaf(currCellData, dataOptionalPathByView, isQueenPawn)){
             addDataOptionalPath( currCellData, DataGame.CHECKED_PAWN_START_END, DataGame.CLEAR_CHECKED);
-            listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
+            listOptionalPawnMovePathTmp.add(currCellData.getPointStartPawn());
 
             listsAllOptionalPathByCell.put(
-                    currCellData.getPoint(), Pair.create(new ArrayList<>(listOptionalCellsPathTmp), new ArrayList<>(removeListPawn)));
-            listOptionalCellsPathTmp.clear();
+                    currCellData.getPoint(), Pair.create(new ArrayList<>(listOptionalPawnMovePathTmp), new ArrayList<>(removeListPawn)));
+            listOptionalPawnMovePathTmp.clear();
             removeListPawn.clear();
             return;
         } else {
 
             //check the cell after the root
             if (!currCellData.isEmpty() && isFromRoot && !gameValidation.isEqualPlayerCells(currCellData)){
-                CellDataImpl nextCellDataByCell;
+                CellDataImpl nextCellDataByCell = dataGame.getNextCell(currCellData, prevCellData);
 
-                //calculate the diagonal direction
-                boolean isRightDiagonal = currCellData.getPoint().x > prevCellData.getPoint().x;
-                if (isRightDiagonal){
-                    nextCellDataByCell = dataGame.getNextCell(currCellData, false);
-                } else {
-                    nextCellDataByCell = dataGame.getNextCell(currCellData, true);
-                }
                 if (nextCellDataByCell != null && nextCellDataByCell.isEmpty()){
 
                     addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
@@ -180,28 +207,99 @@ class GameCreatorImpl{
             // check the cell is empty but not leaf(maybe it a node)
             // need to check the right and left next cell
             if (currCellData.isEmpty()){
-                addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
-                listOptionalCellsPathTmp.add(currCellData.getPointStartPawn());
-                List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalCellsPathTmp);
-                List<PawnDataImpl> removeListPawnTmp = new ArrayList<>(removeListPawn);
 
-                prevCellData = currCellData;
-                prevCellDataTmp = currCellData;
-                CellDataImpl nextCellDataByCellRight = dataGame.getNextCell(currCellData, false);
-                if (nextCellDataByCellRight != null && !nextCellDataByCellRight.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellRight)){
-                    createOptionalPathByCell(nextCellDataByCellRight, true);
+                if (isQueenPawn){
+                    moveByQueenPawn(currCellData);
+                } else {
+                    moveByRegularPawn(currCellData);
                 }
-                prevCellData = prevCellDataTmp;
-                listOptionalCellsPathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
-                removeListPawn = new ArrayList<>(removeListPawnTmp);
 
-                CellDataImpl nextCellDataByCellLeft = dataGame.getNextCell(currCellData, true);
-                if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
-                    createOptionalPathByCell(nextCellDataByCellLeft, true);
-                }
             }
 
         }
+
+    }
+
+    private boolean isAlreadyExists(CellDataImpl currCellData){
+        return FluentIterable.from(dataOptionalPathByView)
+                .transform(DataCellViewClick::getPoint)
+                .filter(point -> currCellData.getPoint().x == point.x && currCellData.getPoint().y == point.y)
+                .first()
+                .isPresent();
+    }
+
+    private void moveByQueenPawn(CellDataImpl currCellData){
+        addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
+        listOptionalPawnMovePathTmp.add(currCellData.getPointStartPawn());
+
+        List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalPawnMovePathTmp);
+        List<PawnDataImpl> removeListPawnCopy = new ArrayList<>(removeListPawn);
+
+        prevCellData = currCellData;
+        CellDataImpl prevCellDataTmp = copyObject(currCellData);
+
+        CellDataImpl nextCellDataLeftBottom = currCellData.getNextCellDataLeftBottom();
+        if (nextCellDataLeftBottom != null && !isAlreadyExists(nextCellDataLeftBottom) && !nextCellDataLeftBottom.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataLeftBottom)){
+            createOptionalPathByCell(nextCellDataLeftBottom, true);
+        }
+
+        prevCellData = copyObject(prevCellDataTmp);
+        listOptionalPawnMovePathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
+        removeListPawn = new ArrayList<>(removeListPawnCopy);
+
+        CellDataImpl nextCellDataRightBottom = currCellData.getNextCellDataRightBottom();
+        if ( nextCellDataRightBottom != null && !isAlreadyExists(nextCellDataRightBottom) && !nextCellDataRightBottom.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataRightBottom)){
+            createOptionalPathByCell(nextCellDataRightBottom, true);
+        }
+
+        prevCellData = copyObject(prevCellDataTmp);
+        listOptionalPawnMovePathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
+        removeListPawn = new ArrayList<>(removeListPawnCopy);
+
+        CellDataImpl nextCellDataLeftTop = currCellData.getNextCellDataLeftTop();
+        if ( nextCellDataLeftTop != null && !isAlreadyExists(nextCellDataLeftTop) && !nextCellDataLeftTop.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataLeftTop)){
+            createOptionalPathByCell(nextCellDataLeftTop, true);
+        }
+
+        prevCellData = copyObject(prevCellDataTmp);
+        listOptionalPawnMovePathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
+        removeListPawn = new ArrayList<>(removeListPawnCopy);
+
+        CellDataImpl nextCellDataRightTop = currCellData.getNextCellDataRightTop();
+        if ( nextCellDataRightTop != null && !isAlreadyExists(nextCellDataRightTop) && !nextCellDataRightTop.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataRightTop)){
+            createOptionalPathByCell(nextCellDataRightTop, true);
+        }
+
+    }
+
+    private void moveByRegularPawn(CellDataImpl currCellData){
+        addDataOptionalPath( currCellData, DataGame.INSIDE_PATH, DataGame.CLEAR_CHECKED);
+        listOptionalPawnMovePathTmp.add(currCellData.getPointStartPawn());
+
+        List<Point> listOptionalCellsPathTmpCopy = new ArrayList<>(listOptionalPawnMovePathTmp);
+        List<PawnDataImpl> removeListPawnCopy = new ArrayList<>(removeListPawn);
+
+        prevCellData = currCellData;
+        CellDataImpl prevCellDataTmp = copyObject(currCellData);
+
+        CellDataImpl nextCellDataByCellRight = dataGame.getNextCell(currCellData, false);
+        if (nextCellDataByCellRight != null && !nextCellDataByCellRight.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellRight)){
+            createOptionalPathByCell(nextCellDataByCellRight, true);
+        }
+
+        prevCellData = copyObject(prevCellDataTmp);
+        listOptionalPawnMovePathTmp = new ArrayList<>(listOptionalCellsPathTmpCopy);
+        removeListPawn = new ArrayList<>(removeListPawnCopy);
+
+        CellDataImpl nextCellDataByCellLeft = dataGame.getNextCell(currCellData, true);
+        if (nextCellDataByCellLeft != null && !nextCellDataByCellLeft.isEmpty() && !gameValidation.isEqualPlayerCells(nextCellDataByCellLeft)) {
+            createOptionalPathByCell(nextCellDataByCellLeft, true);
+        }
+    }
+
+    private CellDataImpl copyObject(CellDataImpl cellData){
+
+        return new CellDataImpl(cellData);
 
     }
 
@@ -209,24 +307,6 @@ class GameCreatorImpl{
         if (cellData == null)return;
         dataOptionalPathByView.add(new DataCellViewClick(cellData.getPoint(), colorChecked, colorClearChecked));
     }
-
-//    private void addDataRellevanrCells(boolean isClickValid, @Nullable CellDataImpl cellData, int color) {
-//        if (cellData == null)return;
-//        dataOptionalPathByView.add(new DataCellViewClick(isClickValid,cellData.getPoint(), dataOptionalPathByView.size() == 0, cellData.isEmpty(), color));
-//    }
-
-//    /**
-//     * Check if the point is the end point in the path
-//     * @param x from current point cell
-//     * @param y from current point cell
-//     * @return
-//     */
-//    public boolean isInOptionalPathValidCell(float x, float y) {
-//
-//      return listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) != null;
-//    }
-
-    Point endPointPathFromUser;
 
     /**
      *

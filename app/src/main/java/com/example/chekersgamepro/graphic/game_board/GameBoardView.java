@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.subjects.PublishSubject;
 
 public class GameBoardView extends View {
@@ -50,10 +51,11 @@ public class GameBoardView extends View {
         }
     }
 
-    public Observable<GameBoardView> getGameBoardView(){
+    public Single<GameBoardView> getGameBoardView(){
         return gameBoardView
                 .hide()
-                .distinctUntilChanged();
+                .distinctUntilChanged()
+                .firstOrError();
     }
 
 }

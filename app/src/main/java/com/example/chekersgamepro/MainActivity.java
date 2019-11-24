@@ -1,25 +1,24 @@
 package com.example.chekersgamepro;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data_game.DataGame;
 import com.example.chekersgamepro.graphic.cell.CellView;
 import com.example.chekersgamepro.graphic.game_board.GameBoardView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         compositeDisposable.add(gameBoardView
                 .getGameBoardView()
-                .doOnNext(this::initGameBoard)
+                .doOnEvent(this::initGameBoard)
                 .subscribe());
 
         compositeDisposable.add(initGameBoardFinish()
@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(this::onClickCell));
 
 
+
         compositeDisposable.add(getPlayerName()
                 .subscribe(textViewPlayerName::setText));
 
@@ -136,8 +137,9 @@ public class MainActivity extends AppCompatActivity {
                         cellView.checked(dataCellViewClick.getColorChecked());
                     }
                 })
-                .subscribe(Functions.actionConsumer(checkersViewModel::finishedCheckedRelevantCells)));
+                .subscribe());
 
+        // checked the optional path by click
         compositeDisposable.add(checkersViewModel
                 .getOptionalPath(this)
                 .doOnNext(this::checkedOptionalPathByClick)
@@ -166,6 +168,26 @@ public class MainActivity extends AppCompatActivity {
                 .map(pawnViewMap::get)
                 .subscribe(PawnView::removePawn));
 
+        checkersViewModel.getComputerTurn(this)
+                .filter(list -> list.size() > 0)
+                .subscribe(new Consumer<List<DataCellViewClick>>() {
+                    @Override
+                    public void accept(List<DataCellViewClick> dataCellViewClicks) throws Exception {
+//                        Point point = dataCellViewClicks.get(0).getPoint();
+//                        cellViewMap.get(point).performClick();
+                    }
+                });
+
+        compositeDisposable.add(checkersViewModel
+                .getWinPlayerName(this)
+                .doOnNext(this::finishGame)
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        textViewTestStart.setText(s);
+                        Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+                    }
+                }));
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -173,6 +195,20 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+    }
+
+    private void finishGame(String s) {
+
+
+
+    }
+
+    private void initGameBoard(GameBoardView gameBoardView, Throwable throwable) {
+        checkersViewModel.initGame(
+                (int) gameBoardView.getX()
+                , (int) gameBoardView.getY()
+                , gameBoardView.getMeasuredWidth()
+                , gameBoardView.getMeasuredHeight());
     }
 
     /**
@@ -438,14 +474,6 @@ public class MainActivity extends AppCompatActivity {
         return map.put(input.first, input.second);
     }
 
-    private void initGameBoard(GameBoardView gameBoardView){
-        checkersViewModel.initGame(
-                (int) gameBoardView.getX()
-                , (int) gameBoardView.getY()
-                , gameBoardView.getMeasuredWidth()
-                , gameBoardView.getMeasuredHeight());
-    }
-
     private void drawBorders(){
         gameBoardView.drawBorders(
                 checkersViewModel.getBorderLines()
@@ -456,6 +484,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         compositeDisposable.dispose();
+
+        cellViewMap.clear();
+
+        pawnViewMap.clear();
+
+        pointsListAnimatePawn.clear();
+
+        viewsObservableList.clear();
+
+        viewsByRelevantCellsList.clear();
+
         finish();
         super.onBackPressed();
 
@@ -464,6 +503,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         compositeDisposable.dispose();
+
+        cellViewMap.clear();
+
+        pawnViewMap.clear();
+
+        pointsListAnimatePawn.clear();
+
+        viewsObservableList.clear();
+
+        viewsByRelevantCellsList.clear();
+
+
         finish();
         super.onDestroy();
     }

@@ -16,12 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> initFinish = new MutableLiveData<>();
-
-    private MutableLiveData<Boolean> initRelevantCellsFinish = new MutableLiveData<>();
 
     private MutableLiveData<List<DataCellViewClick>> relevantCells = new MutableLiveData<>();
 
@@ -33,12 +32,24 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<Point> removePawn = new MutableLiveData<>();
 
+    private MutableLiveData<String> winPlayer = new MutableLiveData<>();
+
+    private MutableLiveData<List<DataCellViewClick>> computerTurn = new MutableLiveData<>();
+
     private GameManager gameManager;
 
     public CheckersViewModel() {
 
         this.gameManager = new GameManager();
 
+    }
+
+    public Single<List<DataCellViewClick>> getComputerTurn(LifecycleOwner lifecycleOwner){
+        return Single.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerTurn));
+    }
+
+    public Observable<String> getWinPlayerName(LifecycleOwner lifecycleOwner){
+        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, winPlayer));
     }
 
     public Observable<List<Point>> getMovePawn(LifecycleOwner lifecycleOwner){
@@ -55,10 +66,6 @@ public class CheckersViewModel extends ViewModel {
 
     public Observable<String> getPlayerName(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, playerName));
-    }
-
-    public Observable<Boolean> startTurn(LifecycleOwner lifecycleOwner){
-        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, initRelevantCellsFinish));
     }
 
     public Observable<List<DataCellViewClick>> getOptionalPath(LifecycleOwner lifecycleOwner){
@@ -94,15 +101,21 @@ public class CheckersViewModel extends ViewModel {
         return gameManager.getBorderWidth();
     }
 
-    public void finishedCheckedRelevantCells() {
-        initRelevantCellsFinish.postValue(true);
-    }
-
-
     public void nextTurn() {
         gameManager.clearData();
         playerName.postValue(gameManager.nextTurnChangePlayer());
-        relevantCells.postValue(gameManager.createRelevantCellsStart());
+        List<DataCellViewClick> relevantCellsStart = gameManager.createRelevantCellsStart();
+        relevantCells.postValue(relevantCellsStart);
+
+        if (gameManager.isSomePlayerWin()){
+            winPlayer.postValue(gameManager.getWinPlayerName());
+        }
+
+//        if (!gameManager.isPlayerOneTurn()){
+//            computerTurn.postValue(relevantCellsStart);
+//        } else {
+//            computerTurn.postValue(Collections.EMPTY_LIST);
+//        }
     }
 
     public void getMoveOrOptionalPath(float x, float y) {
