@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import com.example.chekersgamepro.data_game.DataGame;
 import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import io.reactivex.Observable;
@@ -39,11 +40,6 @@ public class CellView extends ImageView{
         paint.setColor(Color.TRANSPARENT);
         paint.setStrokeWidth(10f);
 
-    }
-
-    public CellView setClickableCell(boolean isClickable){
-        setClickable(isClickable);
-        return this;
     }
 
     public CellView setEnabledCell(boolean isClickable){
@@ -103,8 +99,8 @@ public class CellView extends ImageView{
     }
 
     public Observable<CellView> getCellClick(){
-        return RxView.touches(this)
-                .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+        return RxView.clicks(this)
+//                .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                 .switchMap(ignored -> Observable.just(this));
     }
 

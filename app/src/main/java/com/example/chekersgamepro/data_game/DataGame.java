@@ -2,7 +2,6 @@ package com.example.chekersgamepro.data_game;
 
 import android.graphics.Color;
 import android.graphics.Point;
-import android.util.Log;
 
 import com.example.chekersgamepro.GameManager;
 import com.example.chekersgamepro.R;
@@ -14,9 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
 
 public class DataGame implements GameManager.ChangePlayerListener {
 
@@ -31,6 +27,10 @@ public class DataGame implements GameManager.ChangePlayerListener {
     public static final int RIGHT_TOP_DIRECTION = 3;
     public static final int RIGHT_BOTTOM_DIRECTION = 4;
 
+    public static final int COMPUTER_GAME_MODE = 1;
+    public static final int OFFLINE_GAME_MODE = 2;
+    public static final int ONLINE_GAME_MODE = 3;
+
     private static DataGame instance = null;
     public static final int RIGHT = 1;
     public static final int LEFT = -1;
@@ -39,6 +39,7 @@ public class DataGame implements GameManager.ChangePlayerListener {
     private final int DIV_SIZE_CELL = 14;
     private final int COLOR_BORDER_CELL = Color.BLACK;
     private final int BORDER_WIDTH = 2;
+    private int gameMode = -1;
 
     private List<BorderLine> borderLines = new ArrayList<>();
 
@@ -202,4 +203,11 @@ public class DataGame implements GameManager.ChangePlayerListener {
         return dataGameHelper.getNextCellByDirection(currCellData, direction);
     }
 
+    public int getGameMode() {
+        return gameMode;
+    }
+
+    public void setGameMode(int gameMode) {
+        this.gameMode = gameMode;
+    }
 }

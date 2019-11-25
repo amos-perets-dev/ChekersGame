@@ -1,10 +1,11 @@
 package com.example.chekersgamepro;
 
-import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,17 +19,23 @@ import com.example.chekersgamepro.graphic.cell.CellView;
 import com.example.chekersgamepro.graphic.game_board.GameBoardView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Notification;
 import io.reactivex.Observable;
+import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.internal.functions.Functions;
@@ -70,22 +77,45 @@ public class MainActivity extends AppCompatActivity {
 
     private Point currPointPawnViewStartPath;
 
+    private ImageView computerIcon;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         gameBoardView = findViewById(R.id.game_board_view);
+        computerIcon = findViewById(R.id.computer_sign);
 
         textViewPlayerName = findViewById(R.id.text_player_name);
         textViewTestStart = findViewById(R.id.text_test_start);
 
         checkersViewModel = ViewModelProviders.of(MainActivity.this).get(CheckersViewModel.class);
 
-        compositeDisposable.add(gameBoardView
-                .getGameBoardView()
-                .doOnEvent(this::initGameBoard)
-                .subscribe());
+        DialogChoosePlayer dialogChoosePlayer = new DialogChoosePlayer(this);
+
+        dialogChoosePlayer.show();
+        dialogChoosePlayer
+                .getGameMode()
+                .doOnNext(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer gameMode) throws Exception {
+                        if (gameMode == DataGame.COMPUTER_GAME_MODE){
+
+                            computerIcon
+                                    .animate()
+                                    .withStartAction(() -> {
+                                        computerIcon.setTranslationX(gameBoardView.getX() + (gameBoardView.getMeasuredWidth() / 2) - (computerIcon.getMeasuredWidth() / 2));
+                                        computerIcon.setTranslationY(gameBoardView.getBottom() + 10);
+                                    })
+                                    .alpha(1)
+                                    .setDuration(500)
+                                    .start();
+                        }
+                    }
+                })
+                .doOnNext(this::initGameBoard)
+                .subscribe();
 
         compositeDisposable.add(initGameBoardFinish()
                 .subscribeOn(Schedulers.io())
@@ -93,32 +123,18 @@ public class MainActivity extends AppCompatActivity {
                 .doOnNext(Functions.actionConsumer(this::initCellsViews))
                 .doOnNext(Functions.actionConsumer(this::initPawnsViews))
                 .doOnNext(Functions.actionConsumer(this::drawBorders))
+                .doOnNext(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        dialogChoosePlayer.dismiss();
+                    }
+                })
                 .doOnError(Throwable::printStackTrace)
                 .doOnNext(Functions.actionConsumer(checkersViewModel::nextTurn))
                 .map(ignored -> addViewsToObservable())
                 .flatMap(Observable::fromArray)
                 .flatMap(Observable::fromIterable)
                 .flatMap(Functions.identity())
-                .doOnNext(new Consumer<View>() {
-                    @Override
-                    public void accept(View view) throws Exception {
-                        DataGame dataGame = DataGame.getInstance();
-                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
-                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
-                        String infoPawn = "";
-                        String infoCell = "CELL: (" + cellByPoint.getPoint().x + ", " + cellByPoint.getPoint().y +")" + "isEmpty: " + cellByPoint.isEmpty() + ", player one: " + cellByPoint.isPlayerOneCurrently() + ", leaf: " + cellByPoint.isLeaf() + "\n";
-                        if (pawnByPoint != null){
-                            infoPawn = (", PAWN: player one: " + pawnByPoint.isPlayerOne() + ", killed: " + pawnByPoint.isKilled())+ "\n";
-                        }
-                        textViewTestStart.setText(
-                                "" + infoCell + infoPawn
-                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
-                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
-                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
-                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
-                                        + "ALL CELL: " + dataGame.getCells().size());
-                    }
-                })
                 .subscribe(this::onClickCell));
 
 
@@ -135,6 +151,12 @@ public class MainActivity extends AppCompatActivity {
                     public void accept(DataCellViewClick dataCellViewClick) throws Exception {
                         CellView cellView = cellViewMap.get(dataCellViewClick.getPoint());
                         cellView.checked(dataCellViewClick.getColorChecked());
+                    }
+                })
+                .doOnNext(new Consumer<DataCellViewClick>() {
+                    @Override
+                    public void accept(DataCellViewClick dataCellViewClick) throws Exception {
+                        setClickableViews(checkersViewModel.isClickableViews());
                     }
                 })
                 .subscribe());
@@ -168,15 +190,58 @@ public class MainActivity extends AppCompatActivity {
                 .map(pawnViewMap::get)
                 .subscribe(PawnView::removePawn));
 
-        checkersViewModel.getComputerTurn(this)
+        checkersViewModel.getComputerStartTurn(this)
                 .filter(list -> list.size() > 0)
-                .subscribe(new Consumer<List<DataCellViewClick>>() {
+                .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<List<DataCellViewClick>>() {
                     @Override
                     public void accept(List<DataCellViewClick> dataCellViewClicks) throws Exception {
-//                        Point point = dataCellViewClicks.get(0).getPoint();
-//                        cellViewMap.get(point).performClick();
+                        int max = (dataCellViewClicks.size() - 1 < 0 ? 0 : dataCellViewClicks.size() - 1) + 1;
+                        int index = new Random().nextInt(max);
+                        Point point = dataCellViewClicks.get(index - 1 >= 0 ? index - 1 : 0).getPoint();
+                        CellView cellView = cellViewMap.get(point);
+
+                        computerIcon
+                                .animate()
+                                .translationY(point.y + (cellView.getMeasuredHeight() / 2))
+                                .translationX(point.x)
+                                .setDuration(350)
+                                .withEndAction(() ->  cellView.performClick())
+                                .start();
                     }
-                });
+                })
+                .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<List<DataCellViewClick>>() {
+                    @Override
+                    public void accept(List<DataCellViewClick> dataCellViewClicks) throws Exception {
+                        Point point = FluentIterable.from(checkersViewModel.getOptionalPointsListComputer())
+                                .first()
+                                .get();
+                        CellView cellView = cellViewMap.get(point);
+
+                        computerIcon
+                                .animate()
+                                .translationY(point.y + (cellView.getMeasuredHeight() / 2))
+                                .translationX(point.x)
+                                .setDuration(350)
+                                .withEndAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        cellView.performClick();
+
+                                        computerIcon
+                                                .animate()
+                                                .translationY(gameBoardView.getBottom() + 10)
+                                                .translationX(gameBoardView.getX() + (gameBoardView.getMeasuredWidth() / 2))
+                                                .setDuration(250)
+                                                .start();
+
+                                    }
+                                })
+                                .start();
+                    }
+                })
+                .subscribe();
 
         compositeDisposable.add(checkersViewModel
                 .getWinPlayerName(this)
@@ -203,12 +268,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void initGameBoard(GameBoardView gameBoardView, Throwable throwable) {
+    private void initGameBoard(int gameMode) {
         checkersViewModel.initGame(
-                (int) gameBoardView.getX()
-                , (int) gameBoardView.getY()
+                (int) this.gameBoardView.getX()
+                , (int) this.gameBoardView.getY()
                 , gameBoardView.getMeasuredWidth()
-                , gameBoardView.getMeasuredHeight());
+                , gameBoardView.getMeasuredHeight()
+                , gameMode);
     }
 
     /**
@@ -307,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
             initViewsClicksPrev(dataCellViewClicks);
         }
 
-        setClickableViews(true);
+        setClickableViews(checkersViewModel.isClickableViews());
     }
 
     private CellView checkCellView(Point point, int color) {
@@ -367,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         pointsListAnimatePawn.clear();
         cellsViewOptionalPath.clear();
         checkersViewModel.nextTurn();
-        setClickableViews(true);
+//        setClickableViews(checkersViewModel.isClickableViews());
     }
 
     private Observable<String> getPlayerName() {
@@ -413,7 +479,8 @@ public class MainActivity extends AppCompatActivity {
                 .setHeight(pawnData.getHeight())
                 .setRegularIcon(pawnData.getRegularIcon())
                 .setQueenIcon(pawnData.getQueenIcon())
-                .setXY(pawnData.getStartXY().x, pawnData.getStartXY().y);
+                .setXY(pawnData.getStartXY().x, pawnData.getStartXY().y)
+                .setIsReady(true);
 
         return new Pair<>(pawnData.getStartXY(), pawnView);
     }
@@ -483,39 +550,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
+        super.onBackPressed();
         compositeDisposable.dispose();
-
-        cellViewMap.clear();
-
-        pawnViewMap.clear();
-
-        pointsListAnimatePawn.clear();
-
-        viewsObservableList.clear();
-
-        viewsByRelevantCellsList.clear();
+        int id= android.os.Process.myPid();
+        android.os.Process.killProcess(id);
 
         finish();
-        super.onBackPressed();
-
     }
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         compositeDisposable.dispose();
 
-        cellViewMap.clear();
-
-        pawnViewMap.clear();
-
-        pointsListAnimatePawn.clear();
-
-        viewsObservableList.clear();
-
-        viewsByRelevantCellsList.clear();
-
+        int id= android.os.Process.myPid();
+        android.os.Process.killProcess(id);
 
         finish();
-        super.onDestroy();
     }
 }

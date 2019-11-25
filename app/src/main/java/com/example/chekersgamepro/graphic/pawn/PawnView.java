@@ -13,7 +13,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -25,7 +24,7 @@ import com.jakewharton.rxbinding2.view.RxView;
 import io.reactivex.Observable;
 
 @SuppressLint("AppCompatCustomView")
-public class PawnView extends ImageView{
+public class PawnView extends ImageView {
 
     private Paint paint = new Paint();
 
@@ -37,18 +36,15 @@ public class PawnView extends ImageView{
 
     private boolean isAlreadyChangeIcon = false;
 
+    private boolean isCanBeDraw = false;
+
     public PawnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setColor(Color.GRAY);
+        paint.setColor(Color.TRANSPARENT);
         paint.setStrokeWidth(2.5f);
 
-    }
-
-    public PawnView setClickablePawn(boolean isClickable){
-        setClickable(isClickable);
-        return this;
     }
 
     public PawnView setEnabledPawn(boolean isClickable){
@@ -80,17 +76,20 @@ public class PawnView extends ImageView{
 
 //        clear(canvas);
 
-        //draw shadow
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setColor(Color.DKGRAY);
-        canvas.drawCircle( getPivotX() + 6, getPivotY() + 6,  getPivotY() - 8, paint );
+        if (isCanBeDraw){
+            //draw shadow
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setColor(Color.DKGRAY);
+            canvas.drawCircle( getPivotX() + 6, getPivotY() + 6,  getPivotY() - 8, paint );
 
-        //draw bitmap
-        RectF rectF = new RectF(clipBounds.left + 10, clipBounds.top  + 10, clipBounds.right  - 10, clipBounds.bottom - 10);
+            //draw bitmap
+            RectF rectF = new RectF(clipBounds.left + 10, clipBounds.top  + 10, clipBounds.right  - 10, clipBounds.bottom - 10);
 
-        if (icon != null){
-            canvas.drawBitmap(icon, null, rectF, null );
+            if (icon != null){
+                canvas.drawBitmap(icon, null, rectF, null );
+            }
         }
+
     }
 
     /**
@@ -121,8 +120,8 @@ public class PawnView extends ImageView{
     }
 
     public Observable<PawnView> getPawnClick(){
-        return RxView.touches(this)
-                .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+        return RxView.clicks(this)
+//                .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                 .switchMap(ignored -> Observable.just(this));
     }
 
@@ -178,5 +177,11 @@ public class PawnView extends ImageView{
                 animatePulse.start();
 
             }
+    }
+
+    public PawnView setIsReady(boolean isReady) {
+        this.isCanBeDraw = isReady;
+        invalidate();
+        return this;
     }
 }

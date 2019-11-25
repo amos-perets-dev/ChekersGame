@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import io.reactivex.Observable;
 
@@ -30,7 +31,7 @@ public class GameManager {
 
     private DataGame dataGame = DataGame.getInstance();
 
-    public void initGame(int x, int y, int width, int height) {
+    public void initGame(int x, int y, int width, int height, int gameMode) {
 
         isPlayerOneTurn = new Random().nextBoolean();
 
@@ -38,7 +39,8 @@ public class GameManager {
                 .setX(x)
                 .setY(y)
                 .setWidth(width)
-                .setHeight(height);
+                .setHeight(height)
+                .setGameMode(gameMode);
         this.gameInitialImpl.initBorderLines();
         this.gameInitialImpl.initGameBoard();
         this.gameInitialImpl.initPawns();
@@ -88,7 +90,7 @@ public class GameManager {
     }
 
     private String getPlayerName() {
-        return "PLAYER " + (isPlayerOneTurn ? "1" : "2");
+        return   (isPlayerOneTurn ? "PLAYER 1" : dataGame.getGameMode() == DataGame.COMPUTER_GAME_MODE ? "COMPUTER" : "PLAYER 2");
     }
 
     public String nextTurnChangePlayer() {
@@ -105,6 +107,10 @@ public class GameManager {
 
     public List<Point> getMovePawnPath(float x, float y) {
         return gameCreatorChecked.getMovePawnPath(x, y);
+    }
+
+    public Set<Point> getOptionalPointsListComputer(){
+        return gameCreatorChecked.getOptionalPointsListComputer();
     }
 
     public PawnDataImpl removePawnIfNeeded() {
@@ -142,6 +148,10 @@ public class GameManager {
 
     public boolean isPlayerOneTurn() {
         return isPlayerOneTurn;
+    }
+
+    public boolean isComputerModeGame() {
+        return dataGame.getGameMode() == DataGame.COMPUTER_GAME_MODE;
     }
 
     public interface ChangePlayerListener{

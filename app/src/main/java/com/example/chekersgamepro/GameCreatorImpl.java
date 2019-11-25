@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class GameCreatorImpl{
 
@@ -322,6 +323,10 @@ class GameCreatorImpl{
         endPointPathFromUser = new Point((int) x, (int) y);
 
         return listsAllOptionalPathByCell.get(endPointPathFromUser).first;
+    }
+
+    public Set<Point> getOptionalPointsListComputer(){
+        return listsAllOptionalPathByCell.keySet();
     }
 
     public void actionAfterPublishMovePawnPath(){

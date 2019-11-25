@@ -286,4 +286,8 @@ public class GameInitialImpl {
 
         dataGame.putCellByPlayer(cellData);
     }
+
+    public void setGameMode(int gameMode) {
+        dataGame.setGameMode(gameMode);
+    }
 }

@@ -14,9 +14,9 @@ import com.example.chekersgamepro.data.pawn.PawnDataImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 
 public class CheckersViewModel extends ViewModel {
 
@@ -44,8 +44,8 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
-    public Single<List<DataCellViewClick>> getComputerTurn(LifecycleOwner lifecycleOwner){
-        return Single.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerTurn));
+    public Observable<List<DataCellViewClick>> getComputerStartTurn(LifecycleOwner lifecycleOwner){
+        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerTurn));
     }
 
     public Observable<String> getWinPlayerName(LifecycleOwner lifecycleOwner){
@@ -76,8 +76,8 @@ public class CheckersViewModel extends ViewModel {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, removePawn));
     }
 
-    public void initGame(int x, int y, int width, int height) {
-        gameManager.initGame(x, y, width, height);
+    public void initGame(int x, int y, int width, int height, int gameMode) {
+        gameManager.initGame(x, y, width, height, gameMode);
         initFinish.postValue(true);
     }
 
@@ -111,11 +111,22 @@ public class CheckersViewModel extends ViewModel {
             winPlayer.postValue(gameManager.getWinPlayerName());
         }
 
-//        if (!gameManager.isPlayerOneTurn()){
-//            computerTurn.postValue(relevantCellsStart);
-//        } else {
-//            computerTurn.postValue(Collections.EMPTY_LIST);
-//        }
+        if (gameManager.isComputerModeGame()){
+            if (!gameManager.isPlayerOneTurn()){
+                computerTurn.postValue(relevantCellsStart);
+            } else {
+                computerTurn.postValue(Collections.EMPTY_LIST);
+            }
+        }
+
+    }
+
+    public boolean isClickableViews(){
+        return !(gameManager.isComputerModeGame() && !gameManager.isPlayerOneTurn());
+    }
+
+    public Set<Point> getOptionalPointsListComputer(){
+        return gameManager.getOptionalPointsListComputer();
     }
 
     public void getMoveOrOptionalPath(float x, float y) {

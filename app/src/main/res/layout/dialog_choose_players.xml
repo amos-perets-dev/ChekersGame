@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/one_vs_one_offline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PLAYER ONE VS PLAYER TWO OFFLINE"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/one_vs_one_online"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PLAYER ONE VS PLAYER TWO ONLINE"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/one_vs_computer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PLAYER ONE VS COMPUTER"/>
+
+</LinearLayout>
