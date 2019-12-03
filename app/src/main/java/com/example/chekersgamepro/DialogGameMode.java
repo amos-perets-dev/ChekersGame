@@ -21,7 +21,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Function3;
 import io.reactivex.subjects.PublishSubject;
 
-public class DialogChoosePlayer extends AppCompatDialog {
+public class DialogGameMode extends AppCompatDialog {
 
     private Button buttonPlayerVsPlayerOffline;
     private Button buttonPlayerVsPlayerOnline;
@@ -29,7 +29,7 @@ public class DialogChoosePlayer extends AppCompatDialog {
 
     private PublishSubject<Integer> gameMode = PublishSubject.create();
 
-    public DialogChoosePlayer(Context context) {
+    public DialogGameMode(Context context) {
         super(context);
     }
 
@@ -52,48 +52,32 @@ public class DialogChoosePlayer extends AppCompatDialog {
         buttonPlayerVsPlayerOnline = findViewById(R.id.one_vs_one_online);
         buttonPlayerVsComputer = findViewById(R.id.one_vs_computer);
 
-        buttonPlayerVsPlayerOffline.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gameMode.onNext(v.getId());
-            }
-        });
+        setOnClickListener(buttonPlayerVsPlayerOffline);
+        setOnClickListener(buttonPlayerVsPlayerOnline);
+        setOnClickListener(buttonPlayerVsComputer);
+    }
 
-        buttonPlayerVsPlayerOnline.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gameMode.onNext(v.getId());
-            }
-        });
-
-        buttonPlayerVsComputer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gameMode.onNext(v.getId());
-            }
-        });
-
+    private void setOnClickListener(View view){
+        view.setOnClickListener(v -> gameMode.onNext(v.getId()));
     }
 
     public Observable<Integer> getGameMode(){
         return gameMode.hide()
-                .map(new Function<Integer, Integer>() {
-                    @Override
-                    public Integer apply(Integer id) throws Exception {
+                .doOnSubscribe(ignored -> show())
+                .map(id -> {
 
-                        switch (id){
-                            case R.id.one_vs_one_offline:
-                                return DataGame.OFFLINE_GAME_MODE;
+                    switch (id){
+                        case R.id.one_vs_one_offline:
+                            return DataGame.Mode.OFFLINE_GAME_MODE;
 
-                            case R.id.one_vs_one_online:
-                                return DataGame.ONLINE_GAME_MODE;
+                        case R.id.one_vs_one_online:
+                            return DataGame.Mode.ONLINE_GAME_MODE;
 
-                            case R.id.one_vs_computer:
-                                return DataGame.COMPUTER_GAME_MODE;
-                        }
-
-                        return -1;
+                        case R.id.one_vs_computer:
+                            return DataGame.Mode.COMPUTER_GAME_MODE;
                     }
+
+                    return -1;
                 });
     }
 

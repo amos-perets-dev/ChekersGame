@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GameInitialImpl {
-
     private final int GAME_BOARD_SIZE = 8;
     private final int DIV_SIZE_CELL = 14;
     private final int COLOR_BORDER_CELL = Color.BLACK;
@@ -30,6 +29,8 @@ public class GameInitialImpl {
 
     private int widthCell;
     private int heightCell;
+
+    private CellDataImpl[][] boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
 
     public GameInitialImpl() {
     }
@@ -101,7 +102,7 @@ public class GameInitialImpl {
     public void initPawns() {
 
         int i = 0;
-        boolean isNeedPutPawn;
+
 
         int factorDecreaseSizeCell = (heightCell - BORDER_WIDTH) / DIV_SIZE_CELL;
 
@@ -109,12 +110,12 @@ public class GameInitialImpl {
         for (Map.Entry<Point, CellDataImpl> cellDataEntry : cells.entrySet()){
             CellDataImpl cellData = cellDataEntry.getValue();
 
-            isNeedPutPawn = cellData.isValidCell() && !cellData.isEmpty() && !cellData.isEmptyFirstTimeDraw();
-            if (isNeedPutPawn){
+            if (cellData.getCellContain() == DataGame.CellState.PLAYER_ONE
+                    || cellData.getCellContain() == DataGame.CellState.PLAYER_TWO){
 
                 PawnDataImpl pawnData = new PawnDataImpl(i
-                        , cellData.getPoint()
-                        , cellData.isPlayerOneCurrently()
+                        , cellData.getPointCell()
+                        , cellData.getCellContain()
                         , cellData.getPointStartPawn()
                         , widthCell - factorDecreaseSizeCell - BORDER_WIDTH
                         , heightCell - factorDecreaseSizeCell - BORDER_WIDTH);
@@ -164,14 +165,8 @@ public class GameInitialImpl {
     }
 
     public void initGameBoard() {
-
-        boolean isDarkCell;
-        boolean isValidSquare;
-        boolean isEmptyFirstTimeDraw;
-        boolean isMasterSquare;
-        boolean isEmpty;
-        boolean isReplaceFirstColor;
-        boolean isPlayerOnCurrently = false;
+        boolean isMasterCell = false;
+        int cellContain;
 
         int  insideBorders = 0;
         // measure size cell without the border
@@ -182,82 +177,69 @@ public class GameInitialImpl {
         int tmpX = x ;
         int tmpY = y ;
 
-        /**
-         * Get the start x,y pawn
-         */
+
+        // start x,y pawn
         int factorDecreaseSizeCell = (heightCell - BORDER_WIDTH) / DIV_SIZE_CELL;
 
-        for (int i = 0; i < GAME_BOARD_SIZE; i++) {
+        for (int row = 0; row < GAME_BOARD_SIZE; row++) {
+            // set the master cell
+            for (int column = 0; column < GAME_BOARD_SIZE; column++) {
+                Point pointCell = new Point(tmpX + (BORDER_WIDTH )  , tmpY  + BORDER_WIDTH);
+                Point pointStartPawn = new Point(pointCell.x + factorDecreaseSizeCell / 2, (pointCell.y + factorDecreaseSizeCell / 2));
 
-            //check if need to replace the first color in the row
-            isReplaceFirstColor = i % 2 == 0;
-
-            for (int j = 0; j < GAME_BOARD_SIZE; j++) {
-
-                //change color
-                if (j % 2 == 0) {
-                    isDarkCell = !isReplaceFirstColor;
-                    isValidSquare = !isReplaceFirstColor;
-
+                if (row % 2 != column % 2) {
+                    isMasterCell = row == GAME_BOARD_SIZE - 1 || row == 0;
+                    if (row < 3) {
+                        cellContain = DataGame.CellState.PLAYER_ONE;
+                    } else if (row > 4) {
+                        cellContain = DataGame.CellState.PLAYER_TWO;
+                    } else {
+                        cellContain = DataGame.CellState.EMPTY;
+                    }
                 } else {
-                    isDarkCell = isReplaceFirstColor;
-                    isValidSquare = isReplaceFirstColor;
+                    cellContain = DataGame.CellState.EMPTY_INVALID;
                 }
 
-                Point point = new Point(tmpX + (BORDER_WIDTH )  , tmpY  + BORDER_WIDTH);
-
-                isEmptyFirstTimeDraw = ((i == GAME_BOARD_SIZE / 2) || (i == GAME_BOARD_SIZE / 2 - 1));
-
-                isMasterSquare = ((i == GAME_BOARD_SIZE - 1) || (i == 0));
-                isEmpty = !(isValidSquare && !isEmptyFirstTimeDraw);
-
-                if (isValidSquare && !isEmpty){
-                    isPlayerOnCurrently = i < GAME_BOARD_SIZE / 2 - 1;
-                }
-
-                Point pointStartPawn = new Point(point.x + factorDecreaseSizeCell / 2, (point.y + factorDecreaseSizeCell / 2));
-
-                CellDataImpl cellData = new CellDataImpl( isValidSquare
-                        , isEmpty
-                        , isDarkCell
-                        , point
-                        , isEmptyFirstTimeDraw
-                        , isMasterSquare
+                CellDataImpl cellData = new CellDataImpl(cellContain
+                        , pointCell
+                        , pointStartPawn
+                        , isMasterCell
                         , widthCell - BORDER_WIDTH
-                        , heightCell - BORDER_WIDTH
-                        , isPlayerOnCurrently
-                        , pointStartPawn);
+                        , heightCell - BORDER_WIDTH);
 
+                this.boardCells[row][column] = cellData;
+                tmpX += widthCell;
+                isMasterCell =  false;
                 dataGame.putCellByPlayer(cellData);
 
-                isPlayerOnCurrently = false;
-
-                // initGameBoard the nex column
-                tmpX += widthCell;
             }
-
             // initGameBoard the next row
-            tmpY = (y ) + (heightCell  ) * (i + 1);
+            tmpY = (y ) + (heightCell  ) * (row + 1);
             tmpX = x ;
+            isMasterCell =  false;
         }
 
-        Map<Point, CellDataImpl> cells = getCells();
-        for (Map.Entry<Point, CellDataImpl> cellDataEntry : cells.entrySet()){
-            CellDataImpl cellData = cellDataEntry.getValue();
-            setNextCellByCell(cellData);
+        // set he next cell by cell
+        for (int row = 0; row < GAME_BOARD_SIZE; row++) {
+            for (int column = 0; column < GAME_BOARD_SIZE; column++) {
+                CellDataImpl cellData = setNextCellByCell(this.boardCells[row][column]);
+                this.boardCells[row][column] = cellData;
+                dataGame.putCellByPlayer(cellData);
+            }
         }
 
+        dataGame.setBoardCells(this.boardCells);
     }
 
 
-    public void setNextCellByCell(CellDataImpl cellData) {
+    public CellDataImpl setNextCellByCell(CellDataImpl cellData) {
 
         int pointX;
         int pointY;
 
-        if (cellData.isValidCell()) {
+        if (cellData.getCellContain() != DataGame.CellState.EMPTY_INVALID) {
 
-            Point pointCurrCell = cellData.getPoint();
+            Point pointCurrCell = cellData.getPointCell();
 
             //set By PLayer one
             pointX = pointCurrCell.x - widthCell;
@@ -284,10 +266,12 @@ public class GameInitialImpl {
                     .setNextCellDataRightTop(nextCellRightPlayerTwo);
         }
 
-        dataGame.putCellByPlayer(cellData);
+        return cellData;
+
     }
 
     public void setGameMode(int gameMode) {
         dataGame.setGameMode(gameMode);
     }
+
 }

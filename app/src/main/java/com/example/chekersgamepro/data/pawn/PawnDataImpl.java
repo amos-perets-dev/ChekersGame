@@ -3,6 +3,7 @@ package com.example.chekersgamepro.data.pawn;
 import android.graphics.Point;
 
 import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.data_game.DataGame;
 
 public class PawnDataImpl {
 
@@ -15,16 +16,16 @@ public class PawnDataImpl {
     private int width;
     private int height;
     private int icon;
+    private int player;
 
     private boolean isMasterPawn = false;
     private boolean isKilled = false;
-    private boolean isPlayerOne;
 
 
-    public PawnDataImpl(int idPawn, Point containerCellXY, boolean isPlayerOne, Point startXY, int width, int height ) {
+    public PawnDataImpl(int idPawn, Point containerCellXY, int player, Point startXY, int width, int height ) {
         this.idPawn = idPawn;
         this.containerCellXY = containerCellXY;
-        this.isPlayerOne = isPlayerOne;
+        this.player = player;
         this.startXY = startXY;
         this.width = width;
         this.height = height;
@@ -66,8 +67,8 @@ public class PawnDataImpl {
         return this;
     }
 
-    public boolean isPlayerOne() {
-        return isPlayerOne;
+    public int getPlayer() {
+        return player;
     }
 
     public boolean isKilled() {
@@ -115,11 +116,25 @@ public class PawnDataImpl {
     }
 
     public int getRegularIcon() {
-        return isPlayerOne ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
+        return player == DataGame.CellState.PLAYER_ONE ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
     }
 
     public int getQueenIcon() {
-        return isPlayerOne ? R.drawable.ic_king_pawn_one : R.drawable.ic_king_pawn_two;
+        return player == DataGame.CellState.PLAYER_ONE ? R.drawable.ic_king_pawn_one : R.drawable.ic_king_pawn_two;
     }
 
+    public PawnDataImpl setPlayer(int player) {
+        this.player = player;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "PawnDataImpl{" +
+                "startXY=" + startXY +
+                ", containerCellXY=" + containerCellXY +
+                ", player=" + player +
+                ", isMasterPawn=" + isMasterPawn +
+                '}';
+    }
 }

@@ -2,7 +2,6 @@ package com.example.chekersgamepro;
 
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,25 +18,18 @@ import com.example.chekersgamepro.graphic.cell.CellView;
 import com.example.chekersgamepro.graphic.game_board.GameBoardView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Notification;
 import io.reactivex.Observable;
-import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
@@ -92,73 +84,59 @@ public class MainActivity extends AppCompatActivity {
 
         checkersViewModel = ViewModelProviders.of(MainActivity.this).get(CheckersViewModel.class);
 
-        DialogChoosePlayer dialogChoosePlayer = new DialogChoosePlayer(this);
+        DialogGameMode dialogGameMode = new DialogGameMode(this);
 
-        dialogChoosePlayer.show();
-        dialogChoosePlayer
+        // Open dialog to choose game mode
+        // init the game board, pawns and cells
+        // create observables to the views
+        compositeDisposable.add(dialogGameMode
                 .getGameMode()
-                .doOnNext(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer gameMode) throws Exception {
-                        if (gameMode == DataGame.COMPUTER_GAME_MODE){
-
-                            computerIcon
-                                    .animate()
-                                    .withStartAction(() -> {
-                                        computerIcon.setTranslationX(gameBoardView.getX() + (gameBoardView.getMeasuredWidth() / 2) - (computerIcon.getMeasuredWidth() / 2));
-                                        computerIcon.setTranslationY(gameBoardView.getBottom() + 10);
-                                    })
-                                    .alpha(1)
-                                    .setDuration(500)
-                                    .start();
-                        }
-                    }
-                })
+                .doOnNext(this::initComputerIcon)
                 .doOnNext(this::initGameBoard)
-                .subscribe();
-
-        compositeDisposable.add(initGameBoardFinish()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(Functions.actionConsumer(this::initCellsViews))
-                .doOnNext(Functions.actionConsumer(this::initPawnsViews))
-                .doOnNext(Functions.actionConsumer(this::drawBorders))
-                .doOnNext(new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        dialogChoosePlayer.dismiss();
-                    }
-                })
+                .flatMap(ignored -> initGameBoardFinish())
+                .doOnNext(Functions.actionConsumer(MainActivity.this::initCellsViews))
+                .doOnNext(Functions.actionConsumer(MainActivity.this::initPawnsViews))
+                .doOnNext(Functions.actionConsumer(MainActivity.this::drawBorders))
+                .doOnNext(Functions.actionConsumer(dialogGameMode::dismiss))
                 .doOnError(Throwable::printStackTrace)
                 .doOnNext(Functions.actionConsumer(checkersViewModel::nextTurn))
                 .map(ignored -> addViewsToObservable())
                 .flatMap(Observable::fromArray)
                 .flatMap(Observable::fromIterable)
                 .flatMap(Functions.identity())
+                .doOnNext(new Consumer<View>() {
+                    @Override
+                    public void accept(View view) throws Exception {
+                        DataGame dataGame = DataGame.getInstance();
+                        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        PawnDataImpl pawnByPoint = dataGame.getInstance().getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
+                        String infoPawn = "";
+                        String infoCell = cellByPoint.toString() + "\n";
+                        if (pawnByPoint != null){
+                            infoPawn = pawnByPoint.toString() + "\n";
+                        }
+                        textViewTestStart.setText(
+                                "" + infoCell + infoPawn
+                                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
+                                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
+                                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
+                                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
+                                        + "ALL CELL: " + dataGame.getCells().size());
+                    }
+                })
                 .subscribe(this::onClickCell));
-
-
 
         compositeDisposable.add(getPlayerName()
                 .subscribe(textViewPlayerName::setText));
 
+        // Get the relevant cells start and checked them
         compositeDisposable.add( getRelevantCellsStart()
                 .doOnNext(Functions.actionConsumer(this::clearPrevRelevantCells))
                 .doOnNext(this::addViewsByRelevantCells)
                 .flatMap(Observable::fromIterable)
-                .doOnNext(new Consumer<DataCellViewClick>() {
-                    @Override
-                    public void accept(DataCellViewClick dataCellViewClick) throws Exception {
-                        CellView cellView = cellViewMap.get(dataCellViewClick.getPoint());
-                        cellView.checked(dataCellViewClick.getColorChecked());
-                    }
-                })
-                .doOnNext(new Consumer<DataCellViewClick>() {
-                    @Override
-                    public void accept(DataCellViewClick dataCellViewClick) throws Exception {
-                        setClickableViews(checkersViewModel.isClickableViews());
-                    }
-                })
+                .doOnNext(this::checkRelevantCellsStart)
+                .map(ignored -> checkersViewModel.isClickableViews())
+                .doOnNext(this::setClickableViews)
                 .subscribe());
 
         // checked the optional path by click
@@ -190,59 +168,6 @@ public class MainActivity extends AppCompatActivity {
                 .map(pawnViewMap::get)
                 .subscribe(PawnView::removePawn));
 
-        checkersViewModel.getComputerStartTurn(this)
-                .filter(list -> list.size() > 0)
-                .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnNext(new Consumer<List<DataCellViewClick>>() {
-                    @Override
-                    public void accept(List<DataCellViewClick> dataCellViewClicks) throws Exception {
-                        int max = (dataCellViewClicks.size() - 1 < 0 ? 0 : dataCellViewClicks.size() - 1) + 1;
-                        int index = new Random().nextInt(max);
-                        Point point = dataCellViewClicks.get(index - 1 >= 0 ? index - 1 : 0).getPoint();
-                        CellView cellView = cellViewMap.get(point);
-
-                        computerIcon
-                                .animate()
-                                .translationY(point.y + (cellView.getMeasuredHeight() / 2))
-                                .translationX(point.x)
-                                .setDuration(350)
-                                .withEndAction(() ->  cellView.performClick())
-                                .start();
-                    }
-                })
-                .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnNext(new Consumer<List<DataCellViewClick>>() {
-                    @Override
-                    public void accept(List<DataCellViewClick> dataCellViewClicks) throws Exception {
-                        Point point = FluentIterable.from(checkersViewModel.getOptionalPointsListComputer())
-                                .first()
-                                .get();
-                        CellView cellView = cellViewMap.get(point);
-
-                        computerIcon
-                                .animate()
-                                .translationY(point.y + (cellView.getMeasuredHeight() / 2))
-                                .translationX(point.x)
-                                .setDuration(350)
-                                .withEndAction(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        cellView.performClick();
-
-                                        computerIcon
-                                                .animate()
-                                                .translationY(gameBoardView.getBottom() + 10)
-                                                .translationX(gameBoardView.getX() + (gameBoardView.getMeasuredWidth() / 2))
-                                                .setDuration(250)
-                                                .start();
-
-                                    }
-                                })
-                                .start();
-                    }
-                })
-                .subscribe();
-
         compositeDisposable.add(checkersViewModel
                 .getWinPlayerName(this)
                 .doOnNext(this::finishGame)
@@ -254,12 +179,46 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }));
 
+
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
 
 
         });
 
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                return true;
+            }
+        });
+
+    }
+
+    /**
+     * Checked the cells that can be start cell
+     * @param dataCellViewClick
+     */
+    private void checkRelevantCellsStart(DataCellViewClick dataCellViewClick){
+        CellView cellView = cellViewMap.get(dataCellViewClick.getPoint());
+        cellView.checked(dataCellViewClick.getColorChecked());
+    }
+
+    private void initComputerIcon(Integer gameMode){
+        if (gameMode == DataGame.Mode.COMPUTER_GAME_MODE){
+            computerIcon
+                    .animate()
+                    .withStartAction(() -> {
+                        // set the icon computer location on the screen
+                        computerIcon.setTranslationX(gameBoardView.getX() + (gameBoardView.getMeasuredWidth() / 2) - (computerIcon.getMeasuredWidth() / 2));
+                        computerIcon.setTranslationY(gameBoardView.getBottom() + 10);
+                    })
+                    .alpha(1)
+                    .setDuration(500)
+                    .start();
+        }
     }
 
     private void finishGame(String s) {
@@ -346,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
     private void clearCheckedOptionalPathViewsAfterEndTurn() {
         FluentIterable.from(cellsViewOptionalPath)
                 .transform(dataCellViewClick -> cellViewMap.get(dataCellViewClick.getPoint())
-                        .checked(DataGame.CLEAR_CHECKED))
+                        .checked(DataGame.ColorCell.CLEAR_CHECKED))
                 .toList();
     }
 
@@ -396,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
     private void clearPrevRelevantCells() {
 
         FluentIterable.from(viewsByRelevantCellsList)
-                .transform(cellView -> cellView.checked(DataGame.CLEAR_CHECKED))
+                .transform(cellView -> cellView.checked(DataGame.ColorCell.CLEAR_CHECKED))
                 .toList();
 
         viewsByRelevantCellsList.clear();
@@ -505,12 +464,13 @@ public class MainActivity extends AppCompatActivity {
     private Pair<Point, CellView> initCellView(Pair<CellDataImpl, CellView> input){
         CellDataImpl cellData = input.first;
         CellView cellView = input.second
-                .setWidth(cellData.getWidth())
-                .setHeight(cellData.getHeight())
-                .setBg(cellData.getAlphaCell(), cellData.isMasterCell() && cellData.isValidCell())
-                .setXY(cellData.getPoint().x, (cellData.getPoint().y));
+                .setWidth(cellData.getWidthCell())
+                .setHeight(cellData.getHeightCell())
+                .setBg(cellData.getAlphaCell(), cellData.isMasterCell())
+                .setXY(cellData.getPointCell().x, (cellData.getPointCell().y))
+                .setIsCanClick(cellData.getCellContain() != DataGame.CellState.EMPTY_INVALID);
 
-        return new Pair<>(cellData.getPoint(), cellView);
+        return new Pair<>(cellData.getPointCell(), cellView);
 
     }
 

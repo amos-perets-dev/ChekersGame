@@ -2,80 +2,66 @@ package com.example.chekersgamepro.data.cell;
 
 import android.graphics.Point;
 
+import com.example.chekersgamepro.data_game.DataGame;
+
 import javax.annotation.Nullable;
 
 public class CellDataImpl {
 
-    public static final int PLAYER_ONE = 1;
-    public static final int PLAYER_TWO = 2;
-    public static final int EMPTY = 0;
-
-    private Point point;
+    private Point pointCell;
     private Point pointStartPawn;
 
-    private int width;
-    private int height;
-    private int color;
+    private int widthCell;
+    private int heightCell;
+    private int cellContain = DataGame.CellState.INVALID_STATE;
 
-    private float alphaCell;
-
-    private boolean isDarkCell;
-    private boolean isParent;
-    private boolean isValidCell;
-    private boolean isEmpty;
-    private boolean isEmptyFirstTimeDraw;
     private boolean isMasterCell;
-    private boolean isLeaf = false;
-    private boolean isNode = false;
-    private boolean isRightDirectionValid = false;
-    private boolean isLeftDirectionValid = false;
-    private boolean isPlayerOneCurrently;
 
-    private @Nullable CellDataImpl nextCellDataLeftPlayerOne;
-    private @Nullable CellDataImpl nextCellDataRightPlayerOne;
+    private @Nullable CellDataImpl nextCellDataLeftBottom;
+    private @Nullable CellDataImpl nextCellDataRightBottom;
 
-    private @Nullable CellDataImpl nextCellDataLeftPlayerTwo;
-    private @Nullable CellDataImpl nextCellDataRightPlayerTwo;
+    private @Nullable CellDataImpl nextCellDataLeftTop;
+    private @Nullable CellDataImpl nextCellDataRightTop;
 
     public CellDataImpl(){}
 
-    public CellDataImpl(boolean isValidCell
-            , boolean isEmpty
-            , boolean isDarkCell
-            , Point point
-            , boolean isEmptyFirstTimeDraw
-            , boolean isMasterCell
-            , int width
-            , int height
-            , boolean isPlayerOneCurrently
-            , Point pointStartPawn) {
+    public CellDataImpl (CellDataImpl cellData) {
 
-        this.isValidCell = isValidCell;
-        this.isEmpty = isEmpty;
-        this.isDarkCell = isDarkCell;
-        this.point = point;
-        this.isEmptyFirstTimeDraw = isEmptyFirstTimeDraw;
-        this.isMasterCell = isMasterCell;
-        this.width = width;
-        this.height = height;
-        this.isPlayerOneCurrently = isPlayerOneCurrently;
+        this.pointCell = cellData.getPointCell();
+        this.isMasterCell = cellData.isMasterCell();
+        this.widthCell = cellData.getWidthCell();
+        this.heightCell = cellData.getHeightCell();
+        this.pointStartPawn = cellData.getPointStartPawn();
+        this.cellContain = cellData.getCellContain();
+        this.nextCellDataLeftBottom = cellData.getNextCellDataLeftBottom();
+        this.nextCellDataLeftTop = cellData.getNextCellDataLeftTop();
+        this.nextCellDataRightBottom = cellData.getNextCellDataRightBottom();
+        this.nextCellDataRightTop = cellData.getNextCellDataRightTop();
+    }
+
+    public CellDataImpl(int cellContain
+            , Point pointCell
+            , Point pointStartPawn
+            , boolean isMasterCell
+            , int widthCell
+            , int heightCell) {
+
+        this.cellContain = cellContain;
+        this.pointCell = pointCell;
         this.pointStartPawn = pointStartPawn;
+        this.isMasterCell = isMasterCell;
+        this.widthCell = widthCell;
+        this.heightCell = heightCell;
 
     }
 
-    public CellDataImpl (CellDataImpl cellData) {
+    public int getCellContain() {
+        return cellContain;
+    }
 
-        this.isValidCell = cellData.isValidCell();
-        this.isEmpty = cellData.isEmpty();
-        this.isDarkCell = cellData.isDarkCell();
-        this.point = cellData.getPoint();
-        this.isEmptyFirstTimeDraw = cellData.isEmptyFirstTimeDraw();
-        this.isMasterCell = cellData.isMasterCell();
-        this.width = cellData.getWidth();
-        this.height = cellData.getHeight();
-        this.isPlayerOneCurrently = cellData.isPlayerOneCurrently();
-        this.pointStartPawn = cellData.getPointStartPawn();
-
+    public CellDataImpl setCellContain(int cellContain) {
+        this.cellContain = cellContain;
+        return this;
     }
 
     public Point getPointStartPawn() {
@@ -87,71 +73,30 @@ public class CellDataImpl {
         return this;
     }
 
-    public int getWidth() {
-        return width;
+    public int getWidthCell() {
+        return widthCell;
     }
 
-    public CellDataImpl setWidth(int width) {
-        this.width = width;
+    public CellDataImpl setWidthCell(int widthCell) {
+        this.widthCell = widthCell;
         return this;
     }
 
-    public int getHeight() {
-        return height;
+    public int getHeightCell() {
+        return heightCell;
     }
 
-    public CellDataImpl setHeight(int height) {
-        this.height = height;
+    public CellDataImpl setHeightCell(int heightCell) {
+        this.heightCell = heightCell;
         return this;
     }
 
-    public CellDataImpl setDarkCell(boolean darkCell) {
-        isDarkCell = darkCell;
-        return this;
+    public Point getPointCell() {
+        return pointCell;
     }
 
-    public boolean isDarkCell() {
-        return isDarkCell;
-    }
-
-    public CellDataImpl setisDarkCell(boolean isDarkCell) {
-        this.isDarkCell = isDarkCell;
-        return this;
-    }
-
-    public Point getPoint() {
-        return point;
-    }
-
-    public CellDataImpl setPoint(Point point) {
-        this.point = point;
-        return this;
-    }
-
-    public boolean isValidCell() {
-        return isValidCell;
-    }
-
-    public CellDataImpl setValidCell(boolean validCell) {
-        isValidCell = validCell;
-        return this;
-    }
-
-    public boolean isEmpty() {
-        return isEmpty;
-    }
-
-    public CellDataImpl setEmpty(boolean empty) {
-        isEmpty = empty;
-        return this;
-    }
-
-    public boolean isEmptyFirstTimeDraw() {
-        return isEmptyFirstTimeDraw;
-    }
-
-    public CellDataImpl setEmptyFirstTimeDraw(boolean emptyFirstTimeDraw) {
-        isEmptyFirstTimeDraw = emptyFirstTimeDraw;
+    public CellDataImpl setPointCell(Point pointCell) {
+        this.pointCell = pointCell;
         return this;
     }
 
@@ -164,116 +109,48 @@ public class CellDataImpl {
         return this;
     }
 
+
     public float getAlphaCell() {
-        return isDarkCell ? 1 : 0.35f;
-    }
-
-    public CellDataImpl setAlphaCell(float alphaCell) {
-        this.alphaCell = alphaCell;
-        return this;
-    }
-
-    public boolean isPlayerOneCurrently() {
-        return isPlayerOneCurrently;
-    }
-
-
-    public CellDataImpl setPlayerOneCurrently(boolean isPlayerOneCurrently) {
-        this.isPlayerOneCurrently = isPlayerOneCurrently;
-        return this;
-    }
-
-    public CellDataImpl setColor(int color) {
-        this.color = color;
-        return this;
-    }
-
-    public int getColor() {
-        return color;
-    }
-
-    public CellDataImpl setLeaf(boolean isLeaf) {
-        this.isLeaf = isLeaf;
-        return this;
-    }
-
-    public boolean isLeaf() {
-        return isLeaf;
+        return cellContain == DataGame.CellState.EMPTY_INVALID ? 0.35f : 1;
     }
 
     @Nullable
     public CellDataImpl getNextCellDataLeftBottom() {
-        return nextCellDataLeftPlayerOne;
+        return nextCellDataLeftBottom;
     }
 
-    public CellDataImpl setNextCellDataLeftBottom(CellDataImpl nextCellDataLeftPlayerOne) {
-        this.nextCellDataLeftPlayerOne = nextCellDataLeftPlayerOne;
+    public CellDataImpl setNextCellDataLeftBottom(CellDataImpl nextCellDataLeftBottom) {
+        this.nextCellDataLeftBottom = nextCellDataLeftBottom;
         return this;
     }
 
     @Nullable
     public CellDataImpl getNextCellDataRightBottom() {
-        return nextCellDataRightPlayerOne;
+        return nextCellDataRightBottom;
     }
 
-    public CellDataImpl setNextCellDataRightBottom(CellDataImpl nextCellDataLRight) {
-        this.nextCellDataRightPlayerOne = nextCellDataLRight;
+    public CellDataImpl setNextCellDataRightBottom(CellDataImpl nextCellDataRightBottom) {
+        this.nextCellDataRightBottom = nextCellDataRightBottom;
         return this;
     }
 
     @Nullable
     public CellDataImpl getNextCellDataLeftTop() {
-        return nextCellDataLeftPlayerTwo;
+        return nextCellDataLeftTop;
     }
 
-    public CellDataImpl setNextCellDataLeftTop(@Nullable CellDataImpl nextCellDataLeftPlayerTwo) {
-        this.nextCellDataLeftPlayerTwo = nextCellDataLeftPlayerTwo;
+    public CellDataImpl setNextCellDataLeftTop(@Nullable CellDataImpl nextCellDataLeftTop) {
+        this.nextCellDataLeftTop = nextCellDataLeftTop;
         return this;
     }
 
     @Nullable
     public CellDataImpl getNextCellDataRightTop() {
-        return nextCellDataRightPlayerTwo;
+        return nextCellDataRightTop;
     }
 
-    public CellDataImpl setNextCellDataRightTop(@Nullable CellDataImpl nextCellDataRightPlayerTwo) {
-        this.nextCellDataRightPlayerTwo = nextCellDataRightPlayerTwo;
-        return this;
-    }
-
-    public boolean isNode() {
-        return isNode;
-    }
-
-    public CellDataImpl setNode(boolean node) {
-        isNode = node;
-        return this;
-    }
-
-    public boolean isParent() {
-        return isParent;
-    }
-
-    public CellDataImpl setParent(boolean parent) {
-        isParent = parent;
-        return this;
-    }
-
-    public boolean isRightDirectionValid() {
-        return isRightDirectionValid;
-    }
-
-    public CellDataImpl setRightDirectionValid(boolean rightDirectionValid) {
-        isRightDirectionValid = rightDirectionValid;
-        return this;
-    }
-
-    public boolean isLeftDirectionValid() {
-        return isLeftDirectionValid;
-    }
-
-    public CellDataImpl setLeftDirectionValid(boolean leftDirectionValid) {
-        isLeftDirectionValid = leftDirectionValid;
+    public CellDataImpl setNextCellDataRightTop(@Nullable CellDataImpl nextCellDataRightTop) {
+        this.nextCellDataRightTop = nextCellDataRightTop;
         return this;
     }
 
@@ -283,10 +160,28 @@ public class CellDataImpl {
         if (!(o instanceof CellDataImpl)) return false;
         CellDataImpl cellData = (CellDataImpl) o;
         return
-                isValidCell() == cellData.isValidCell() &&
-                        isEmpty() == cellData.isEmpty() &&
-                        isMasterCell() == cellData.isMasterCell() &&
-                        getPoint().x == cellData.getPoint().x && getPoint().y == cellData.getPoint().y;
+                isMasterCell() == cellData.isMasterCell() &&
+                        getPointCell().x == cellData.getPointCell().x && getPointCell().y == cellData.getPointCell().y;
     }
 
+    public String print() {
+        return "CellDataImpl{" +
+                "pointCell=" + pointCell +
+                ", cellContain=" + cellContain +
+                ", isMasterCell=" + isMasterCell +
+                '}';
+    }
+
+    @Override
+    public String toString() {
+        return "CellDataImpl{" +
+                "pointCell=" + pointCell +
+                ", cellContain=" + cellContain +
+                ", isMasterCell=" + isMasterCell +
+                ", nextCellDataRightTop=" + (nextCellDataRightTop == null ? "NULL" : "NON NULL")+
+                ", nextCellDataLeftTop=" + (nextCellDataLeftTop == null ? "NULL" : "NON NULL")+
+                ", nextCellDataRightBottom=" + (nextCellDataRightBottom == null ? "NULL" : "NON NULL")+
+                ", nextCellDataLeftBottom=" + (nextCellDataLeftBottom == null ? "NULL" : "NON NULL")+
+                '}';
+    }
 }

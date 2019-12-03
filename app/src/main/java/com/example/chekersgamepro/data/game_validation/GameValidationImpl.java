@@ -1,7 +1,5 @@
 package com.example.chekersgamepro.data.game_validation;
 
-import android.graphics.Point;
-
 import com.example.chekersgamepro.DataCellViewClick;
 import com.example.chekersgamepro.data_game.DataGame;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -14,64 +12,33 @@ public class GameValidationImpl {
 
     private DataGame dataGame = DataGame.getInstance();
 
-    public GameValidationImpl() {
+    private boolean isPlayerOne;
 
+    public GameValidationImpl() {
     }
 
-//    private boolean isCanCellStartByQueen(CellDataImpl currCellData){
-//
-//        CellDataImpl nextCellDataLeftBottom = currCellData.getNextCellDataLeftBottom();
-//        CellDataImpl nextCellByNextLeftBottom = dataGame.getNextCellByDirection(nextCellDataLeftBottom, DataGame.LEFT_BOTTOM_DIRECTION);
-//        if (nextCellDataLeftBottom != null){
-//            if (nextCellDataLeftBottom.isEmpty()
-//                    || !nextCellDataLeftBottom.isEmpty() && !isEqualPlayerCells(nextCellDataLeftBottom)
-//                    && nextCellByNextLeftBottom != null && nextCellByNextLeftBottom.isEmpty()) {
-//                return true;
-//            }
-//        }
-//
-//        CellDataImpl nextCellDataLeftTop = currCellData.getNextCellDataLeftTop();
-//        CellDataImpl nextCellByNextLeftTop = dataGame.getNextCellByDirection(nextCellDataLeftTop, DataGame.LEFT_TOP_DIRECTION);
-//        if (nextCellDataLeftTop != null){
-//            if (nextCellDataLeftTop.isEmpty()
-//                    || !nextCellDataLeftTop.isEmpty() && !isEqualPlayerCells(nextCellDataLeftTop)
-//                    && nextCellByNextLeftTop != null && nextCellByNextLeftTop.isEmpty()) {
-//                return true;
-//            }
-//        }
-//
-//        CellDataImpl nextCellDataRightBottom = currCellData.getNextCellDataRightBottom();
-//        CellDataImpl nextCellByNextRightBottom = dataGame.getNextCellByDirection(nextCellDataLeftBottom, DataGame.RIGHT_BOTTOM_DIRECTION);
-//        if (nextCellDataRightBottom != null){
-//            if (nextCellDataRightBottom.isEmpty()
-//                    || !nextCellDataRightBottom.isEmpty() && !isEqualPlayerCells(nextCellDataRightBottom)
-//                    && nextCellByNextRightBottom != null && nextCellByNextRightBottom.isEmpty()) {
-//                return true;
-//            }
-//        }
-//
-//        CellDataImpl nextCellDataRightTop = currCellData.getNextCellDataRightTop();
-//        CellDataImpl nextCellByNextRightTop = dataGame.getNextCellByDirection(nextCellDataLeftBottom, DataGame.RIGHT_TOP_DIRECTION);
-//        if (nextCellDataRightTop != null){
-//            if (nextCellDataRightTop.isEmpty()
-//                    || !nextCellDataRightTop.isEmpty() && !isEqualPlayerCells(nextCellDataRightTop)
-//                    && nextCellByNextRightTop != null && nextCellByNextRightTop.isEmpty()) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//
-//    }
+    private CellDataImpl getNextCellByRelevantData(CellDataImpl currCellData, boolean isLeft){
+
+        CellDataImpl nextCell =  dataGame.getNextCell(currCellData, isLeft, dataGame.isPlayerOneTurn());
+
+        return nextCell;
+    }
+
+    public boolean isEqualPlayersByRelevantData(CellDataImpl currCellData){
+        boolean isPlayerOneCurrently = currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE || currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE_KING;
+
+        return isPlayerOneCurrently  && dataGame.isPlayerOneTurn() || !isPlayerOneCurrently && ! dataGame.isPlayerOneTurn();
+
+    }
 
     private boolean isCanCellStartByQueen(CellDataImpl currCellData){
 
         CellDataImpl nextCellDataLeftBottom = currCellData.getNextCellDataLeftBottom();
         if (nextCellDataLeftBottom != null){
             CellDataImpl nextCellByNextLeftBottom = nextCellDataLeftBottom.getNextCellDataLeftBottom();
-            if (nextCellDataLeftBottom.isEmpty()
-                    || !nextCellDataLeftBottom.isEmpty() && !isEqualPlayerCells(nextCellDataLeftBottom)
-                    && nextCellByNextLeftBottom != null && nextCellByNextLeftBottom.isEmpty()) {
+            if (nextCellDataLeftBottom.getCellContain() == DataGame.CellState.EMPTY
+                    || nextCellDataLeftBottom.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellDataLeftBottom)
+                    && nextCellByNextLeftBottom != null && nextCellByNextLeftBottom.getCellContain() == DataGame.CellState.EMPTY) {
                 return true;
             }
         }
@@ -79,9 +46,9 @@ public class GameValidationImpl {
         CellDataImpl nextCellDataLeftTop = currCellData.getNextCellDataLeftTop();
         if (nextCellDataLeftTop != null){
             CellDataImpl nextCellByNextLeftTop = nextCellDataLeftTop.getNextCellDataLeftTop();
-            if (nextCellDataLeftTop.isEmpty()
-                    || !nextCellDataLeftTop.isEmpty() && !isEqualPlayerCells(nextCellDataLeftTop)
-                    && nextCellByNextLeftTop != null && nextCellByNextLeftTop.isEmpty()) {
+            if (nextCellDataLeftTop.getCellContain() == DataGame.CellState.EMPTY
+                    || nextCellDataLeftTop.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellDataLeftTop)
+                    && nextCellByNextLeftTop != null && nextCellByNextLeftTop.getCellContain() == DataGame.CellState.EMPTY) {
                 return true;
             }
         }
@@ -89,9 +56,9 @@ public class GameValidationImpl {
         CellDataImpl nextCellDataRightBottom = currCellData.getNextCellDataRightBottom();
         if (nextCellDataRightBottom != null){
             CellDataImpl nextCellByNextRightBottom = nextCellDataRightBottom.getNextCellDataRightBottom();
-            if (nextCellDataRightBottom.isEmpty()
-                    || !nextCellDataRightBottom.isEmpty() && !isEqualPlayerCells(nextCellDataRightBottom)
-                    && nextCellByNextRightBottom != null && nextCellByNextRightBottom.isEmpty()) {
+            if (nextCellDataRightBottom.getCellContain() == DataGame.CellState.EMPTY
+                    || nextCellDataRightBottom.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellDataRightBottom)
+                    && nextCellByNextRightBottom != null && nextCellByNextRightBottom.getCellContain() == DataGame.CellState.EMPTY) {
                 return true;
             }
         }
@@ -99,9 +66,9 @@ public class GameValidationImpl {
         CellDataImpl nextCellDataRightTop = currCellData.getNextCellDataRightTop();
         if (nextCellDataRightTop != null){
             CellDataImpl nextCellByNextRightTop = nextCellDataRightTop.getNextCellDataRightTop();
-            if (nextCellDataRightTop.isEmpty()
-                    || !nextCellDataRightTop.isEmpty() && !isEqualPlayerCells(nextCellDataRightTop)
-                    && nextCellByNextRightTop != null && nextCellByNextRightTop.isEmpty()) {
+            if (nextCellDataRightTop.getCellContain() == DataGame.CellState.EMPTY
+                    || nextCellDataRightTop.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellDataRightTop)
+                    && nextCellByNextRightTop != null && nextCellByNextRightTop.getCellContain() == DataGame.CellState.EMPTY) {
                 return true;
             }
         }
@@ -118,40 +85,44 @@ public class GameValidationImpl {
         }
 
         //Check the left direction
-        CellDataImpl nextCellLeft = dataGame.getNextCell(currCellData, true);
+        CellDataImpl nextCellLeft = getNextCellByRelevantData(currCellData, true);
         // 1. check if there is normal turn
-        if (nextCellLeft != null && nextCellLeft.isEmpty()){
+        if (nextCellLeft != null && nextCellLeft.getCellContain() == DataGame.CellState.EMPTY){
             return true;
         }
 
-        CellDataImpl nextCellChildLeft = dataGame.getNextCell(nextCellLeft, true);
+        CellDataImpl nextCellChildLeft = getNextCellByRelevantData(nextCellLeft, true);
 
         // 2. check if there is attack turn
-        if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+        if ((nextCellLeft != null && nextCellLeft.getCellContain() != DataGame.CellState.EMPTY
+                && !isEqualPlayersByRelevantData(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.getCellContain() == DataGame.CellState.EMPTY)){
             return true;
         }
 
         //Check the right direction
-        CellDataImpl nextCellRight = dataGame.getNextCell(currCellData, false);
+        CellDataImpl nextCellRight = getNextCellByRelevantData(currCellData, false);
+
         // 1. check if there is normal turn
-        if (nextCellRight != null && nextCellRight.isEmpty()){
+        if (nextCellRight != null && nextCellRight.getCellContain() == DataGame.CellState.EMPTY){
+
             return true;
         }
 
-        CellDataImpl nextCellChildRight = dataGame.getNextCell(nextCellRight, false);
+        CellDataImpl nextCellChildRight = getNextCellByRelevantData(nextCellRight, false);
 
         // 2. check if there is attack turn
-        if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
+        if ((nextCellRight != null && nextCellRight.getCellContain() != DataGame.CellState.EMPTY
+                && !isEqualPlayersByRelevantData(nextCellRight) && nextCellChildRight != null && nextCellChildRight.getCellContain() == DataGame.CellState.EMPTY)){
             return true;
         }
 
-       return false;
+        return false;
     }
 
 
     public boolean isLeaf(CellDataImpl currCell, List<DataCellViewClick> dataOptionalPathByView, boolean isQueenPawn){
 
-        if (!currCell.isEmpty()){
+        if (currCell.getCellContain() != DataGame.CellState.EMPTY){
             return false;
         }
 
@@ -159,22 +130,24 @@ public class GameValidationImpl {
             return isLeafByQueen(currCell, dataOptionalPathByView);
         }
 
-        CellDataImpl nextCellLeft = dataGame.getNextCell(currCell, true);
+        CellDataImpl nextCellLeft = getNextCellByRelevantData(currCell, true);
 
         // check if there is attack path
         if (nextCellLeft != null){
-            CellDataImpl nextCellLeftByNextCell = dataGame.getNextCell(nextCellLeft, true);
-            if (nextCellLeftByNextCell != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellLeftByNextCell.isEmpty()){
+            CellDataImpl nextCellLeftByNextCell = getNextCellByRelevantData(nextCellLeft, true);
+            if (nextCellLeftByNextCell != null
+                    && nextCellLeft.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellLeft) && nextCellLeftByNextCell.getCellContain() == DataGame.CellState.EMPTY){
                 return false;
             }
         }
 
-        CellDataImpl nextCellRight = dataGame.getNextCell(currCell, false);
+        CellDataImpl nextCellRight = getNextCellByRelevantData(currCell, false);
 
         // check if there is attack path
         if (nextCellRight != null){
-            CellDataImpl nextCellRightByNextCell = dataGame.getNextCell(nextCellRight, false);
-            if (nextCellRightByNextCell != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellRightByNextCell.isEmpty()){
+            CellDataImpl nextCellRightByNextCell = getNextCellByRelevantData(nextCellRight, false);
+            if (nextCellRightByNextCell != null
+                    && nextCellRight.getCellContain() != DataGame.CellState.EMPTY && !isEqualPlayersByRelevantData(nextCellRight) && nextCellRightByNextCell.getCellContain() == DataGame.CellState.EMPTY){
                 return false;
             }
         }
@@ -186,7 +159,7 @@ public class GameValidationImpl {
     private boolean isAlreadyExistsInList(CellDataImpl currCellData, List<DataCellViewClick> dataOptionalPathByView){
         return FluentIterable.from(dataOptionalPathByView)
                 .transform(DataCellViewClick::getPoint)
-                .filter(point -> currCellData.getPoint().x == point.x && currCellData.getPoint().y == point.y)
+                .filter(point -> currCellData.getPointCell().x == point.x && currCellData.getPointCell().y == point.y)
                 .first()
                 .isPresent();
     }
@@ -195,24 +168,28 @@ public class GameValidationImpl {
     private boolean isLeafByQueen(CellDataImpl currCellData, List<DataCellViewClick> dataOptionalPathByView) {
 
         CellDataImpl nextCellDataLeftBottom = currCellData.getNextCellDataLeftBottom();
-        if (nextCellDataLeftBottom != null && !isAlreadyExistsInList(nextCellDataLeftBottom, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataLeftBottom, DataGame.LEFT_BOTTOM_DIRECTION)){
+        if (nextCellDataLeftBottom != null
+                && !isAlreadyExistsInList(nextCellDataLeftBottom, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataLeftBottom, DataGame.Direction.LEFT_BOTTOM_DIRECTION)){
             return false;
         }
 
         CellDataImpl nextCellDataRightBottom = currCellData.getNextCellDataRightBottom();
-        if ( nextCellDataRightBottom != null && !isAlreadyExistsInList(nextCellDataRightBottom, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataRightBottom, DataGame.RIGHT_BOTTOM_DIRECTION)){
+        if ( nextCellDataRightBottom != null
+                && !isAlreadyExistsInList(nextCellDataRightBottom, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataRightBottom, DataGame.Direction.RIGHT_BOTTOM_DIRECTION)){
             return false;
 
         }
 
         CellDataImpl nextCellDataLeftTop = currCellData.getNextCellDataLeftTop();
-        if ( nextCellDataLeftTop != null && !isAlreadyExistsInList(nextCellDataLeftTop, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataLeftTop, DataGame.LEFT_TOP_DIRECTION)){
+        if ( nextCellDataLeftTop != null
+                && !isAlreadyExistsInList(nextCellDataLeftTop, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataLeftTop, DataGame.Direction.LEFT_TOP_DIRECTION)){
             return false;
 
         }
 
         CellDataImpl nextCellDataRightTop = currCellData.getNextCellDataRightTop();
-        if ( nextCellDataRightTop != null && !isAlreadyExistsInList(nextCellDataRightTop, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataRightTop, DataGame.RIGHT_TOP_DIRECTION)){
+        if ( nextCellDataRightTop != null
+                && !isAlreadyExistsInList(nextCellDataRightTop, dataOptionalPathByView) && isAttackMoveByQueenByDirection(nextCellDataRightTop, DataGame.Direction.RIGHT_TOP_DIRECTION)){
             return false;
 
         }
@@ -223,32 +200,34 @@ public class GameValidationImpl {
 
     public boolean isEqualPlayerCells(CellDataImpl currCellData){
 
-        boolean isPlayerOneCurrently = currCellData.isPlayerOneCurrently();
+        boolean isPlayerOneCurrently = currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE || currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE_KING;
         return isPlayerOneCurrently  && dataGame.isPlayerOneTurn() || !isPlayerOneCurrently && ! dataGame.isPlayerOneTurn();
 
     }
 
-    public boolean isAttackMove(CellDataImpl currCellData) {
+    public boolean isMoveAttack(CellDataImpl currCellData) {
 
         if (isQueenPawn(currCellData)){
             return isAttackMoveByQueen(currCellData);
         }
 
         //Check the left direction
-        CellDataImpl nextCellLeft = dataGame.getNextCell(currCellData, true);
-        CellDataImpl nextCellChildLeft = dataGame.getNextCell(nextCellLeft, true);
+        CellDataImpl nextCellLeft = getNextCellByRelevantData(currCellData, true);
+        CellDataImpl nextCellChildLeft = getNextCellByRelevantData(nextCellLeft, true);
 
         // 2. check if there is attack turn
-        if ((nextCellLeft != null && !nextCellLeft.isEmpty() && !isEqualPlayerCells(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.isEmpty())){
+        if ((nextCellLeft != null && nextCellLeft.getCellContain() != DataGame.CellState.EMPTY
+                && !isEqualPlayersByRelevantData(nextCellLeft) && nextCellChildLeft != null && nextCellChildLeft.getCellContain() == DataGame.CellState.EMPTY)){
             return true;
         }
 
         //Check the right direction
-        CellDataImpl nextCellRight = dataGame.getNextCell(currCellData, false);
-        CellDataImpl nextCellChildRight = dataGame.getNextCell(nextCellRight, false);
+        CellDataImpl nextCellRight = getNextCellByRelevantData(currCellData, false);
+        CellDataImpl nextCellChildRight = getNextCellByRelevantData(nextCellRight, false);
 
         // 2. check if there is attack turn
-        if ((nextCellRight != null && !nextCellRight.isEmpty() && !isEqualPlayerCells(nextCellRight) && nextCellChildRight != null && nextCellChildRight.isEmpty())){
+        if ((nextCellRight != null && nextCellRight.getCellContain() != DataGame.CellState.EMPTY
+                && !isEqualPlayersByRelevantData(nextCellRight) && nextCellChildRight != null && nextCellChildRight.getCellContain() == DataGame.CellState.EMPTY)){
             return true;
         }
 
@@ -266,7 +245,8 @@ public class GameValidationImpl {
     public boolean isAttackMoveByQueenByDirection(CellDataImpl currCellData, int direction){
         CellDataImpl nextCell = dataGame.getNextCellByDirection(currCellData, direction);
         if (currCellData != null && nextCell != null){
-            if (!currCellData.isEmpty() && !isEqualPlayerCells(currCellData) && nextCell.isEmpty()) {
+            if (currCellData.getCellContain() != DataGame.CellState.EMPTY
+                    && !isEqualPlayersByRelevantData(currCellData) && nextCell.getCellContain() == DataGame.CellState.EMPTY) {
                 return true;
             }
         }
@@ -276,41 +256,36 @@ public class GameValidationImpl {
 
     private boolean isAttackMoveByQueen(CellDataImpl currCellData){
 
-        return isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftBottom(), DataGame.LEFT_BOTTOM_DIRECTION)
-                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftTop(), DataGame.LEFT_TOP_DIRECTION)
-                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightBottom(), DataGame.RIGHT_BOTTOM_DIRECTION)
-                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightTop(), DataGame.RIGHT_TOP_DIRECTION);
+        return isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftBottom(), DataGame.Direction.LEFT_BOTTOM_DIRECTION)
+                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataLeftTop(), DataGame.Direction.LEFT_TOP_DIRECTION)
+                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightBottom(), DataGame.Direction.RIGHT_BOTTOM_DIRECTION)
+                || isAttackMoveByQueenByDirection(currCellData.getNextCellDataRightTop(), DataGame.Direction.RIGHT_TOP_DIRECTION);
 
     }
 
     public boolean isAttackMoveByDirection(CellDataImpl currCellData, boolean isLeft) {
 
         if (isQueenPawn(currCellData)){
-
-           return isAttackMoveByQueen(currCellData);
+            boolean isAttackMoveByQueen = isAttackMoveByQueen(currCellData);
+            return isAttackMoveByQueen;
 
         }
 
         //Check the right direction
-        CellDataImpl nextCell = dataGame.getNextCell(currCellData, isLeft);
-        CellDataImpl nextCellChild = dataGame.getNextCell(nextCell, isLeft);
+        CellDataImpl nextCell = getNextCellByRelevantData(currCellData, isLeft);
+        CellDataImpl nextCellChild = getNextCellByRelevantData(nextCell, isLeft);
 
         // 2. check if there is attack turn
-        if ((nextCell != null && !nextCell.isEmpty() && !isEqualPlayerCells(nextCell) && nextCellChild != null && nextCellChild.isEmpty())){
+        if ((nextCell != null && nextCell.getCellContain() != DataGame.CellState.EMPTY
+                && !isEqualPlayersByRelevantData(nextCell) && nextCellChild != null && nextCellChild.getCellContain() == DataGame.CellState.EMPTY)){
             return true;
         }
 
         return false;
     }
 
-    public boolean isQueenPawn(Point currPawnPoint) {
-        return dataGame.getPawnByPoint(currPawnPoint).isMasterPawn();
-    }
-
-
     public boolean isQueenPawn(CellDataImpl currCellData){
-        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(currCellData.getPointStartPawn());
-        return pawnByPoint != null && pawnByPoint.isMasterPawn();
+        return currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE_KING || currCellData.getCellContain() == DataGame.CellState.PLAYER_TWO_KING;
     }
 
     public boolean isSomePlayerWin() {
@@ -319,7 +294,7 @@ public class GameValidationImpl {
                 .transform(PawnDataImpl::getContainerCellXY)
                 .transform(dataGame::getCellByPoint)
                 .filter(this::isCanCellStart)
-                .transform(CellDataImpl::getPoint)
+                .transform(CellDataImpl::getPointCell)
                 .first()
                 .isPresent();
 
@@ -327,7 +302,7 @@ public class GameValidationImpl {
                 .transform(PawnDataImpl::getContainerCellXY)
                 .transform(dataGame::getCellByPoint)
                 .filter(this::isCanCellStart)
-                .transform(CellDataImpl::getPoint)
+                .transform(CellDataImpl::getPointCell)
                 .first()
                 .isPresent();
 
@@ -337,5 +312,9 @@ public class GameValidationImpl {
             return !isPlayerTwoCanStart || dataGame.getPawnsPlayerTwo().size() == 0;
         }
 
+    }
+
+    public void setIsPlayerOne(boolean isPlayerOnCurrently) {
+        this.isPlayerOne = isPlayerOnCurrently;
     }
 }

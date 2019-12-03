@@ -90,7 +90,7 @@ public class GameManager {
     }
 
     private String getPlayerName() {
-        return   (isPlayerOneTurn ? "PLAYER 1" : dataGame.getGameMode() == DataGame.COMPUTER_GAME_MODE ? "COMPUTER" : "PLAYER 2");
+        return   (isPlayerOneTurn ? "PLAYER 1" : dataGame.getGameMode() == DataGame.Mode.COMPUTER_GAME_MODE ? "COMPUTER" : "PLAYER 2");
     }
 
     public String nextTurnChangePlayer() {
@@ -135,7 +135,7 @@ public class GameManager {
     }
 
     public boolean isQueenPawn(Point currPawnPoint) {
-        return gameValidation.isQueenPawn(currPawnPoint);
+        return gameValidation.isQueenPawn(dataGame.getCellByPoint(currPawnPoint));
     }
 
     public boolean isSomePlayerWin() {
@@ -151,7 +151,7 @@ public class GameManager {
     }
 
     public boolean isComputerModeGame() {
-        return dataGame.getGameMode() == DataGame.COMPUTER_GAME_MODE;
+        return dataGame.getGameMode() == DataGame.Mode.COMPUTER_GAME_MODE;
     }
 
     public interface ChangePlayerListener{

@@ -22,28 +22,21 @@ public class DataGameHelper {
     public CellDataImpl getNextCell(CellDataImpl currCellData, CellDataImpl prevCellData) {
         if (currCellData == null) return null;
 
-        if ((currCellData.getPoint().x < prevCellData.getPoint().x) && (currCellData.getPoint().y < prevCellData.getPoint().y)) {
-            Log.d("TEST_GAME", "getNextCellDataLeftTop: ");
+        if ((currCellData.getPointCell().x < prevCellData.getPointCell().x) && (currCellData.getPointCell().y < prevCellData.getPointCell().y)) {
             return currCellData.getNextCellDataLeftTop();
         }
 
-        if ((currCellData.getPoint().x < prevCellData.getPoint().x) && (currCellData.getPoint().y > prevCellData.getPoint().y)) {
-            Log.d("TEST_GAME", "getNextCellDataLeftBottom: ");
-
+        if ((currCellData.getPointCell().x < prevCellData.getPointCell().x) && (currCellData.getPointCell().y > prevCellData.getPointCell().y)) {
             return currCellData.getNextCellDataLeftBottom();
 
         }
 
-        if ((currCellData.getPoint().x > prevCellData.getPoint().x) && (currCellData.getPoint().y < prevCellData.getPoint().y)) {
-            Log.d("TEST_GAME", "getNextCellDataRightTop: ");
-
+        if ((currCellData.getPointCell().x > prevCellData.getPointCell().x) && (currCellData.getPointCell().y < prevCellData.getPointCell().y)) {
             return currCellData.getNextCellDataRightTop();
 
         }
 
-        if ((currCellData.getPoint().x > prevCellData.getPoint().x) && (currCellData.getPoint().y > prevCellData.getPoint().y)) {
-            Log.d("TEST_GAME", "getNextCellDataRightBottom: ");
-
+        if ((currCellData.getPointCell().x > prevCellData.getPointCell().x) && (currCellData.getPointCell().y > prevCellData.getPointCell().y)) {
             return currCellData.getNextCellDataRightBottom();
 
         }
@@ -54,19 +47,19 @@ public class DataGameHelper {
     public CellDataImpl getNextCellByDirection(CellDataImpl currCellData, int direction) {
         if (currCellData == null) return null;
 
-        if (direction == DataGame.LEFT_TOP_DIRECTION ) {
+        if (direction == DataGame.Direction.LEFT_TOP_DIRECTION ) {
             return currCellData.getNextCellDataLeftTop();
         }
 
-        if (direction == DataGame.LEFT_BOTTOM_DIRECTION) {
+        if (direction == DataGame.Direction.LEFT_BOTTOM_DIRECTION) {
             return currCellData.getNextCellDataLeftBottom();
         }
 
-        if (direction == DataGame.RIGHT_TOP_DIRECTION) {
+        if (direction == DataGame.Direction.RIGHT_TOP_DIRECTION) {
             return currCellData.getNextCellDataRightTop();
         }
 
-        if (direction == DataGame.RIGHT_BOTTOM_DIRECTION) {
+        if (direction == DataGame.Direction.RIGHT_BOTTOM_DIRECTION) {
             return currCellData.getNextCellDataRightBottom();
         }
 

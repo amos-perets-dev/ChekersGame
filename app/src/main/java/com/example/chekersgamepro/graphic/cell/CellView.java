@@ -33,6 +33,8 @@ public class CellView extends ImageView{
 
     private Bitmap crownIcon;
 
+    private boolean isCanClick;
+
     public CellView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
@@ -43,7 +45,7 @@ public class CellView extends ImageView{
     }
 
     public CellView setEnabledCell(boolean isClickable){
-        setEnabled(isClickable);
+        setEnabled(isClickable && isCanClick);
         return this;
     }
 
@@ -105,8 +107,8 @@ public class CellView extends ImageView{
     }
 
     public CellView checked(int color){
-        if (color == DataGame.CLEAR_CHECKED){
-            setBackgroundResource(DataGame.CLEAR_CHECKED);
+        if (color == DataGame.ColorCell.CLEAR_CHECKED){
+            setBackgroundResource(DataGame.ColorCell.CLEAR_CHECKED);
         } else {
             setBackgroundColor(color);
         }
@@ -137,4 +139,8 @@ public class CellView extends ImageView{
         return bitmap;
     }
 
+    public CellView setIsCanClick(boolean isCanClick) {
+        this.isCanClick = isCanClick;
+        return this;
+    }
 }
