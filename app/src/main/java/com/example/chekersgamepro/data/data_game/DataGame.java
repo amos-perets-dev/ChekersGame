@@ -1,4 +1,4 @@
-package com.example.chekersgamepro.data_game;
+package com.example.chekersgamepro.data.data_game;
 
 import android.graphics.Color;
 import android.graphics.Point;

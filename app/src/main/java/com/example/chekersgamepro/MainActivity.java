@@ -11,9 +11,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.graphic.cell.CellView;
 import com.example.chekersgamepro.graphic.game_board.GameBoardView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;

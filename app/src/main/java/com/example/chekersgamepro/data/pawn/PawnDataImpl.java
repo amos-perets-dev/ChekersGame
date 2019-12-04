@@ -3,7 +3,7 @@ package com.example.chekersgamepro.data.pawn;
 import android.graphics.Point;
 
 import com.example.chekersgamepro.R;
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 
 public class PawnDataImpl {
 

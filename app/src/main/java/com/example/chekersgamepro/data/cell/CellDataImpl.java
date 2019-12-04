@@ -2,7 +2,7 @@ package com.example.chekersgamepro.data.cell;
 
 import android.graphics.Point;
 
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 
 import javax.annotation.Nullable;
 

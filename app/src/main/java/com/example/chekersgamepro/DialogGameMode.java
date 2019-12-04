@@ -12,13 +12,11 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatDialog;
 
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Function3;
 import io.reactivex.subjects.PublishSubject;
 
 public class DialogGameMode extends AppCompatDialog {

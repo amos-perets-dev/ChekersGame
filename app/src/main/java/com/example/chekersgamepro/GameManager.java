@@ -3,19 +3,18 @@ package com.example.chekersgamepro;
 import android.graphics.Point;
 
 import com.example.chekersgamepro.data.BorderLine;
+import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_board.GameInitialImpl;
-import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
+import com.example.chekersgamepro.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import io.reactivex.Observable;
 
 public class GameManager {
 

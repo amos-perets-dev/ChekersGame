@@ -3,10 +3,11 @@ package com.example.chekersgamepro;
 import android.graphics.Point;
 import android.util.Pair;
 
+import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
-import com.example.chekersgamepro.data.game_validation.GameValidationImpl;
+import com.example.chekersgamepro.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;

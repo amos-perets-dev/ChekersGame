@@ -1,6 +1,4 @@
-package com.example.chekersgamepro.data_game;
-
-import android.util.Log;
+package com.example.chekersgamepro.data.data_game;
 
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 

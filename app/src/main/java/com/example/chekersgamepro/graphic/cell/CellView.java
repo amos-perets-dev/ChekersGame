@@ -11,15 +11,13 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.R;
-import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import io.reactivex.Observable;

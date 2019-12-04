@@ -1,6 +1,5 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.data;
 
-import android.graphics.Color;
 import android.graphics.Point;
 
 public class DataCellViewClick {

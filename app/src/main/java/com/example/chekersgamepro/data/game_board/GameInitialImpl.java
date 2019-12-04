@@ -3,7 +3,7 @@ package com.example.chekersgamepro.data.game_board;
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;

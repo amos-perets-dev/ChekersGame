@@ -1,7 +1,7 @@
-package com.example.chekersgamepro.data.game_validation;
+package com.example.chekersgamepro.game_validation;
 
-import com.example.chekersgamepro.DataCellViewClick;
-import com.example.chekersgamepro.data_game.DataGame;
+import com.example.chekersgamepro.data.DataCellViewClick;
+import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
 import com.google.common.collect.FluentIterable;
