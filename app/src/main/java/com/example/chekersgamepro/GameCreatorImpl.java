@@ -100,18 +100,6 @@ class GameCreatorImpl{
         return cellsPointRelevantStart;
     }
 
-    private FluentIterable<CellDataImpl> getCellsData() {
-        return FluentIterable.from((dataGame.isPlayerOneTurn()
-                ? dataGame.getPawnsPlayerOne().values()
-                : dataGame.getPawnsPlayerTwo().values()))
-                .transform(PawnDataImpl::getContainerCellXY)
-                .transform(dataGame::getCellByPoint);
-    }
-
-    public List<DataCellViewClick> getCellsPointRelevantStart() {
-        return cellsPointRelevantStart;
-    }
-
     public List<DataCellViewClick> createOptionalPath(float x, float y){
 
         dataOptionalPathByView.clear();
