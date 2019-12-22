@@ -10,18 +10,17 @@ import androidx.lifecycle.ViewModel;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
+import com.example.chekersgamepro.data.move.Move;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 
 public class CheckersViewModel extends ViewModel {
 
-    private MutableLiveData<Boolean> initFinish = new MutableLiveData<>();
 
     private MutableLiveData<List<DataCellViewClick>> relevantCells = new MutableLiveData<>();
 
@@ -35,7 +34,7 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<String> winPlayer = new MutableLiveData<>();
 
-    private MutableLiveData<List<DataCellViewClick>> computerTurn = new MutableLiveData<>();
+    private MutableLiveData<Move> computerTurn = new MutableLiveData<>();
 
     private GameManager gameManager;
 
@@ -45,7 +44,7 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
-    public Observable<List<DataCellViewClick>> getComputerStartTurn(LifecycleOwner lifecycleOwner){
+    public Observable<Move> getComputerStartTurn(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerTurn));
     }
 
@@ -55,10 +54,6 @@ public class CheckersViewModel extends ViewModel {
 
     public Observable<List<Point>> getMovePawn(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, movePawn));
-    }
-
-    public Observable<Boolean> initFinish(LifecycleOwner lifecycleOwner){
-        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, initFinish));
     }
 
     public Observable<List<DataCellViewClick>> getRelevantCells(LifecycleOwner lifecycleOwner){
@@ -79,7 +74,6 @@ public class CheckersViewModel extends ViewModel {
 
     public void initGame(int x, int y, int width, int height, int gameMode) {
         gameManager.initGame(x, y, width, height, gameMode);
-        initFinish.postValue(true);
     }
 
     public Map<Point, PawnDataImpl> getPawns() {
@@ -112,11 +106,10 @@ public class CheckersViewModel extends ViewModel {
             winPlayer.postValue(gameManager.getWinPlayerName());
         }
 
-        if (gameManager.isComputerModeGame()){
-            if (!gameManager.isPlayerOneTurn()){
-                computerTurn.postValue(relevantCellsStart);
-            } else {
-                computerTurn.postValue(Collections.EMPTY_LIST);
+        if (gameManager.isComputerModeGame() && !gameManager.isPlayerOneTurn()){
+            Move moveAI = gameManager.getMoveAI();
+            if (moveAI != null){
+                computerTurn.postValue(moveAI);
             }
         }
 
@@ -124,10 +117,6 @@ public class CheckersViewModel extends ViewModel {
 
     public boolean isClickableViews(){
         return !(gameManager.isComputerModeGame() && !gameManager.isPlayerOneTurn());
-    }
-
-    public Set<Point> getOptionalPointsListComputer(){
-        return gameManager.getOptionalPointsListComputer();
     }
 
     public void getMoveOrOptionalPath(float x, float y) {

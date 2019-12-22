@@ -16,6 +16,7 @@ import java.util.Map;
 public class DataGame extends DataGameHelper implements GameManager.ChangePlayerListener {
 
     public static final int GAME_BOARD_SIZE = 8;
+    public static final int DIFFICULT_LEVEL = 3;
 
     private static DataGame instance = null;
 
@@ -34,15 +35,11 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
 
     private boolean isPlayerOneTurn;
 
-    private DataGameHelper dataGameHelper = new DataGameHelper();
-
     private int countKing = 0;
 
     private CellDataImpl[][] boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
 
-    private DataGame() {
-        // Exists only to defeat instantiation.
-    }
+    private DataGame() { }
 
     synchronized public static DataGame getInstance() {
         if(instance == null) {
@@ -75,35 +72,26 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         return pawnsPlayerOne;
     }
 
-    public DataGame setCells(Map<Point, CellDataImpl> cells) {
-        this.cells = new HashMap<>(cells);
-        return this;
+    public int getPawnsKingPlayerOne() {
+        countKing = 0;
+        for (PawnDataImpl pawnData : pawnsPlayerOne.values()){
+            if (pawnData.isMasterPawn()){
+                countKing++;
+            }
+        }
+        return countKing;
     }
 
-    public DataGame setCellsPlayerOne(Map<Point, CellDataImpl> cellsPlayerOne) {
-        this.cellsPlayerOne = new HashMap<>(cellsPlayerOne);
-        return this;
+    public int getPawnsKingPlayerTwo() {
+        countKing = 0;
+        for (PawnDataImpl pawnData : pawnsPlayerTwo.values()){
+            if (pawnData.isMasterPawn()){
+                countKing++;
+            }
+        }
+        return countKing;
     }
 
-    public DataGame setCellsPlayerTwo(Map<Point, CellDataImpl> cellsPlayerTwo) {
-        this.cellsPlayerTwo = new HashMap<>(cellsPlayerTwo);
-        return this;
-    }
-
-    public DataGame setPawns(Map<Point, PawnDataImpl> pawns) {
-        this.pawns = new HashMap<>(pawns);
-        return this;
-    }
-
-    public DataGame setPawnsPlayerOne(Map<Point, PawnDataImpl> pawnsPlayerOne) {
-        this.pawnsPlayerOne = new HashMap<>(pawnsPlayerOne);
-        return this;
-    }
-
-    public DataGame setPawnsPlayerTwo(Map<Point, PawnDataImpl> pawnsPlayerTwo) {
-        this.pawnsPlayerTwo = new HashMap<>(pawnsPlayerTwo);
-        return this;
-    }
 
     public Map<Point, PawnDataImpl> getPawnsPlayerTwo() {
         return pawnsPlayerTwo;
@@ -189,7 +177,6 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         cellData.setCellContain(state);
         putCellByPlayer(cellData);
         setCellInBoardCells(cellData);
-//        cells.put(cellData.getPointCell(), cellData);
     }
 
     public PawnDataImpl getPawnByPoint(Point point) {
@@ -254,9 +241,6 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         // set he next cel by cell
         for (int row = 0; row < GAME_BOARD_SIZE; row++) {
             for (int column = 0; column < GAME_BOARD_SIZE; column++) {
-                if (boardCells[row][column].getCellContain() == CellState.INVALID_STATE){
-                    Log.d("TEST_GAME", "boardCells[row][column] POINT: " + boardCells[row][column].getPointCell());
-                }
                 board[row][column] = new CellDataImpl(boardCells[row][column]);
             }
         }

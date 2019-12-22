@@ -7,12 +7,12 @@ public class DataGameHelper {
     public CellDataImpl getNextCell(CellDataImpl cellData, boolean isLeft, boolean isPlayerOneTurn) {
         return cellData != null
                 ? isPlayerOneTurn
-                ? isLeft
-                ? cellData.getNextCellDataLeftBottom()
-                : cellData.getNextCellDataRightBottom()
-                : isLeft
-                ? cellData.getNextCellDataLeftTop()
-                : cellData.getNextCellDataRightTop()
+                    ? isLeft
+                        ? cellData.getNextCellDataLeftBottom()
+                        : cellData.getNextCellDataRightBottom()
+                    : isLeft
+                        ? cellData.getNextCellDataLeftTop()
+                        : cellData.getNextCellDataRightTop()
                 : null;
 
     }
