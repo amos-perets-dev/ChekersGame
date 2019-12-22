@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.game_validation;
 
+import com.example.chekersgamepro.ai.DataGameBoard;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
@@ -12,14 +13,17 @@ public class GameValidationImpl {
 
     private DataGame dataGame = DataGame.getInstance();
 
-    private boolean isPlayerOne;
+    private DataGameBoard dataGameBoard;
 
-    public GameValidationImpl() {
+    public GameValidationImpl(DataGameBoard dataGameBoard) {
+        this.dataGameBoard = dataGameBoard;
     }
 
     private CellDataImpl getNextCellByRelevantData(CellDataImpl currCellData, boolean isLeft){
 
-        CellDataImpl nextCell =  dataGame.getNextCell(currCellData, isLeft, dataGame.isPlayerOneTurn());
+        CellDataImpl nextCell = dataGameBoard == null
+                ? dataGame.getNextCell(currCellData, isLeft, dataGame.isPlayerOneTurn())
+                : dataGameBoard.getNextCell(currCellData, isLeft, dataGameBoard.isPlayerOneCurrently());
 
         return nextCell;
     }
@@ -27,7 +31,10 @@ public class GameValidationImpl {
     public boolean isEqualPlayersByRelevantData(CellDataImpl currCellData){
         boolean isPlayerOneCurrently = currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE || currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE_KING;
 
-        return isPlayerOneCurrently  && dataGame.isPlayerOneTurn() || !isPlayerOneCurrently && ! dataGame.isPlayerOneTurn();
+        return dataGameBoard == null
+                ? isPlayerOneCurrently  && dataGame.isPlayerOneTurn() || !isPlayerOneCurrently && ! dataGame.isPlayerOneTurn()
+                : isPlayerOneCurrently  && dataGameBoard.isPlayerOneCurrently() || !isPlayerOneCurrently && !dataGameBoard.isPlayerOneCurrently();
+
 
     }
 
@@ -77,6 +84,13 @@ public class GameValidationImpl {
 
     }
 
+    public boolean isAlreadyExists(CellDataImpl currCellData,List<DataCellViewClick> dataOptionalPathByView){
+        return FluentIterable.from(dataOptionalPathByView)
+                .transform(DataCellViewClick::getPoint)
+                .filter(point -> currCellData.getPointCell().x == point.x && currCellData.getPointCell().y == point.y)
+                .first()
+                .isPresent();
+    }
 
     public boolean isCanCellStart(CellDataImpl currCellData){
 
@@ -314,7 +328,4 @@ public class GameValidationImpl {
 
     }
 
-    public void setIsPlayerOne(boolean isPlayerOnCurrently) {
-        this.isPlayerOne = isPlayerOnCurrently;
-    }
 }

@@ -67,8 +67,8 @@ class GameCreatorImpl{
 
     }
 
-    public GameCreatorImpl(GameValidationImpl gameValidation) {
-        this.gameValidation = gameValidation;
+    public GameCreatorImpl() {
+        this.gameValidation = new GameValidationImpl(null);
     }
 
     /**
@@ -233,14 +233,6 @@ class GameCreatorImpl{
 
     }
 
-    private boolean isAlreadyExists(CellDataImpl currCellData){
-        return FluentIterable.from(dataOptionalPathByView)
-                .transform(DataCellViewClick::getPoint)
-                .filter(point -> currCellData.getPointCell().x == point.x && currCellData.getPointCell().y == point.y)
-                .first()
-                .isPresent();
-    }
-
     private void moveByQueenPawn(CellDataImpl currCellData){
         addDataOptionalPath( currCellData, DataGame.ColorCell.INSIDE_PATH, DataGame.ColorCell.CLEAR_CHECKED);
         listOptionalPawnMovePathTmp.add(currCellData.getPointStartPawn());
@@ -253,7 +245,7 @@ class GameCreatorImpl{
 
         CellDataImpl nextCellDataLeftBottom = currCellData.getNextCellDataLeftBottom();
         if (nextCellDataLeftBottom != null
-                && !isAlreadyExists(nextCellDataLeftBottom) && nextCellDataLeftBottom.getCellContain() != DataGame.CellState.EMPTY
+                && !gameValidation.isAlreadyExists(nextCellDataLeftBottom, dataOptionalPathByView) && nextCellDataLeftBottom.getCellContain() != DataGame.CellState.EMPTY
                 && !gameValidation.isEqualPlayerCells(nextCellDataLeftBottom)){
             createOptionalPathByCell(nextCellDataLeftBottom, true);
         }
@@ -264,7 +256,7 @@ class GameCreatorImpl{
 
         CellDataImpl nextCellDataRightBottom = currCellData.getNextCellDataRightBottom();
         if ( nextCellDataRightBottom != null
-                && !isAlreadyExists(nextCellDataRightBottom) && nextCellDataRightBottom.getCellContain() != DataGame.CellState.EMPTY
+                && !gameValidation.isAlreadyExists(nextCellDataRightBottom, dataOptionalPathByView) && nextCellDataRightBottom.getCellContain() != DataGame.CellState.EMPTY
                 && !gameValidation.isEqualPlayerCells(nextCellDataRightBottom)){
             createOptionalPathByCell(nextCellDataRightBottom, true);
         }
@@ -275,7 +267,7 @@ class GameCreatorImpl{
 
         CellDataImpl nextCellDataLeftTop = currCellData.getNextCellDataLeftTop();
         if ( nextCellDataLeftTop != null
-                && !isAlreadyExists(nextCellDataLeftTop) && nextCellDataLeftTop.getCellContain() != DataGame.CellState.EMPTY
+                && !gameValidation.isAlreadyExists(nextCellDataLeftTop, dataOptionalPathByView) && nextCellDataLeftTop.getCellContain() != DataGame.CellState.EMPTY
                 && !gameValidation.isEqualPlayerCells(nextCellDataLeftTop)){
             createOptionalPathByCell(nextCellDataLeftTop, true);
         }
@@ -286,7 +278,7 @@ class GameCreatorImpl{
 
         CellDataImpl nextCellDataRightTop = currCellData.getNextCellDataRightTop();
         if ( nextCellDataRightTop != null
-                && !isAlreadyExists(nextCellDataRightTop) && nextCellDataRightTop.getCellContain() != DataGame.CellState.EMPTY
+                && !gameValidation.isAlreadyExists(nextCellDataRightTop, dataOptionalPathByView) && nextCellDataRightTop.getCellContain() != DataGame.CellState.EMPTY
                 && !gameValidation.isEqualPlayerCells(nextCellDataRightTop)){
             createOptionalPathByCell(nextCellDataRightTop, true);
         }
@@ -362,14 +354,12 @@ class GameCreatorImpl{
     }
 
     public void setCurrentSrcDstCellData(CellDataImpl cellDataDst){
-//        Log.d("TEST_GAME", "GameCreatorImpl -> setCurrentSrcDstCellData -> cellDataDst: " + cellDataDst.toString());
         // set cell data dst
         dataGame.updateCell(cellDataDst
                 , dataGame.isPlayerOneTurn()
                         ? cellDataDst.isMasterCell() || cellDataSrcCurrently.getCellContain() == DataGame.CellState.PLAYER_ONE_KING ? DataGame.CellState.PLAYER_ONE_KING : DataGame.CellState.PLAYER_ONE
                         : cellDataDst.isMasterCell() || cellDataSrcCurrently.getCellContain() == DataGame.CellState.PLAYER_TWO_KING ? DataGame.CellState.PLAYER_TWO_KING : DataGame.CellState.PLAYER_TWO);
         // set cell data src
-//        Log.d("TEST_GAME", "GameCreatorImpl -> setCurrentSrcDstCellData -> cellDataSrc: " + cellDataSrcCurrently.toString());
         dataGame.updateCell(cellDataSrcCurrently, DataGame.CellState.EMPTY);
         // pawn data src
         dataGame.updatePawn(dataGame.getPawnByPoint(cellDataSrcCurrently.getPointStartPawn()), cellDataDst);

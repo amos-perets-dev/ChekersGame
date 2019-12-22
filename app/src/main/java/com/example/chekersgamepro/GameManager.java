@@ -2,13 +2,17 @@ package com.example.chekersgamepro;
 
 import android.graphics.Point;
 
+import com.example.chekersgamepro.ai.DataGameBoard;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.game_board.GameInitialImpl;
+import com.example.chekersgamepro.data.move.Move;
 import com.example.chekersgamepro.game_validation.GameValidationImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
 import com.example.chekersgamepro.data.data_game.DataGame;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +36,8 @@ public class GameManager {
 
     public void initGame(int x, int y, int width, int height, int gameMode) {
 
-        isPlayerOneTurn = new Random().nextBoolean();
+//        isPlayerOneTurn = new Random().nextBoolean();
+        isPlayerOneTurn = true;
 
         this.gameInitialImpl
                 .setX(x)
@@ -44,28 +49,15 @@ public class GameManager {
         this.gameInitialImpl.initGameBoard();
         this.gameInitialImpl.initPawns();
 
-        gameValidation = new GameValidationImpl();
+        gameCreatorChecked = new GameCreatorImpl();
 
-        gameCreatorChecked = new GameCreatorImpl(gameValidation);
+        gameValidation = new GameValidationImpl(null);
 
         dataGame.addChanePlayerListener(changePlayerListListeners);
     }
 
-    public int getWidthCell(){
-        return gameInitialImpl.getWidthCell();
-    }
-
     public List<BorderLine> getBorderLines() {
         return gameInitialImpl.getBorderLines();
-    }
-
-
-    public int getHeightCell(){
-        return gameInitialImpl.getHeightCell();
-    }
-
-    public int getGameBoardSize() {
-        return gameInitialImpl.getGameBoardSize();
     }
 
     public int getColorBorderCell() {
@@ -151,6 +143,10 @@ public class GameManager {
 
     public boolean isComputerModeGame() {
         return dataGame.getGameMode() == DataGame.Mode.COMPUTER_GAME_MODE;
+    }
+
+    public @Nullable Move getMoveAI() {
+        return new DataGameBoard().getBestMove();
     }
 
     public interface ChangePlayerListener{

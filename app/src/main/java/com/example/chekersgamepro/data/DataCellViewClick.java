@@ -15,6 +15,10 @@ public class DataCellViewClick {
         this.colorClearChecked = colorClearChecked;
     }
 
+    public DataCellViewClick(Point point) {
+        this.point = point;
+    }
+
 
     public int getColorChecked() {
         return colorChecked;

@@ -22,6 +22,15 @@ public class DataMove {
         this.cellsListNeedRemove = new ArrayList<>(cellsListNeedRemove);
     }
 
+    public DataMove(DataMove dataMoveFirst) {
+
+        this.move = dataMoveFirst.getMove();
+        this.cellDataSrc = new CellDataImpl(dataMoveFirst.getCellDataSrc());
+        this.cellDataDst = new CellDataImpl(dataMoveFirst.getCellDataDst());
+        this.cellsListNeedRemove = new ArrayList<>(dataMoveFirst.getCellsListNeedRemove());
+
+    }
+
     public Move getMove() {
         return move;
     }
