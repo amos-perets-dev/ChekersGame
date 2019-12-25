@@ -17,7 +17,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 public class GameManager {
@@ -26,7 +25,7 @@ public class GameManager {
 
     private GameValidationImpl gameValidation;
 
-    private GameCreatorImpl gameCreatorChecked;
+    private GameCreatorImpl gameCreator;
 
     private boolean isPlayerOneTurn;
 
@@ -49,7 +48,7 @@ public class GameManager {
         this.gameInitialImpl.initGameBoard();
         this.gameInitialImpl.initPawns();
 
-        gameCreatorChecked = new GameCreatorImpl();
+        gameCreator = new GameCreatorImpl();
 
         gameValidation = new GameValidationImpl(null);
 
@@ -77,7 +76,7 @@ public class GameManager {
     }
 
     public List<DataCellViewClick> createRelevantCellsStart() {
-        return gameCreatorChecked.createRelevantCellsStart();
+        return gameCreator.createRelevantCellsStart();
     }
 
     private String getPlayerName() {
@@ -93,31 +92,31 @@ public class GameManager {
     }
 
     public List<DataCellViewClick> createOptionalPathByCell(float x, float y) {
-        return gameCreatorChecked.createOptionalPath(x, y);
+        return gameCreator.createOptionalPath(x, y);
     }
 
     public List<Point> getMovePawnPath(float x, float y) {
-        return gameCreatorChecked.getMovePawnPath(x, y);
+        return gameCreator.getMovePawnPath(x, y);
     }
 
     public Set<Point> getOptionalPointsListComputer(){
-        return gameCreatorChecked.getOptionalPointsListComputer();
+        return gameCreator.getOptionalPointsListComputer();
     }
 
     public PawnDataImpl removePawnIfNeeded() {
-        return gameCreatorChecked.removePawnIfNeeded();
+        return gameCreator.removePawnIfNeeded();
     }
 
     public void clearData() {
-        gameCreatorChecked.clearData();
+        gameCreator.clearData();
     }
 
     public void updatePawnKilled() {
-        gameCreatorChecked.updatePawnKilled();
+        gameCreator.updatePawnKilled();
     }
 
     public void actionAfterPublishMovePawnPath() {
-        gameCreatorChecked.actionAfterPublishMovePawnPath();
+        gameCreator.actionAfterPublishMovePawnPath();
     }
 
     public Point getPointPawnByCell(Point pointByCell) {

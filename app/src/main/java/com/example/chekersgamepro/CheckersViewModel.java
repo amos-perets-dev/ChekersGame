@@ -13,7 +13,6 @@ import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.move.Move;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +35,10 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<Move> computerTurn = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> nextTurn = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> isNeedBlock = new MutableLiveData<>();
+
     private GameManager gameManager;
 
     public CheckersViewModel() {
@@ -44,8 +47,16 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
+    public Observable<Boolean> isNeedBlock(LifecycleOwner lifecycleOwner){
+        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, isNeedBlock));
+    }
+
     public Observable<Move> getComputerStartTurn(LifecycleOwner lifecycleOwner){
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerTurn));
+    }
+
+    public Observable<Boolean> getNextTurn(LifecycleOwner lifecycleOwner){
+        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, nextTurn));
     }
 
     public Observable<String> getWinPlayerName(LifecycleOwner lifecycleOwner){
@@ -99,8 +110,9 @@ public class CheckersViewModel extends ViewModel {
     public void nextTurn() {
         gameManager.clearData();
         playerName.postValue(gameManager.nextTurnChangePlayer());
-        List<DataCellViewClick> relevantCellsStart = gameManager.createRelevantCellsStart();
-        relevantCells.postValue(relevantCellsStart);
+        relevantCells.postValue(gameManager.createRelevantCellsStart());
+        // if it is the computer turn need to block
+        isNeedBlock.postValue(!isNeedBlock());
 
         if (gameManager.isSomePlayerWin()){
             winPlayer.postValue(gameManager.getWinPlayerName());
@@ -115,19 +127,21 @@ public class CheckersViewModel extends ViewModel {
 
     }
 
-    public boolean isClickableViews(){
-        return !(gameManager.isComputerModeGame() && !gameManager.isPlayerOneTurn());
+    public boolean isNeedBlock(){
+        if (!gameManager.isComputerModeGame()) return true;
+        return gameManager.isPlayerOneTurn();
     }
 
     public void getMoveOrOptionalPath(float x, float y) {
 
         List<Point> movePawnPath = gameManager.getMovePawnPath(x, y);
         if (movePawnPath != null) {
+            isNeedBlock.postValue(true);
             movePawn.postValue(movePawnPath);
             gameManager.actionAfterPublishMovePawnPath();
         } else {
             List<DataCellViewClick> optionalPathByCell = gameManager.createOptionalPathByCell(x, y);
-            optionalPath.postValue(optionalPathByCell == null ? Collections.EMPTY_LIST : optionalPathByCell);
+            if (optionalPathByCell != null) optionalPath.postValue(optionalPathByCell);
         }
     }
 
@@ -146,5 +160,10 @@ public class CheckersViewModel extends ViewModel {
 
     public Point getPointPawnByCell(Point pointByCell) {
         return gameManager.getPointPawnByCell(pointByCell);
+    }
+
+    public void finishTurn() {
+        isNeedBlock.postValue(false);
+        nextTurn.postValue(true);
     }
 }

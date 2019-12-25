@@ -72,7 +72,7 @@ class GameCreatorImpl{
     }
 
     /**
-     * Create list that all start cells
+     * Create list that all the optional start cells
      *
      * @return
      */

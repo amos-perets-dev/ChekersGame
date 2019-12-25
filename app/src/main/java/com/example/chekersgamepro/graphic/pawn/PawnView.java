@@ -131,7 +131,7 @@ public class PawnView extends ImageView {
                 .alpha(0)
                 .setDuration(400)
                 .withEndAction(() -> {
-                    // set the pawn visibility
+                    // set the visibility pawn
                     setVisibility(GONE);
                 })
                 .start();

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;
@@ -18,8 +19,12 @@ import com.google.common.collect.FluentIterable;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import io.reactivex.Observable;
 
 public class GameViewsManager {
 
@@ -37,6 +42,12 @@ public class GameViewsManager {
     private int indexCellView = 0;
 
     private int indexPawnView = 0;
+
+    private Map<Point, CellView> cellViewMap = new HashMap<>();
+
+    private Map<Point, PawnView> pawnViewMap = new HashMap<>();
+
+    private  List<Observable<? extends View>> viewsObservableList = new ArrayList<>();
 
     public GameViewsManager(Activity activity, CheckersViewModel checkersViewModel) {
         this.activity = activity;
@@ -77,7 +88,7 @@ public class GameViewsManager {
 
     public Map<Point, CellView> initCellsViews() {
 
-        Map<Point, CellView> cellViewMap = new HashMap<>();
+        cellViewMap = new HashMap<>();
 
         FluentIterable.from(checkersViewModel.getCells().entrySet())
                 .transform(Map.Entry::getValue)
@@ -117,7 +128,7 @@ public class GameViewsManager {
     }
 
     public Map<Point, PawnView> initPawnsViews() {
-        Map<Point, PawnView> pawnViewMap = new HashMap<>();
+        pawnViewMap = new HashMap<>();
         FluentIterable.from(checkersViewModel.getPawns().entrySet())
                 .transform(Map.Entry::getValue)
                 .transform(this::createPairPawnDataAndView)
@@ -160,21 +171,21 @@ public class GameViewsManager {
 
     public void setTest(View view) {
 
-        DataGame dataGame = DataGame.getInstance();
-        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
-        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
-        String infoPawn = "";
-        String infoCell = cellByPoint.toString() + "\n";
-        if (pawnByPoint != null){
-            infoPawn = pawnByPoint.toString() + "\n";
-        }
-        textViewTestStart.setText(
-                "" + infoCell + infoPawn
-                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
-                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
-                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
-                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
-                        + "ALL CELL: " + dataGame.getCells().size());
+//        DataGame dataGame = DataGame.getInstance();
+//        CellDataImpl cellByPoint = dataGame.getCellByPoint(new Point((int) view.getX(), (int) view.getY()));
+//        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(new Point((int) view.getX(), (int) view.getY()));
+//        String infoPawn = "";
+//        String infoCell = cellByPoint.toString() + "\n";
+//        if (pawnByPoint != null){
+//            infoPawn = pawnByPoint.toString() + "\n";
+//        }
+//        textViewTestStart.setText(
+//                "" + infoCell + infoPawn
+//                        + ", SIZE PAWN 1: " + dataGame.getPawnsPlayerOne().size()
+//                        + ", SIZE CELL 1: " + dataGame.getCellsPlayerOne().size()+ "\n"
+//                        + ", SIZE PAWN 2: " + dataGame.getPawnsPlayerTwo().size()
+//                        + ", SIZE CELL 2: " + dataGame.getCellsPlayerTwo().size()+ "\n"
+//                        + "ALL CELL: " + dataGame.getCells().size());
 
     }
 
@@ -188,5 +199,100 @@ public class GameViewsManager {
 
     public ImageView getComputerIcon() {
         return computerIcon;
+    }
+
+    public Map<Point, CellView> getCellViewMap() {
+        return cellViewMap;
+    }
+
+    public Map<Point, PawnView> getPawnViewMap() {
+        return pawnViewMap;
+    }
+
+    public void setClickableViews(boolean isClickable){
+        FluentIterable.from(pawnViewMap.values())
+                .transform(pawnView -> pawnView.setEnabledPawn(isClickable))
+                .toList();
+
+        FluentIterable.from(cellViewMap.values())
+                .transform(cellView -> cellView.setEnabledCell(isClickable))
+                .toList();
+    }
+
+    public List<Observable<? extends View>> addViewsToObservable(int ignored){
+        FluentIterable.from(cellViewMap.values())
+                .transform(CellView::getCellClick)
+                .transform(viewsObservableList::add)
+                .toList();
+
+        FluentIterable.from(pawnViewMap.values())
+                .transform(PawnView::getPawnClick)
+                .transform(viewsObservableList::add)
+                .toList();
+
+        return viewsObservableList;
+    }
+
+    /**
+     * Update the pawn view by point when the animate move finished
+     *
+     * @param point the path end point
+     */
+    public void updatePawnViewStart(Point point, Point currPointPawnViewStartPath, PawnView currPawnViewStartPath) {
+        pawnViewMap.remove(currPointPawnViewStartPath);
+        currPawnViewStartPath.setXY(point.x, point.y);
+        // now the curr point is the end point
+        pawnViewMap.put(point, currPawnViewStartPath);
+        currPawnViewStartPath.setIcon(checkersViewModel.isQueenPawn(point));
+    }
+
+    public PawnView getPawn(Point pointPawnByCell) {
+        return pawnViewMap.get(pointPawnByCell);
+    }
+
+    public void removePawnView(Point point) {
+        pawnViewMap.get(point).removePawn();
+    }
+
+    public CellView getCellViewByPoint(Point point) {
+        return cellViewMap.get(point);
+    }
+
+    public CellView clearCheckedCell(Point point){
+       return cellViewMap.get(point)
+                .checked(DataGame.ColorCell.CLEAR_CHECKED);
+    }
+
+    public CellView checkedCell(Point point, int color){
+        return cellViewMap.get(point)
+                .checked(color);
+    }
+
+    public void initViews(Integer gameMode) {
+        initGameBoard(gameMode);
+        initComputerIcon(gameMode);
+        initCellsViews();
+        initPawnsViews();
+        gameBoardView.drawBorders(
+                checkersViewModel.getBorderLines()
+                , checkersViewModel.getBorderWidth()
+                , checkersViewModel.getColorBorderCell());
+
+    }
+
+    private void initGameBoard(int gameMode) {
+        checkersViewModel.initGame(
+                (int) gameBoardView.getX()
+                , (int)gameBoardView.getY()
+                , gameBoardView.getMeasuredWidth()
+                , gameBoardView.getMeasuredHeight()
+                , gameMode);
+    }
+
+    public void clearCheckedCellsList(List<DataCellViewClick> cellsViewOptionalPath) {
+        FluentIterable.from(cellsViewOptionalPath)
+                .transform(DataCellViewClick::getPoint)
+                .transform(this::clearCheckedCell)
+                .toList();
     }
 }
