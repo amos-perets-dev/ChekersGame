@@ -1,4 +1,4 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.screens.game;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -12,6 +12,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatDialog;
 
+import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.jakewharton.rxbinding2.view.RxView;
 

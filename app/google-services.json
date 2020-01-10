@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "237439842729",
+    "firebase_url": "https://checkers-d0d7a.firebaseio.com",
+    "project_id": "checkers-d0d7a",
+    "storage_bucket": "checkers-d0d7a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237439842729:android:f31c84d5b26497f1356cb8",
+        "android_client_info": {
+          "package_name": "com.example.chekersgamepro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "237439842729-rkrvg9ln39mn4nso3c074duolni4bgqo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chekersgamepro",
+            "certificate_hash": "3e36700593d68c74925e0a7fffdff82719bebc28"
+          }
+        },
+        {
+          "client_id": "237439842729-eum88qfol5n852assnrvtus8gl74vs0c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOR_eeNudUzrAGCCvs8xQ5sWUr4lvdSfA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "237439842729-eum88qfol5n852assnrvtus8gl74vs0c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

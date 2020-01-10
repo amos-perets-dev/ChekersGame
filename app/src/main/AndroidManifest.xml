@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.chekersgamepro">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
+        android:isGame="true"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:largeHeap="true"
-        android:isGame="true"
-        android:hardwareAccelerated="true"
-        android:theme="@style/AppTheme">
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
+        android:theme="@style/AppTheme"
+        android:name=".util.CheckersApplication"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".screens.homepage.HomePageActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.registration.RegistrationActivity"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.game.CheckersActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".screens.splash.SplashActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

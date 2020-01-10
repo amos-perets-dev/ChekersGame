@@ -2,9 +2,8 @@ package com.example.chekersgamepro.data.data_game;
 
 import android.graphics.Color;
 import android.graphics.Point;
-import android.util.Log;
 
-import com.example.chekersgamepro.GameManager;
+import com.example.chekersgamepro.screens.game.GameManager;
 import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.PawnDataImpl;

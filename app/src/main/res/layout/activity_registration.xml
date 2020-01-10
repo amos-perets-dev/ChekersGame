@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/registration_activity"
+    tools:context=".screens.registration.RegistrationActivity">
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/title_registration"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        android:fontFamily="sans-serif"
+        android:text="@string/activity_registration_title_text"
+        app:autoSizeTextType="uniform"
+        android:textStyle="bold"
+        android:textColor="@color/activity_registration_title_text_color"
+        app:autoSizeMinTextSize="@dimen/activity_registration_title_text_size_min"
+        app:autoSizeMaxTextSize="@dimen/activity_registration_title_text_size_max"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/fields_guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.2"/>
+
+
+    <com.rengwuxian.materialedittext.MaterialEditText
+        android:id="@+id/edit_text_user_name_registration"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="start|bottom"
+        android:hint="@string/activity_registration_hint_enter_user_name"
+        android:imeOptions="actionNext"
+        android:inputType="textEmailAddress"
+        android:maxLines="1"
+        android:maxLength="20"
+        android:singleLine="true"
+        android:textColor="@color/activity_registration_enter_user_name_text_color"
+        android:textColorHint="@color/activity_registration_enter_user_name_hint_color"
+        android:theme="@style/EditTextColorCustom"
+        app:layout_constraintHeight_percent="0.12"
+        app:layout_constraintStart_toStartOf="@+id/fields_guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/title_registration"
+        app:layout_constraintWidth_percent="0.6"
+        app:met_floatingLabel="normal"
+        app:met_floatingLabelText="@string/activity_registration_floating_label_text_email"
+        app:met_primaryColor="@color/primary_color_underline"
+        app:met_underlineColor="@color/secondary_color_underline"
+        app:met_helperTextColor="@color/activity_registration_user_name_helper_text_color"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/button_check_validation_registration"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/activity_registration_button_disable_empty_text"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:background="@color/activity_registration_button_disable_color"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="@dimen/activity_registration_button_text_size_min"
+        app:autoSizeMaxTextSize="@dimen/activity_registration_button_text_size_max"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.1"
+        android:enabled="false"
+        android:clickable="false"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

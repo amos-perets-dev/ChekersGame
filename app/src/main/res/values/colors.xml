@@ -8,5 +8,20 @@
     <color name="color_black_cell">#1AFFEB3B</color>
     <color name="color_withe_cell">#4D4EFF00</color>
 
+    <!--///Registration///-->
+    <color name="activity_registration_title_text_color">#109710</color>
+    <color name="activity_registration_button_registration_color">#109710</color>
+    <color name="activity_registration_button_check_available_color">#F0CE20</color>
+    <color name="activity_registration_button_disable_color">#8A8787</color>
+    <color name="activity_registration_button_error_color">#971010</color>
+
+    <color name="activity_registration_enter_user_name_line_color">#686666</color>
+    <color name="activity_registration_enter_user_name_text_color">#686666</color>
+    <color name="activity_registration_enter_user_name_hint_color">#918D8D</color>
+    <color name="activity_registration_user_name_helper_text_color">#9E0D0D</color>
+
+    <!--///General Edit Text///-->
+    <color name="primary_color_underline">#7B71A0</color>
+    <color name="secondary_color_underline">#74708B</color>
 
 </resources>

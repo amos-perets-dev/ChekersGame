@@ -1,4 +1,4 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.screens.game;
 
 import android.graphics.Point;
 import android.widget.ImageView;

@@ -1,6 +1,12 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-    <item name="dialog_choose_player" format="float" type="dimen">
-        0.9
-    </item>
+    <item name="dialog_choose_player" format="float" type="dimen">0.9</item>
+
+    <dimen name="activity_registration_title_text_size_min">20dp</dimen>
+    <dimen name="activity_registration_title_text_size_max">28dp</dimen>
+
+    <dimen name="activity_registration_button_text_size_min">18dp</dimen>
+    <dimen name="activity_registration_button_text_size_max">20dp</dimen>
+
+
 </resources>

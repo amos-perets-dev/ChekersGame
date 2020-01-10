@@ -1,4 +1,4 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.screens.game;
 
 import android.graphics.Point;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.graphic.cell.CellView;
@@ -25,7 +26,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity {
+public class CheckersActivity extends AppCompatActivity {
 
     private CheckersViewModel checkersViewModel;
 
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkersViewModel = ViewModelProviders.of(MainActivity.this).get(CheckersViewModel.class);
+        checkersViewModel = ViewModelProviders.of(CheckersActivity.this).get(CheckersViewModel.class);
 
         gameViewsManager = new GameViewsManager(this, checkersViewModel);
 
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Consumer<String>() {
                     @Override
                     public void accept(String s) throws Exception {
-                        Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CheckersActivity.this, s, Toast.LENGTH_SHORT).show();
                     }
                 }));
     }

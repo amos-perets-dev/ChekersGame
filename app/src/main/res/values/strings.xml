@@ -1,4 +1,20 @@
 <resources>
     <string name="app_name">ChekersGamePro</string>
     <string name="action_settings">Settings</string>
+
+    <!--///Registration///<<<-->
+    <string name="activity_registration_title_text">Enter user name</string>
+    <string name="activity_registration_hint_enter_user_name">User name</string>
+    <string name="activity_registration_floating_label_text_email">User name</string>
+
+    <string name="activity_registration_user_name_helper_text">The username already exists</string>
+
+    <string name="activity_registration_button_check_availability_text">Check availability</string>
+    <string name="activity_registration_button_registration_text">Registration</string>
+    <string name="activity_registration_button_disable_empty_text">Enter user name</string>
+    <string name="activity_registration_button_not_available_text">Enter other user name</string>
+    <string name="activity_registration_button_error_text">Error! Check Connection network</string>
+    <!--///Registration///>>>-->
+
+
 </resources>

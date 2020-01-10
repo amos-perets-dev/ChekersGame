@@ -1,4 +1,4 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.screens.game;
 
 import android.app.Activity;
 import android.graphics.Point;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.data_game.DataGame;
