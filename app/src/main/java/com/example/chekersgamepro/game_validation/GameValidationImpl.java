@@ -1,10 +1,12 @@
 package com.example.chekersgamepro.game_validation;
 
+import android.util.Log;
+
 import com.example.chekersgamepro.ai.DataGameBoard;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
-import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 import com.google.common.collect.FluentIterable;
 
 import java.util.List;
@@ -21,11 +23,9 @@ public class GameValidationImpl {
 
     private CellDataImpl getNextCellByRelevantData(CellDataImpl currCellData, boolean isLeft){
 
-        CellDataImpl nextCell = dataGameBoard == null
+        return dataGameBoard == null
                 ? dataGame.getNextCell(currCellData, isLeft, dataGame.isPlayerOneTurn())
                 : dataGameBoard.getNextCell(currCellData, isLeft, dataGameBoard.isPlayerOneCurrently());
-
-        return nextCell;
     }
 
     public boolean isEqualPlayersByRelevantData(CellDataImpl currCellData){
@@ -302,7 +302,7 @@ public class GameValidationImpl {
         return currCellData.getCellContain() == DataGame.CellState.PLAYER_ONE_KING || currCellData.getCellContain() == DataGame.CellState.PLAYER_TWO_KING;
     }
 
-    public boolean isSomePlayerWin() {
+    public boolean isSomePlayerWin(boolean isPlayerOneTurn) {
 
         boolean isPlayerOneCanStart = FluentIterable.from(dataGame.getPawnsPlayerOne().values())
                 .transform(PawnDataImpl::getContainerCellXY)

@@ -24,4 +24,6 @@
     <color name="primary_color_underline">#7B71A0</color>
     <color name="secondary_color_underline">#74708B</color>
 
+    <color name="activity_game_player_name_shadow_color">#C0C0C0</color>
+
 </resources>

@@ -20,7 +20,7 @@ public class DataGameBoard {
 
     private DataGame dataGame = DataGame.getInstance();
     private CellDataImpl[][] boardCells = new CellDataImpl[DataGame.GAME_BOARD_SIZE][DataGame.GAME_BOARD_SIZE];
-    private boolean isPlayerOneCurrently = false;
+    private boolean isPlayerOneCurrently = true;
     private int playerOneCount = 0;
     private int playerTwoCount = 0;
     private int playerOneKingsCount = 0;
@@ -575,8 +575,8 @@ public class DataGameBoard {
      */
     public DataGameBoard getCopyBoard() {
         CellDataImpl[][] cellsDataBard = new CellDataImpl[DataGame.GAME_BOARD_SIZE][DataGame.GAME_BOARD_SIZE];
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < DataGame.GAME_BOARD_SIZE; row++) {
+            for (int col = 0; col < DataGame.GAME_BOARD_SIZE; col++) {
                 CellDataImpl dataCell = getDataCell(row, col);
                 cellsDataBard[row][col] = new CellDataImpl(dataCell);
             }

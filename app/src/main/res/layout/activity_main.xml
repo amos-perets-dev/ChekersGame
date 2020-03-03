@@ -1,41 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".screens.game.CheckersActivity">
+    tools:context=".screens.game.CheckersActivity"
+    android:background="#FFFFFF">
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/text_player_name"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:textSize="20dp"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/computer_sign"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:alpha="0"
+            android:elevation="30dp"
+            android:rotation="180"
+            android:translationZ="40dp"
+            android:src="@drawable/ic_tap_icon" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/computer_sign"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:elevation="30dp"
-        android:src="@drawable/ic_tap_icon"
-        android:alpha="0"/>
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_test_start"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:textSize="15dp"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:textSize="15dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_gravity="bottom|end"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:srcCompat="@android:drawable/ic_dialog_email" />
 
@@ -44,28 +41,115 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.35"/>
+        app:layout_constraintGuide_percent="0.35" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_board"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05"/>
+        app:layout_constraintGuide_percent="0.05" />
 
 
-    <com.example.chekersgamepro.graphic.game_board.GameBoardView
-        android:id="@+id/game_board_view"
-        android:layout_width="340dp"
-        android:layout_height="340dp"
-        app:layout_constraintTop_toTopOf="@+id/top_board"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <include
-       layout="@layout/cells"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_game_board"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        app:elevation="20dp"
+        android:translationZ="20dp">
 
-    <include
-        layout="@layout/pawns"/>
+        <ProgressBar
+            android:id="@+id/progress_top"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            app:layout_constraintStart_toStartOf="@+id/game_board_view"
+            app:layout_constraintEnd_toEndOf="@+id/game_board_view"
+            app:layout_constraintBottom_toTopOf="@+id/game_board_view"
+            app:layout_constraintHeight_percent="0.007"
+            android:max="3000"/>
 
+        <com.example.chekersgamepro.graphic.game_board.GameBoardView
+            android:id="@+id/game_board_view"
+            android:layout_width="340dp"
+            android:layout_height="340dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:cardElevation="-11dp"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bottom"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            app:layout_constraintStart_toStartOf="@+id/game_board_view"
+            app:layout_constraintEnd_toEndOf="@+id/game_board_view"
+            app:layout_constraintTop_toBottomOf="@+id/game_board_view"
+            app:layout_constraintHeight_percent="0.007"
+            android:max="3000"/>
+
+            <com.example.chekersgamepro.views.custom.PlayerNameView
+                android:id="@+id/text_player_two"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="#C5C3C3"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.07"
+                app:layout_constraintTop_toBottomOf="@+id/game_board_view"
+                app:layout_constraintWidth_percent="0.45"
+                android:layout_marginTop="45dp"
+                android:alpha="0"
+                tools:text="PLAYER TWO"/>
+
+            <com.example.chekersgamepro.views.custom.PlayerNameView
+                android:id="@+id/text_player_one"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="#E4E2E2"
+                app:layout_constraintBottom_toTopOf="@+id/game_board_view"
+                app:layout_constraintHeight_percent="0.07"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.45"
+                android:layout_marginBottom="45dp"
+                android:alpha="0"
+                tools:text="PLAYER ONE"/>
+
+        <com.example.chekersgamepro.views.custom.TotalPawnPlayerView
+            android:id="@+id/text_player_two_total_pawn"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#C5C3C3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHeight_percent="0.07"
+            app:layout_constraintTop_toBottomOf="@+id/game_board_view"
+            app:layout_constraintWidth_percent="0.45"
+            android:layout_marginTop="45dp"
+            android:alpha="1"
+            tools:text="PLAYER TWO"/>
+
+        <com.example.chekersgamepro.views.custom.TotalPawnPlayerView
+            android:id="@+id/text_player_one_total_pawn"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#E4E2E2"
+            app:layout_constraintBottom_toTopOf="@+id/game_board_view"
+            app:layout_constraintHeight_percent="0.07"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.45"
+            android:layout_marginBottom="45dp"
+            android:alpha="1"
+            tools:text="PLAYER ONE"/>
+
+        <include layout="@layout/cells" />
+
+        <include layout="@layout/pawns" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

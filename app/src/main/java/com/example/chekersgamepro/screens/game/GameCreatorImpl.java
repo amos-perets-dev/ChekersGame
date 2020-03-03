@@ -1,14 +1,17 @@
 package com.example.chekersgamepro.screens.game;
 
 import android.graphics.Point;
+import android.util.Log;
 import android.util.Pair;
 
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.game_validation.GameValidationImpl;
-import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 import com.example.chekersgamepro.data.data_game.DataGame;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -20,7 +23,7 @@ import java.util.Set;
 
 class GameCreatorImpl{
 
-    private List<DataCellViewClick> cellsPointRelevantStart = new ArrayList<>();
+    private List<DataCellViewClick> cellsRelevantStart = new ArrayList<>();
 
     private Map<Point, Pair<List<Point>, List<PawnDataImpl>>> listsAllOptionalPathByCell = new HashMap<>();
 
@@ -54,8 +57,8 @@ class GameCreatorImpl{
     private List<PawnDataImpl> listPawnsNeededKilled;
 
     public void clearData(){
-//        Log.d("TEST_GAME", "clearData CLEAR LIST");
-        cellsPointRelevantStart.clear();
+
+        cellsRelevantStart.clear();
 
         listsAllOptionalPathByCell.clear();
 
@@ -76,12 +79,15 @@ class GameCreatorImpl{
      *
      * @return
      */
-    public List<DataCellViewClick> createRelevantCellsStart() {
-        cellsPointRelevantStart.clear();
+    public ImmutableList<DataCellViewClick> createRelevantCellsStart() {
+        cellsRelevantStart.clear();
 
-        FluentIterable<CellDataImpl> cellsCanBeMaybeStart = FluentIterable.from((dataGame.isPlayerOneTurn()
+        boolean playerOneTurn = dataGame.isPlayerOneTurn();
+
+        FluentIterable<CellDataImpl> cellsCanBeMaybeStart = FluentIterable.from((playerOneTurn
                 ? dataGame.getCellsPlayerOne().values()
                 : dataGame.getCellsPlayerTwo().values()));
+
 
         // Check if there is attack path
         isAttackMove = cellsCanBeMaybeStart
@@ -89,33 +95,31 @@ class GameCreatorImpl{
                 .first()
                 .isPresent();
 
-        cellsCanBeMaybeStart
+        ImmutableList<DataCellViewClick> dataCellViewClicks = cellsCanBeMaybeStart
                 .filter(gameValidation::isCanCellStart)
                 .filter(cellData -> !isAttackMove || gameValidation.isMoveAttack(cellData))
                 .transform(CellDataImpl::getPointCell)
-                .transform(point -> new DataCellViewClick (point, DataGame.ColorCell.CAN_CELL_START, DataGame.ColorCell.CLEAR_CHECKED))
-                .transform(cellsPointRelevantStart::add)
+                .transform(point -> new DataCellViewClick(point, DataGame.ColorCell.CAN_CELL_START, DataGame.ColorCell.CLEAR_CHECKED))
                 .toList();
 
+        cellsRelevantStart = new ArrayList<>(dataCellViewClicks);
 
-        return cellsPointRelevantStart;
+        return dataCellViewClicks;
     }
 
-    public List<DataCellViewClick> createOptionalPath(float x, float y){
+    public List<DataCellViewClick> createOptionalPath(CellDataImpl currCellData){
 
         dataOptionalPathByView.clear();
         listsAllOptionalPathByCell.clear();
         listOptionalPawnMovePathTmp.clear();
         removeListPawn.clear();
 
-        CellDataImpl currCellData =  dataGame.getCellByPoint(new Point((int) x, (int) y));
-
         // check if the pawn is null
         // because if the user click when another process is running the pawn is null
         if (currCellData == null) return null;
 
         // check if point contains in the can be start cells
-        boolean isPointInRelevantCell = FluentIterable.from(cellsPointRelevantStart)
+        boolean isPointInRelevantCell = FluentIterable.from(cellsRelevantStart)
                 .transform(DataCellViewClick::getPoint)
                 .filter(point -> point.x == currCellData.getPointCell().x && point.y == currCellData.getPointCell().y)
                 .first()
@@ -182,8 +186,6 @@ class GameCreatorImpl{
         return dataOptionalPathByView;
 
     }
-
-
 
     private void createOptionalPathByCell(@Nullable CellDataImpl currCellData, boolean isFromRoot){
 
@@ -325,24 +327,14 @@ class GameCreatorImpl{
         dataOptionalPathByView.add(new DataCellViewClick(cellData.getPointCell(), colorChecked, colorClearChecked));
     }
 
-    /**
-     *
-     *
-     * @param x point of the dst cell
-     * @param y point of the dst cell
-     * @return
-     */
-    public List<Point> getMovePawnPath(float x, float y) {
-        //check if the point in the path and in the valid cell(end point)
-        if (listsAllOptionalPathByCell.get(new Point((int) x, (int) y)) == null) return null;
 
-        endPointPathFromUser = new Point((int) x, (int) y);
+    public List<Point> getMovePawnPath(Point endPoint) {
+        //check if the point in the path and in the valid cell(end point)
+        if (listsAllOptionalPathByCell.get(endPoint) == null) return null;
+
+        endPointPathFromUser = endPoint;
 
         return listsAllOptionalPathByCell.get(endPointPathFromUser).first;
-    }
-
-    public Set<Point> getOptionalPointsListComputer(){
-        return listsAllOptionalPathByCell.keySet();
     }
 
     public void actionAfterPublishMovePawnPath(){

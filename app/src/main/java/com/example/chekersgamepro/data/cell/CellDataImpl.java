@@ -14,6 +14,7 @@ public class CellDataImpl {
     private int widthCell;
     private int heightCell;
     private int cellContain = DataGame.CellState.INVALID_STATE;
+    private int idCell;
 
     private boolean isMasterCell;
 
@@ -26,7 +27,7 @@ public class CellDataImpl {
     public CellDataImpl(){}
 
     public CellDataImpl (CellDataImpl cellData) {
-
+        this.idCell = cellData.getIdCell();
         this.pointCell = cellData.getPointCell();
         this.isMasterCell = cellData.isMasterCell();
         this.widthCell = cellData.getWidthCell();
@@ -39,13 +40,15 @@ public class CellDataImpl {
         this.nextCellDataRightTop = cellData.getNextCellDataRightTop();
     }
 
-    public CellDataImpl(int cellContain
+    public CellDataImpl(int idCell
+            , int cellContain
             , Point pointCell
             , Point pointStartPawn
             , boolean isMasterCell
             , int widthCell
             , int heightCell) {
 
+        this.idCell = idCell;
         this.cellContain = cellContain;
         this.pointCell = pointCell;
         this.pointStartPawn = pointStartPawn;
@@ -53,6 +56,15 @@ public class CellDataImpl {
         this.widthCell = widthCell;
         this.heightCell = heightCell;
 
+    }
+
+    public int getIdCell() {
+        return idCell;
+    }
+
+    public CellDataImpl setIdCell(int idCell) {
+        this.idCell = idCell;
+        return this;
     }
 
     public int getCellContain() {

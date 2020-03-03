@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.RegistrationButtonStatus
+import com.example.chekersgamepro.RegistrationStatus
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.util.CheckersApplication
 import com.example.chekersgamepro.models.validation.IValidationForm
@@ -19,9 +19,11 @@ import io.reactivex.disposables.Disposable
 
 class RegistrationViewModel : ViewModel() {
 
+    private val repositoryManager = RepositoryManager.create()
+
     private val validationForm: IValidationForm = ValidationFormImpl()
 
-    private val currentState = MutableLiveData<RegistrationButtonStatus>()
+    private var currentState = MutableLiveData<RegistrationStatus>()
 
     private val isUserAdded = MutableLiveData<Intent>()
 
@@ -30,7 +32,6 @@ class RegistrationViewModel : ViewModel() {
     private val context = CheckersApplication.create()
 
     private var isCanAddUser = false
-
 
     fun checkUserNameExist(userName: String) {
 
@@ -47,77 +48,79 @@ class RegistrationViewModel : ViewModel() {
                 .subscribe(currentState::postValue))
     }
 
-    private fun getTextByState(registrationButtonStatus: RegistrationButtonStatus): String {
-        return when (registrationButtonStatus.ordinal) {
-            RegistrationButtonStatus.CHECK_AVAILABLE.ordinal -> context.resources.getString(R.string.activity_registration_button_check_availability_text)
-            RegistrationButtonStatus.REGISTRATION.ordinal -> context.resources.getString(R.string.activity_registration_button_registration_text)
-            RegistrationButtonStatus.NOT_AVAILABLE.ordinal -> context.resources.getString(R.string.activity_registration_button_not_available_text)
-            RegistrationButtonStatus.EMPTY.ordinal -> context.resources.getString(R.string.activity_registration_button_disable_empty_text)
+    private fun getTextByState(registrationStatus: RegistrationStatus): String {
+        return when (registrationStatus.ordinal) {
+            RegistrationStatus.CHECK_AVAILABLE.ordinal -> context.resources.getString(R.string.activity_registration_button_check_availability_text)
+            RegistrationStatus.REGISTRATION.ordinal -> context.resources.getString(R.string.activity_registration_button_registration_text)
+            RegistrationStatus.NOT_AVAILABLE.ordinal -> context.resources.getString(R.string.activity_registration_button_not_available_text)
+            RegistrationStatus.EMPTY.ordinal -> context.resources.getString(R.string.activity_registration_button_disable_empty_text)
             else -> context.resources.getString(R.string.activity_registration_button_error_text)
         }
     }
 
-    private fun getColorByState(registrationButtonStatus: RegistrationButtonStatus): Int {
-        return when (registrationButtonStatus.ordinal) {
-            RegistrationButtonStatus.CHECK_AVAILABLE.ordinal -> context.resources.getColor(R.color.activity_registration_button_check_available_color)
-            RegistrationButtonStatus.REGISTRATION.ordinal -> context.resources.getColor(R.color.activity_registration_button_registration_color)
-            RegistrationButtonStatus.NOT_AVAILABLE.ordinal -> context.resources.getColor(R.color.activity_registration_button_disable_color)
-            RegistrationButtonStatus.EMPTY.ordinal -> context.resources.getColor(R.color.activity_registration_button_disable_color)
+    private fun getColorByState(registrationStatus: RegistrationStatus): Int {
+        return when (registrationStatus.ordinal) {
+            RegistrationStatus.CHECK_AVAILABLE.ordinal -> context.resources.getColor(R.color.activity_registration_button_check_available_color)
+            RegistrationStatus.REGISTRATION.ordinal -> context.resources.getColor(R.color.activity_registration_button_registration_color)
+            RegistrationStatus.NOT_AVAILABLE.ordinal -> context.resources.getColor(R.color.activity_registration_button_disable_color)
+            RegistrationStatus.EMPTY.ordinal -> context.resources.getColor(R.color.activity_registration_button_disable_color)
             else -> context.resources.getColor(R.color.activity_registration_button_error_color)
         }
     }
 
 
     private fun addNewUser(userName: String): Disposable {
-        return RepositoryManager.create()
+        return repositoryManager
                 .addNewUser(userName)
-                .doOnError {
-                    Log.d("TEST_GAME", "2 doOnError")
-                }
-                .doOnEvent { isAdded, t2 ->
-                    Log.d("TEST_GAME", "2 doOnEvent isAdded: $isAdded")
-                    if (isAdded) {
-                        isUserAdded.postValue(Intent(context, HomePageActivity::class.java))
-                    } else {
-                        currentState.postValue(RegistrationButtonStatus.ERROR)
+                .doOnError { Log.d("TEST_GAME", "2 doOnError") }
+                .doOnEvent { status, t2 ->
+                    when(status.ordinal){
+                        RegistrationStatus.REGISTED.ordinal -> isUserAdded.postValue(Intent(context, HomePageActivity::class.java))
+                        RegistrationStatus.ERROR.ordinal -> currentState.postValue(RegistrationStatus.ERROR)
+                        else -> currentState.postValue(RegistrationStatus.NOT_AVAILABLE)
                     }
                 }
                 .subscribe()
     }
 
     fun isUserAdded(lifecycleOwner: LifecycleOwner): Observable<Intent> =
-            getObservable(isUserAdded, lifecycleOwner) as Observable<Intent>
+            (getObservable(isUserAdded, lifecycleOwner) as Observable<*>)
+                    .cast(Intent::class.java)
 
     fun registrationFormValid(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
-            (getObservable(currentState, lifecycleOwner) as Observable<RegistrationButtonStatus>)
+            (getObservable(currentState, lifecycleOwner) as Observable<*>)
+                    .cast(RegistrationStatus::class.java)
                     .map { state ->
-                        state.ordinal != RegistrationButtonStatus.NOT_AVAILABLE.ordinal
+                        state.ordinal != RegistrationStatus.NOT_AVAILABLE.ordinal
                     }
 
     fun isUserNameValid(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
-            (getObservable(currentState, lifecycleOwner) as Observable<RegistrationButtonStatus>)
+            (getObservable(currentState, lifecycleOwner) as Observable<*>)
+                    .cast(RegistrationStatus::class.java)
                     .doOnNext {state ->
-                        isCanAddUser = state.ordinal == RegistrationButtonStatus.REGISTRATION.ordinal
+                        isCanAddUser = state.ordinal == RegistrationStatus.REGISTRATION.ordinal
 
                     }
                     .map { state ->
-                        state.ordinal == RegistrationButtonStatus.REGISTRATION.ordinal
-                                || state.ordinal == RegistrationButtonStatus.CHECK_AVAILABLE.ordinal
+                        state.ordinal == RegistrationStatus.REGISTRATION.ordinal
+                                || state.ordinal == RegistrationStatus.CHECK_AVAILABLE.ordinal
                     }
 
     fun getCurrentStateText(lifecycleOwner: LifecycleOwner): Observable<String> =
-            (getObservable(currentState, lifecycleOwner) as Observable<RegistrationButtonStatus>)
+            (getObservable(currentState, lifecycleOwner) as Observable<*>)
+                    .cast(RegistrationStatus::class.java)
                     .map(this::getTextByState)
 
     fun getColor(lifecycleOwner: LifecycleOwner): Observable<Int> =
-            (getObservable(currentState, lifecycleOwner) as Observable<RegistrationButtonStatus>)
+            (getObservable(currentState, lifecycleOwner) as Observable<*>)
+                    .cast(RegistrationStatus::class.java)
                     .map(this::getColorByState)
 
     private fun getObservable(liveData: MutableLiveData<*>, lifecycleOwner: LifecycleOwner): Observable<Any> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, liveData))
 
     override fun onCleared() {
-        super.onCleared()
         compositeDisposable.dispose()
+        super.onCleared()
     }
 }

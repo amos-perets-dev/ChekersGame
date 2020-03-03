@@ -2,117 +2,67 @@ package com.example.chekersgamepro.data.game_board;
 
 import android.graphics.Color;
 import android.graphics.Point;
+import android.util.Log;
 
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
-import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class GameInitialImpl {
-    private final int GAME_BOARD_SIZE = 8;
+    private final int GAME_BOARD_SIZE = DataGame.GAME_BOARD_SIZE;
     private final int DIV_SIZE_CELL = 14;
     private final int COLOR_BORDER_CELL = Color.BLACK;
     private final int BORDER_WIDTH = 2;
 
-    private DataGame dataGame = DataGame.getInstance();
+    private DataGame dataGame;
 
     private int width;
     private int height;
-    private int x = 0;
-    private int y = 0;
-
-    private List<BorderLine> borderLines = new ArrayList<>();
+    private int x;
+    private int y;
 
     private int widthCell;
     private int heightCell;
 
-    private CellDataImpl[][] boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
+    private CellDataImpl[][] boardCells;
 
-    public GameInitialImpl() {
-    }
-
-    public Map<Point, PawnDataImpl> getPawns() {
-        return dataGame.getPawns();
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public GameInitialImpl setWidth(int width) {
-        this.width = width;
-        return this;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public GameInitialImpl setHeight(int height) {
-        this.height = height;
-        return this;
-    }
-
-    public GameInitialImpl setX(int x) {
+    public GameInitialImpl(int x, int y, int width, int height, int gameMode) {
         this.x = x;
-        return this;
-    }
-
-    public GameInitialImpl setY(int y) {
         this.y = y;
-        return this;
-    }
+        this.width = width;
+        this.height = height;
 
-    public int getGameBoardSize() {
-        return GAME_BOARD_SIZE;
-    }
+        boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
+        dataGame = DataGame.getInstance();
+        dataGame.setGameMode(gameMode);
 
-    public int getColorBorderCell() {
-        return COLOR_BORDER_CELL;
-    }
-
-    public int getBorderWidth() {
-        return BORDER_WIDTH;
-    }
-
-
-    public int getWidthCell() {
-        return widthCell;
-    }
-
-    public int getHeightCell() {
-        return heightCell;
-    }
-
-    public List<BorderLine> getBorderLines() {
-        return borderLines;
-    }
-
-    public Map<Point, CellDataImpl> getCells() {
-        return dataGame.getCells();
+        initBorderLines();
+        initGameBoard();
+        initPawns();
     }
 
     /**
      * Init the pawns on the board game
      **/
     public void initPawns() {
+        dataGame.clearCachePawns();
 
         int i = 0;
 
-
         int factorDecreaseSizeCell = (heightCell - BORDER_WIDTH) / DIV_SIZE_CELL;
 
-        Map<Point, CellDataImpl> cells = getCells();
-        for (Map.Entry<Point, CellDataImpl> cellDataEntry : cells.entrySet()){
+        Map<Point, CellDataImpl> cells = dataGame.getCells();
+        for (Map.Entry<Point, CellDataImpl> cellDataEntry : cells.entrySet()) {
             CellDataImpl cellData = cellDataEntry.getValue();
 
             if (cellData.getCellContain() == DataGame.CellState.PLAYER_ONE
-                    || cellData.getCellContain() == DataGame.CellState.PLAYER_TWO){
-
+                    || cellData.getCellContain() == DataGame.CellState.PLAYER_TWO) {
+                
                 PawnDataImpl pawnData = new PawnDataImpl(i
                         , cellData.getPointCell()
                         , cellData.getCellContain()
@@ -127,55 +77,61 @@ public class GameInitialImpl {
         }
     }
 
-    public void initBorderLines(){
+    public void initBorderLines() {
+        List<BorderLine> borderLines = new ArrayList<>();
 
         // measure the all inside borders between the cells
         int insideBorders = (GAME_BOARD_SIZE + 1) * BORDER_WIDTH;
 
         // measure size cell without the border
-        widthCell = ((width - insideBorders) / GAME_BOARD_SIZE) ;
-        heightCell = ((height - insideBorders) / GAME_BOARD_SIZE) ;
+        widthCell = ((width - insideBorders) / GAME_BOARD_SIZE);
+        heightCell = ((height - insideBorders) / GAME_BOARD_SIZE);
 
         // initGameBoard the first x,y point
-        int tmpX = 0 ;
-        int tmpY = BORDER_WIDTH / 2 ;
+        int tmpX = 0;
+        int tmpY = BORDER_WIDTH / 2;
 
         // init rows
-        for (int i = 0; i < GAME_BOARD_SIZE + 1; i++){
+        for (int i = 0; i < GAME_BOARD_SIZE + 1; i++) {
             Point startPoint = new Point(0, tmpY);
-            Point endPoint = new Point(tmpX + ((widthCell + BORDER_WIDTH) * GAME_BOARD_SIZE) + BORDER_WIDTH , tmpY);
+            Point endPoint = new Point(tmpX + ((widthCell + BORDER_WIDTH) * GAME_BOARD_SIZE) + BORDER_WIDTH, tmpY);
             BorderLine borderLine = new BorderLine(startPoint, endPoint);
             borderLines.add(borderLine);
-            tmpY +=  heightCell + BORDER_WIDTH;
+            tmpY += heightCell + BORDER_WIDTH;
         }
 
         // initGameBoard the first x,y point
-        tmpX = BORDER_WIDTH / 2 ;
+        tmpX = BORDER_WIDTH / 2;
         tmpY = 0;
 
         // init columns
-        for (int i = 0; i < GAME_BOARD_SIZE + 1; i++){
+        for (int i = 0; i < GAME_BOARD_SIZE + 1; i++) {
             Point startPoint = new Point(tmpX, 0);
-            Point endPoint = new Point(tmpX  , tmpY + ((heightCell + BORDER_WIDTH) * GAME_BOARD_SIZE) + BORDER_WIDTH);
+            Point endPoint = new Point(tmpX, tmpY + ((heightCell + BORDER_WIDTH) * GAME_BOARD_SIZE) + BORDER_WIDTH);
             BorderLine borderLine = new BorderLine(startPoint, endPoint);
             borderLines.add(borderLine);
             tmpX += widthCell + BORDER_WIDTH;
         }
 
+        dataGame.setBorderLines(borderLines);
     }
 
+    private int idCell = 1;
+
     public void initGameBoard() {
+        dataGame.clearCacheCells();
+
         boolean isMasterCell = false;
         int cellContain;
 
-        int  insideBorders = 0;
+        int insideBorders = 0;
         // measure size cell without the border
-        widthCell = ((width - insideBorders) / GAME_BOARD_SIZE) ;
-        heightCell = ((height - insideBorders) / GAME_BOARD_SIZE) ;
+        widthCell = ((width - insideBorders) / GAME_BOARD_SIZE);
+        heightCell = ((height - insideBorders) / GAME_BOARD_SIZE);
 
         // initGameBoard the first x,y point
-        int tmpX = x ;
-        int tmpY = y ;
+        int tmpX = x;
+        int tmpY = y;
 
 
         // start x,y pawn
@@ -184,7 +140,7 @@ public class GameInitialImpl {
         for (int row = 0; row < GAME_BOARD_SIZE; row++) {
             // set the master cell
             for (int column = 0; column < GAME_BOARD_SIZE; column++) {
-                Point pointCell = new Point(tmpX + (BORDER_WIDTH )  , tmpY  + BORDER_WIDTH);
+                Point pointCell = new Point(tmpX + (BORDER_WIDTH), tmpY + BORDER_WIDTH);
                 Point pointStartPawn = new Point(pointCell.x + factorDecreaseSizeCell / 2, (pointCell.y + factorDecreaseSizeCell / 2));
 
                 if (row % 2 != column % 2) {
@@ -200,23 +156,28 @@ public class GameInitialImpl {
                     cellContain = DataGame.CellState.EMPTY_INVALID;
                 }
 
-                CellDataImpl cellData = new CellDataImpl(cellContain
+                Log.d("TEST_GAME", "CELL CONTAIN: " + cellContain + ", idCell: " + idCell);
+
+                CellDataImpl cellData = new CellDataImpl(idCell
+                        , cellContain
                         , pointCell
                         , pointStartPawn
                         , isMasterCell
                         , widthCell - BORDER_WIDTH
                         , heightCell - BORDER_WIDTH);
 
+                idCell++;
+
                 this.boardCells[row][column] = cellData;
                 tmpX += widthCell;
-                isMasterCell =  false;
+                isMasterCell = false;
                 dataGame.putCellByPlayer(cellData);
-
+                dataGame.puCellById(cellData.getIdCell(), cellData.getPointCell());
             }
             // initGameBoard the next row
-            tmpY = (y ) + (heightCell  ) * (row + 1);
-            tmpX = x ;
-            isMasterCell =  false;
+            tmpY = (y) + (heightCell) * (row + 1);
+            tmpX = x;
+            isMasterCell = false;
         }
 
         // set he next cell by cell
@@ -268,10 +229,6 @@ public class GameInitialImpl {
 
         return cellData;
 
-    }
-
-    public void setGameMode(int gameMode) {
-        dataGame.setGameMode(gameMode);
     }
 
 }

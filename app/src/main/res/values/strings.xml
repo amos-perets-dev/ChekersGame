@@ -7,7 +7,7 @@
     <string name="activity_registration_hint_enter_user_name">User name</string>
     <string name="activity_registration_floating_label_text_email">User name</string>
 
-    <string name="activity_registration_user_name_helper_text">Already exist username</string>
+    <string name="activity_registration_user_name_helper_text">שם זה כבר קיים</string>
 
     <string name="activity_registration_button_check_availability_text">Check availability</string>
     <string name="activity_registration_button_registration_text">Registration</string>

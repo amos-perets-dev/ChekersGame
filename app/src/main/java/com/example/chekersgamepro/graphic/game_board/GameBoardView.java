@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 
 import com.example.chekersgamepro.data.BorderLine;
 
@@ -16,7 +17,7 @@ import java.util.List;
 
 import io.reactivex.subjects.PublishSubject;
 
-public class GameBoardView extends View {
+public class GameBoardView extends CardView {
 
 
     private Paint paint = new Paint();

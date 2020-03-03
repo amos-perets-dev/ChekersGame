@@ -24,9 +24,9 @@ class CheckersApplication : MultiDexApplication(){
         FirebaseApp.initializeApp(this)
 
         val realmConfiguration = RealmConfiguration.Builder()
-                .name("aaa.realm")
+                .name("k.realm")
                 .encryptionKey(ByteArray(64))
-                .schemaVersion(2)
+                .schemaVersion(11)
                 .build()
 
         Realm.setDefaultConfiguration(realmConfiguration)

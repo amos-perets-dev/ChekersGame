@@ -1,9 +1,11 @@
 package com.example.chekersgamepro.screens.game;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Pair;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
@@ -13,16 +15,26 @@ import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.graphic.cell.CellView;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
+import com.example.chekersgamepro.screens.game.model.GameFinishData;
+import com.example.chekersgamepro.screens.game.model.GameFinishState;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
@@ -30,9 +42,14 @@ public class CheckersActivity extends AppCompatActivity {
 
     private CheckersViewModel checkersViewModel;
 
-    private  List<CellView> viewsByRelevantCellsList = new ArrayList<>();
+    private List<CellView> viewsByRelevantCellsList = new ArrayList<>();
 
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private CompositeDisposable compositeDisposable;
+
+    private Disposable disposableAnimatePawnMove = Disposables.disposed();
+
+    private Disposable disposableFinishGame = Disposables.disposed();
+    private Disposable disposableRemoteMove = Disposables.disposed();
 
     /**
      * List of the all optional path
@@ -41,45 +58,41 @@ public class CheckersActivity extends AppCompatActivity {
 
     private PawnView pawnViewStartPath;
 
-    private GameViewsManager gameViewsManager;
-
-    private ComputerIconView computerIconView;
+    private CheckersGameViewsManager checkersGameViewsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkersViewModel = ViewModelProviders.of(CheckersActivity.this).get(CheckersViewModel.class);
+        Log.d("TEST_GAME", "CheckersActivity -> onCreate: " + this.toString());
+        compositeDisposable = new CompositeDisposable();
+        checkersViewModel = ViewModelProviders.of(this).get(CheckersViewModel.class);
 
-        gameViewsManager = new GameViewsManager(this, checkersViewModel);
-
-        computerIconView = new ComputerIconView(gameViewsManager);
-
-        DialogGameMode dialogGameMode = new DialogGameMode(this);
+        checkersGameViewsManager = new CheckersGameViewsManager(this, checkersViewModel, compositeDisposable);
 
         // Open dialog to choose game mode
         // init the game board, pawns and cells
         // create observables to the views
-        compositeDisposable.add(dialogGameMode
-                .getGameMode()
-                .doOnNext(gameViewsManager::initViews)
-                .doOnNext(Functions.actionConsumer(dialogGameMode::dismiss))
+        StartGameDialog startGameDialog = new StartGameDialog(this, getIntent());
+        compositeDisposable.add(startGameDialog.getGameMode()
+                .doOnNext(ignored -> checkersGameViewsManager.initViews(getIntent()))
+                .doOnNext(Functions.actionConsumer(checkersGameViewsManager::showViews))
                 .doOnError(Throwable::printStackTrace)
                 .observeOn(AndroidSchedulers.mainThread())
                 .observeOn(Schedulers.io())
-                .doOnNext(Functions.actionConsumer(checkersViewModel::nextTurn))
+                .doOnNext(Functions.actionConsumer(checkersViewModel::initStartGameOrNextTurn))
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(gameViewsManager::addViewsToObservable)
+                .map(checkersGameViewsManager::addViewsToObservable)
                 .flatMap(Observable::fromIterable)
                 .flatMap(Functions.identity())
-                .doOnNext(view -> gameViewsManager.setTest(view))
+                .doOnNext(view -> checkersGameViewsManager.setTest(view))
                 .subscribe(this::onClickCell));
 
 
         changePlayerNameAsync();
 
-        checkedCellsStartAsync();
+        startTurnCheckedCellsStartAsync();
 
         checkedOptionalPathAsync();
 
@@ -87,38 +100,32 @@ public class CheckersActivity extends AppCompatActivity {
 
         nextTurnAsync();
 
-        blockViewsAsync();
-
         removePawnsAsync();
 
-        showWinPlayerAsync();
+        showFinishGameAsync();
+
+        compositeDisposable.add(checkersViewModel.getRemoteMove());
 
 
-        checkersViewModel.getComputerStartTurn(this)
-                .observeOn(Schedulers.io())
-                .filter(point -> point.getStartPoint().x != 0)
-                .delay(100, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnNext(move -> computerIconView.animateComputerIcon(false, move.getStartPoint()))
-                .delay(350, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnNext(move -> computerIconView.animateComputerIcon(true, move.getEndPoint()))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+        compositeDisposable.add(checkersViewModel.getComputerOrRemotePlayerMove(this)
+                .flatMapCompletable(checkersGameViewsManager::animateComputerIconView)
+                .subscribe()
+        );
+
+        compositeDisposable.add(checkersViewModel.isTechnicalWin().subscribe());
     }
 
     /**
      * Show the player name winning
      */
-    private void showWinPlayerAsync() {
-        compositeDisposable.add(checkersViewModel
-                .getWinPlayerName(this)
-                .doOnNext(this::finishGame)
-                .doOnNext(gameViewsManager.getTextViewTestStart()::setText)
-                .subscribe(new Consumer<String>() {
-                    @Override
-                    public void accept(String s) throws Exception {
-                        Toast.makeText(CheckersActivity.this, s, Toast.LENGTH_SHORT).show();
-                    }
-                }));
+    private void showFinishGameAsync() {
+        disposableFinishGame = checkersViewModel
+                .isFinishGame(this)
+                .doOnNext(checkersGameViewsManager::setFinishGame)
+                .delay(2500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .map(GameFinishData::getIntentBackToHomePage)
+                .flatMapCompletable(this::setResult)
+                .subscribe();
     }
 
     /**
@@ -129,17 +136,7 @@ public class CheckersActivity extends AppCompatActivity {
                 .removePawn(this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(gameViewsManager::removePawnView));
-    }
-
-    /**
-     * Block the view if needed
-     */
-    private void blockViewsAsync() {
-        compositeDisposable.add( checkersViewModel.isNeedBlock(this)
-                .map(isNeedBlock -> !isNeedBlock)
-                .doOnNext(gameViewsManager::setClickableViews)
-                .subscribe());
+                .subscribe(checkersGameViewsManager::removePawnView));
     }
 
     /**
@@ -163,7 +160,7 @@ public class CheckersActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .doOnNext(pointsListAnimatePawn -> {
                     Point pointPawnStartPath = pointsListAnimatePawn.get(0);
-                    animatePawnMove(pointsListAnimatePawn, pointPawnStartPath, 0);
+                    animatePawnMove(pointsListAnimatePawn, pointPawnStartPath);
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe());
@@ -178,11 +175,11 @@ public class CheckersActivity extends AppCompatActivity {
                 .getOptionalPath(this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(this::checkedOptionalPathByClick)
                 .doOnNext(dataCellViewClicks -> {
                     // set the pawn start in the current path
-                    pawnViewStartPath = gameViewsManager.getPawn(checkersViewModel.getPointPawnByCell(dataCellViewClicks.get(0).getPoint()));
+                    pawnViewStartPath = checkersGameViewsManager.getPawn(checkersViewModel.getPointPawnByCell(dataCellViewClicks.get(0).getPoint()));
                 })
+                .flatMapCompletable(this::checkedOptionalPathByClick)
                 .subscribe());
     }
 
@@ -190,12 +187,13 @@ public class CheckersActivity extends AppCompatActivity {
      * Get the relevant cells start and checked them
      * And if needed (if it is the computer turn) set the clickable to the false
      */
-    private void checkedCellsStartAsync() {
-        compositeDisposable.add( checkersViewModel
+    private void startTurnCheckedCellsStartAsync() {
+        compositeDisposable.add(checkersViewModel
                 .getRelevantCells(this)
                 .doOnNext(this::addViewsByRelevantCells)
                 .flatMap(Observable::fromIterable)
                 .doOnNext(this::checkRelevantCellsStart)
+                .doOnNext(Functions.actionConsumer(checkersGameViewsManager::notifyProgress))
                 .subscribe());
     }
 
@@ -205,7 +203,7 @@ public class CheckersActivity extends AppCompatActivity {
     private void changePlayerNameAsync() {
         compositeDisposable.add(checkersViewModel
                 .getPlayerName(this)
-                .subscribe(gameViewsManager.getTextViewPlayerName()::setText));
+                .subscribe(checkersGameViewsManager::setPlayerTurn));
     }
 
     /**
@@ -213,66 +211,53 @@ public class CheckersActivity extends AppCompatActivity {
      *
      * @param dataCellViewClick data for the cell start
      */
-    private void checkRelevantCellsStart(DataCellViewClick dataCellViewClick){
-        gameViewsManager.checkedCell(dataCellViewClick.getPoint(), dataCellViewClick.getColorChecked());
+    private void checkRelevantCellsStart(DataCellViewClick dataCellViewClick) {
+        if (checkersViewModel.isYourTurn()) {
+            checkersGameViewsManager.checkedCell(dataCellViewClick.getPoint(), dataCellViewClick.getColorChecked());
+        }
     }
 
-    private void finishGame(String s) {
+    private void animatePawnMove(List<Point> pointsListAnimatePawnMove, Point pointPawnStartPath) {
 
+        if (disposableAnimatePawnMove != null) disposableAnimatePawnMove.dispose();
 
-
-    }
-
-    private void animatePawnMove(List<Point> pointsListAnimatePawnMove, Point pointPawnStartPath, int indexPointsListAnimatePawn) {
-
-        Point currPoint = pointsListAnimatePawnMove.get(indexPointsListAnimatePawn);
-        final int index = ++indexPointsListAnimatePawn;
-        pawnViewStartPath
-                .animate()
-                .withLayer()
-                .translationY(currPoint.y)
-                .translationX(currPoint.x)
-                .setDuration(250)
-                .withStartAction(() -> {
-                    pawnViewStartPath.setElevation(10f);
-                    checkersViewModel.removePawnIfNeeded();
-                })
-                .withEndAction(() -> {
-
-                    pawnViewStartPath.setElevation(0);
-                    if (index < pointsListAnimatePawnMove.size()) {
-                       animatePawnMove(pointsListAnimatePawnMove, pointPawnStartPath, index);
-                    } else {
-                        endTurn(currPoint, pointPawnStartPath);
-                    }
-                })
-                .start();
+        disposableAnimatePawnMove = pawnViewStartPath
+                .isStartIterateMovePawn()
+                .doOnSubscribe(disposable -> pawnViewStartPath.animatePawnMove(pointsListAnimatePawnMove, 0))
+                .doOnNext(checkersViewModel::removePawnIfNeeded)
+                .filter(Functions.equalsWith(false))
+                .map(ignored -> pointsListAnimatePawnMove.size() - 1) //End point
+                .map(pointsListAnimatePawnMove::get)
+                .flatMapCompletable(endPoint -> endTurn(endPoint, pointPawnStartPath))
+                .subscribe();
     }
 
     private void onClickCell(View view) {
-        checkersViewModel.getMoveOrOptionalPath(view.getX(), view.getY());
+        checkersViewModel.showErrorMsg(view.getX(), view.getY());
     }
 
-    private void checkedOptionalPathByClick(List<DataCellViewClick> dataCellViewClicks) {
+    private Completable checkedOptionalPathByClick(List<DataCellViewClick> dataCellViewClicks) {
 
         // clear the prev cells checked
-        checkedOptionalPathByClick(cellsViewOptionalPath, false);
-
-        // checked the current cells
-        checkedOptionalPathByClick(dataCellViewClicks, true);
-
-        // Init the list to be set the prev list
-        this.cellsViewOptionalPath = new ArrayList<>(dataCellViewClicks);
-
+        return checkedOptionalPathByClick(cellsViewOptionalPath, false)
+                // checked the current cells
+                .andThen(checkedOptionalPathByClick(dataCellViewClicks, true))
+                .doOnEvent(throwable -> {
+                    // Init the list to be set the prev list
+                    CheckersActivity.this.cellsViewOptionalPath = new ArrayList<>(dataCellViewClicks);
+                })
+                .andThen(checkersViewModel.finishCheckedOptionalPath());
     }
 
-    private void checkedOptionalPathByClick(List<DataCellViewClick> dataCellViewClicks, boolean isChecked){
-        FluentIterable.from(dataCellViewClicks)
-                .transform(dataCellViewClick -> gameViewsManager.checkedCell(dataCellViewClick.getPoint(),
-                        isChecked
-                                ? dataCellViewClick.getColorChecked()
-                                : dataCellViewClick.getColorClearChecked()))
-                .toList();
+    private Completable checkedOptionalPathByClick(List<DataCellViewClick> dataCellViewClicks, boolean isChecked) {
+        for (DataCellViewClick cellViewClick : dataCellViewClicks) {
+            checkersGameViewsManager.checkedCell(cellViewClick.getPoint(),
+                    isChecked
+                            ? cellViewClick.getColorChecked()
+                            : cellViewClick.getColorClearChecked());
+        }
+
+        return Completable.complete();
     }
 
     /**
@@ -292,12 +277,12 @@ public class CheckersActivity extends AppCompatActivity {
      *
      * @param cellsViewList list of the relevant cells start
      */
-    private void addViewsByRelevantCells(List<DataCellViewClick> cellsViewList) {
+    private void addViewsByRelevantCells(ImmutableList<DataCellViewClick> cellsViewList) {
 
         // add the relevant cells to the list
         FluentIterable.from(cellsViewList)
                 .transform(DataCellViewClick::getPoint)
-                .transform(gameViewsManager::getCellViewByPoint)
+                .transform(checkersGameViewsManager::getCellViewByPoint)
                 .transform(viewsByRelevantCellsList::add)
                 .toList();
 
@@ -306,38 +291,48 @@ public class CheckersActivity extends AppCompatActivity {
     /**
      * Set the end turn, clear the lists and set the relevant pawns
      *
-     * @param lastPointPath of the current path that choose by the user
+     * @param lastPointPath      of the current path that choose by the user
      * @param pointPawnStartPath of the current path that choose by the user
+     * @return
      */
-    private void endTurn(Point lastPointPath, Point pointPawnStartPath){
-        gameViewsManager.updatePawnViewStart(lastPointPath, pointPawnStartPath, pawnViewStartPath);
+    private Completable endTurn(Point lastPointPath, Point pointPawnStartPath) {
+        checkersGameViewsManager.updatePawnViewStart(lastPointPath, pointPawnStartPath, pawnViewStartPath);
 
         // clear the optional checked path after the turn finished
-        gameViewsManager.clearCheckedCellsList(cellsViewOptionalPath);
+        checkersGameViewsManager.clearCheckedCellsList(cellsViewOptionalPath);
         clearPrevRelevantCellsStart();
         cellsViewOptionalPath.clear();
-        checkersViewModel.finishTurn();
+        return checkersViewModel.finishTurn()
+                .andThen(checkersGameViewsManager.resetProgress());
     }
 
     @Override
     public void onBackPressed() {
+        compositeDisposable.add(
+                checkersViewModel
+                        .setFinishGameTechnicalLoss(GameFinishState.TECHNICAL_LOSS)
+                        .subscribe()
+        );
+    }
 
-        super.onBackPressed();
-        compositeDisposable.dispose();
-        int id= android.os.Process.myPid();
-        android.os.Process.killProcess(id);
-
+    private Completable setResult(Intent intent) {
+        Log.d("TEST_GAME", "CheckersActivity -> setResult");
+        setResult(111, intent);
         finish();
+        return Completable.complete();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        Log.d("TEST_GAME", "CheckersActivity -> onDestroy");
+
+//        checkersViewModel.resetRemoteMove();
+
         compositeDisposable.dispose();
+        disposableAnimatePawnMove.dispose();
+        disposableFinishGame.dispose();
+        disposableRemoteMove.dispose();
 
-        int id= android.os.Process.myPid();
-        android.os.Process.killProcess(id);
-
-        finish();
+        super.onDestroy();
     }
 }

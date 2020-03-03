@@ -1,4 +1,4 @@
-package com.example.chekersgamepro.data.pawn;
+package com.example.chekersgamepro.data.pawn.pawn;
 
 import android.graphics.Point;
 

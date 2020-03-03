@@ -19,6 +19,9 @@ public class Move {
         this.endPoint = endPoint;
     }
 
+    public Move() {
+    }
+
     public Point getStartPoint() {
         return startPoint;
     }
@@ -29,6 +32,11 @@ public class Move {
     }
 
     public Move setEndPoint(Point endPoint) {
+        this.endPoint = endPoint;
+        return this;
+    }
+
+    public Move setStartPoint(Point endPoint) {
         this.endPoint = endPoint;
         return this;
     }

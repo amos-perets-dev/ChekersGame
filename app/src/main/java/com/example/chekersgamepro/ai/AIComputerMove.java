@@ -53,9 +53,9 @@ public class AIComputerMove {
             if (LEVEL_LIMIT == (level + 1)){
                 score = currGameBoard.getEvaluateBoard(isPlayerOneCurrently);
             }
-            Log.d("TEST_GAME", "LEVEL: " + level + ", ONE COUNT: " + (currGameBoard.getPlayerOneCount() + currGameBoard.getPlayerOneKingsCount()) +
-                     " , TWO COUNT: " + (currGameBoard.getPlayerTwoCount() + currGameBoard.getPlayerTwoKingsCount()) +
-                    " , SCORE: " + score + ", FROM: " + move.getStartPoint() +", TO: " + move.getEndPoint());
+//            Log.d("TEST_GAME", "LEVEL: " + level + ", ONE COUNT: " + (currGameBoard.getPlayerOneCount() + currGameBoard.getPlayerOneKingsCount()) +
+//                     " , TWO COUNT: " + (currGameBoard.getPlayerTwoCount() + currGameBoard.getPlayerTwoKingsCount()) +
+//                    " , SCORE: " + score + ", FROM: " + move.getStartPoint() +", TO: " + move.getEndPoint());
             Tree currentLayer = new Tree(currGameBoard, move, score);
 
             root.addChild(currentLayer);

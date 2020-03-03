@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.R;
@@ -39,7 +40,7 @@ public class CellView extends ImageView{
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setColor(Color.TRANSPARENT);
         paint.setStrokeWidth(10f);
-
+//        setCardElevation(30);
     }
 
     public CellView setEnabledCell(boolean isClickable){

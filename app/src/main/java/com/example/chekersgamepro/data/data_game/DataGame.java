@@ -2,17 +2,19 @@ package com.example.chekersgamepro.data.data_game;
 
 import android.graphics.Color;
 import android.graphics.Point;
+import android.util.Log;
 
-import com.example.chekersgamepro.screens.game.GameManager;
 import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
-import com.example.chekersgamepro.data.pawn.PawnDataImpl;
+import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataGame extends DataGameHelper implements GameManager.ChangePlayerListener {
+public class DataGame extends DataGameHelper {
 
     public static final int GAME_BOARD_SIZE = 8;
     public static final int DIFFICULT_LEVEL = 3;
@@ -24,31 +26,47 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
     private final int BORDER_WIDTH = 2;
     private int gameMode = -1;
 
-    private Map<Point, CellDataImpl> cells = new HashMap<>();
-    private Map<Point, CellDataImpl> cellsPlayerOne = new HashMap<>();
-    private Map<Point, CellDataImpl> cellsPlayerTwo = new HashMap<>();
+    private Map<Integer, Point> idCells;
 
-    private Map<Point, PawnDataImpl> pawns = new HashMap<>();
-    private Map<Point, PawnDataImpl> pawnsPlayerOne  = new HashMap<>();
-    private Map<Point, PawnDataImpl> pawnsPlayerTwo = new HashMap<>();
+    private Map<Point, CellDataImpl> cells;
+    private Map<Point, CellDataImpl> cellsPlayerOne;
+    private Map<Point, CellDataImpl> cellsPlayerTwo;
+
+    private Map<Point, PawnDataImpl> pawns;
+    private Map<Point, PawnDataImpl> pawnsPlayerOne;
+    private Map<Point, PawnDataImpl> pawnsPlayerTwo;
+
+    private List<BorderLine> borderLines;
 
     private boolean isPlayerOneTurn;
 
-    private int countKing = 0;
+    private int countKing;
 
-    private CellDataImpl[][] boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
+    private CellDataImpl[][] boardCells;
 
-    private DataGame() { }
+    private DataGame() {
+        idCells = new HashMap<>();
+
+        cells = new HashMap<>();
+        cellsPlayerOne = new HashMap<>();
+        cellsPlayerTwo = new HashMap<>();
+
+        pawns = new HashMap<>();
+        pawnsPlayerOne  = new HashMap<>();
+        pawnsPlayerTwo = new HashMap<>();
+
+        boardCells = new CellDataImpl[GAME_BOARD_SIZE][GAME_BOARD_SIZE];
+
+        borderLines = new ArrayList<>();
+
+        countKing = 0;
+    }
 
     synchronized public static DataGame getInstance() {
         if(instance == null) {
             instance = new DataGame();
         }
         return instance;
-    }
-
-    public void addChanePlayerListener(List<GameManager.ChangePlayerListener> changePlayerListListeners){
-        changePlayerListListeners.add(this);
     }
 
     public Map<Point, CellDataImpl> getCellsPlayerOne() {
@@ -67,8 +85,25 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         return pawns;
     }
 
+
+    public void clearCachePawns() {
+        pawns.clear();
+        pawnsPlayerTwo.clear();
+        pawnsPlayerOne.clear();
+    }
+
+    public void clearCacheCells() {
+        cells.clear();
+        cellsPlayerOne.clear();
+        cellsPlayerTwo.clear();
+    }
+
     public Map<Point, PawnDataImpl> getPawnsPlayerOne() {
         return pawnsPlayerOne;
+    }
+
+    public int getTotalRegularPawnsPlayerOne() {
+        return pawnsPlayerOne.size() - getPawnsKingPlayerOne();
     }
 
     public int getPawnsKingPlayerOne() {
@@ -91,6 +126,9 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         return countKing;
     }
 
+    public int getTotalRegularPawnsPlayerTwo() {
+        return pawnsPlayerTwo.size() - getPawnsKingPlayerTwo();
+    }
 
     public Map<Point, PawnDataImpl> getPawnsPlayerTwo() {
         return pawnsPlayerTwo;
@@ -112,6 +150,7 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         } else if (pawnData.getPlayer() == CellState.PLAYER_TWO || pawnData.getPlayer() == CellState.PLAYER_TWO_KING){
             pawnsPlayerTwo.put(pawnData.getStartXY(), pawnData);
         }
+        Log.d("TEST_GAME", "putPawnByPlayer: " + pawnData.getPlayer());
         pawns.put(pawnData.getStartXY(), pawnData);
     }
 
@@ -192,6 +231,18 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
                 : pawnData != null ? cells.get(pawnData.getContainerCellXY()) : null;
     }
 
+    public int getIdCellByPoint(Point point) {
+        return getCellByPoint(point).getIdCell();
+    }
+
+    public Point getPointCellById(int id) {
+       return idCells.get(id);
+    }
+
+    public void puCellById(int idCell, Point pointCell) {
+        idCells.put(idCell, pointCell);
+    }
+
     public void updatePawnKilled(PawnDataImpl pawnData) {
         CellDataImpl cellByPoint = getCellByPoint(pawnData.getContainerCellXY());
 
@@ -202,13 +253,9 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         removeCellByPlayer(cellByPoint);
     }
 
-    @Override
-    public void onChangePlayer(boolean isPlayerOneTurn) {
-        this.isPlayerOneTurn = isPlayerOneTurn;
-    }
 
     public boolean isPlayerOneTurn() {
-        return isPlayerOneTurn;
+        return isPlayerOneTurn ;
     }
 
     public int getGameMode() {
@@ -219,8 +266,10 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         this.gameMode = gameMode;
     }
 
-    public void setPlayerTurn(boolean isPlayerOneTurnCopy) {
-        this.isPlayerOneTurn = isPlayerOneTurnCopy;
+//    private RepositoryManager repositoryManager = RepositoryManager.create();
+
+    public void setPlayerTurn(boolean isPlayerOneTurn) {
+        this.isPlayerOneTurn = isPlayerOneTurn /*&& repositoryManager.getPlayer().isOwner() || repositoryManager.getPlayer().getNowPlay() == PlayersCode.PLAYER_ONE.ordinal()*/;
     }
 
     public void setBoardCells(CellDataImpl[][] boardCells) {
@@ -244,6 +293,35 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
             }
         }
         return board;
+    }
+
+    public void clearAllData() {
+//        idCells.clear();
+//
+//        cells.clear();
+//        cellsPlayerOne.clear();
+//        cellsPlayerTwo.clear();
+//
+//        pawns.clear();
+//        pawnsPlayerOne.clear();
+//        pawnsPlayerTwo.clear();
+
+    }
+
+    public List<BorderLine> getBorderLines() {
+        return borderLines;
+    }
+
+    public int getColorBorderCell() {
+        return COLOR_BORDER_CELL;
+    }
+
+    public int getBorderWidth() {
+        return BORDER_WIDTH;
+    }
+
+    public void setBorderLines(List<BorderLine> borderLines) {
+        this.borderLines = borderLines;
     }
 
     public static class ColorCell{
@@ -276,6 +354,4 @@ public class DataGame extends DataGameHelper implements GameManager.ChangePlayer
         public static final int RIGHT_TOP_DIRECTION = 3;
         public static final int RIGHT_BOTTOM_DIRECTION = 4;
     }
-
-
 }
