@@ -2,6 +2,7 @@ package com.example.chekersgamepro.util
 
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
+import com.example.chekersgamepro.checkers.CheckersApplication
 
 
 class NetworkUtil {

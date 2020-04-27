@@ -21,7 +21,7 @@ class RequestGameDialog(context: Context,
                         acceptOnlineGame: KFunction0<Unit>,
                         declineOnlineGame: KFunction0<Unit>,
                         compositeDisposable: CompositeDisposable,
-                        private val msgState: Observable<DialogStateCreator>) {
+                        msgState: Observable<DialogStateCreator>) {
 
     private val TIME_TO_CLOSE_DIALOG = 5
 
@@ -70,7 +70,7 @@ class RequestGameDialog(context: Context,
 
     }
 
-    fun setMsgState(dialogStateCreator: DialogStateCreator) {
+    private fun setMsgState(dialogStateCreator: DialogStateCreator) {
         val dialogState = dialogStateCreator.dialogState
         val msg = dialogStateCreator.msg
         when (dialogState.ordinal) {

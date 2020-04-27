@@ -16,17 +16,18 @@ import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 import com.example.chekersgamepro.data.pawn.total.TotalPawnsDataByPlayer;
 import com.example.chekersgamepro.screens.game.model.GameFinishData;
 import com.example.chekersgamepro.screens.game.model.GameFinishState;
-import com.example.chekersgamepro.util.CheckersApplication;
+import com.example.chekersgamepro.checkers.CheckersApplication;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.subjects.PublishSubject;
 
@@ -48,15 +49,39 @@ public class CheckersViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> nextTurn = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> startOrStopTimer = new MutableLiveData<>();
+
     private PublishSubject<Boolean> finishCheckedOptionalPath = PublishSubject.create();
 
-    private GameManager gameManager = new GameManager() ;
+    private GameManager gameManager = new GameManager();
 
-    private Observable<Boolean> isfFinishCheckedOptionalPath(){
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    public CheckersViewModel() {
+
+        compositeDisposable.addAll(
+                getRemoteMove().subscribe(),
+
+                isTechnicalWin().subscribe()
+        );
+    }
+
+    private Observable<Boolean> isfFinishCheckedOptionalPath() {
         return finishCheckedOptionalPath.hide();
     }
 
-    public Observable<Pair<Point, Boolean>> getComputerOrRemotePlayerMove(LifecycleOwner lifecycleOwner) {
+    public Observable<Boolean> isStartTimer(LifecycleOwner lifecycleOwner) {
+        return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, startOrStopTimer))
+                .doOnNext(aBoolean -> Log.d("TEST_GAME", "IS START TIMER: " + aBoolean));
+    }
+
+    /**
+     * Get the computer or remote player move
+     *
+     * @param lifecycleOwner
+     * @return
+     */
+    public Observable<Pair<Point, Boolean>> getMoveAsync(LifecycleOwner lifecycleOwner) {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerOrRemotePlayerTurn))
                 .filter(pairMove -> pairMove != null && pairMove.first != null && pairMove.first.x != 0);
     }
@@ -65,7 +90,7 @@ public class CheckersViewModel extends ViewModel {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, nextTurn));
     }
 
-    public Observable<GameFinishData> isFinishGame(LifecycleOwner lifecycleOwner){
+    public Observable<GameFinishData> isFinishGame(LifecycleOwner lifecycleOwner) {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, isFinishGame))
                 .filter(gameFinishData -> gameFinishData.isYourWin().isPresent());
     }
@@ -90,8 +115,8 @@ public class CheckersViewModel extends ViewModel {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, removePawn));
     }
 
-    public void initGame(int x, int y, int width, int height, int gameMode, String playerOne, String playerTwo) {
-        gameManager.initGame(x, y, width, height, gameMode, playerOne, playerTwo);
+    public Completable initGame() {
+        return gameManager.initGame();
     }
 
     public Map<Point, PawnDataImpl> getPawns() {
@@ -115,7 +140,7 @@ public class CheckersViewModel extends ViewModel {
     }
 
 
-    public void initStartGameOrNextTurn(){
+    public void initStartGameOrNextTurn() {
 
         isPlayerOneTurn.postValue(gameManager.isPlayerOneTurn());
 
@@ -136,23 +161,23 @@ public class CheckersViewModel extends ViewModel {
         initStartGameOrNextTurn();
     }
 
-    public void setFinishGame(GameFinishState gameFinishState){
+    public void setFinishGame(GameFinishState gameFinishState) {
         isFinishGame.postValue(gameManager.isFinishGameSetWinnerPlayer(gameFinishState));
     }
 
-    public Completable setFinishGameTechnicalLoss(GameFinishState gameFinishState){
+    public Completable setFinishGameTechnicalLoss(GameFinishState gameFinishState) {
         return gameManager.setFinishGameTechnicalLoss()
                 .doOnEvent(throwable -> setFinishGame(gameFinishState));
     }
 
-    public Observable<GameFinishState> isTechnicalWin(){
+    public Observable<GameFinishState> isTechnicalWin() {
         return gameManager.isTechnicalWin()
                 .filter(Functions.equalsWith(true))
                 .map(ignored -> GameFinishState.TECHNICAL_WIN)
                 .doOnNext(this::setFinishGame);
     }
 
-    public boolean isYourTurn(){
+    public boolean isYourTurn() {
         return gameManager.isYourTurn();
     }
 
@@ -161,7 +186,7 @@ public class CheckersViewModel extends ViewModel {
         Point point = new Point((int) x, (int) y);
 
         boolean isInvalidTurn = !gameManager.isYourTurn() || gameManager.isComputerTurn();
-        if (isInvalidTurn){
+        if (isInvalidTurn) {
             CheckersApplication.create().showToast("ERROR");
             return;
         }
@@ -173,7 +198,7 @@ public class CheckersViewModel extends ViewModel {
         Log.d("TEST_GAME", " public void setMoveOrOptionalPath(Point point): " + point);
         boolean isCreateMovePawnPath = createMovePawnPath(point);
 
-        if (!isCreateMovePawnPath){
+        if (!isCreateMovePawnPath) {
             createOptionalPathByCell(point);
         }
     }
@@ -186,7 +211,7 @@ public class CheckersViewModel extends ViewModel {
         return true;
     }
 
-    private void createOptionalPathByCell(Point point){
+    private void createOptionalPathByCell(Point point) {
         List<DataCellViewClick> optionalPathByCell = gameManager.createOptionalPathByCell(point);
         if (optionalPathByCell != null) {
             optionalPath.postValue(optionalPathByCell);
@@ -194,9 +219,9 @@ public class CheckersViewModel extends ViewModel {
     }
 
     public void removePawnIfNeeded(Boolean isStartIterateMovePawn) {
-        if (isStartIterateMovePawn){
+        if (isStartIterateMovePawn) {
             PawnDataImpl pawnData = gameManager.removePawnIfNeeded();
-            if (pawnData!=null){
+            if (pawnData != null) {
                 removePawn.postValue(pawnData.getStartXY());
                 gameManager.updatePawnKilled();
             }
@@ -211,22 +236,15 @@ public class CheckersViewModel extends ViewModel {
         return gameManager.getPointPawnByCell(pointByCell);
     }
 
-    public Disposable getRemoteMove() {
+    public Observable<Boolean> getRemoteMove() {
         return gameManager.getRemoteMove()
                 .distinctUntilChanged()
                 .doOnNext(move -> setComputerOrRemotePlayerMove(move.getStartPoint(), false))
                 .flatMap(move -> isfFinishCheckedOptionalPath()
-                        .doOnNext(ignored -> setComputerOrRemotePlayerMove(move.getEndPoint(), true)))
-                .doOnDispose(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        Log.d("TEST_GAME", "CheckersViewModel -> doOnDispose -> Remote move");
-                    }
-                })
-                .subscribe();
+                        .doOnNext(ignored -> setComputerOrRemotePlayerMove(move.getEndPoint(), true)));
     }
 
-    private void setComputerOrRemotePlayerMove(Point point, boolean isNeedBackAfterClick){
+    private void setComputerOrRemotePlayerMove(Point point, boolean isNeedBackAfterClick) {
         computerOrRemotePlayerTurn.postValue(new Pair<>(point, isNeedBackAfterClick));
     }
 
@@ -253,4 +271,34 @@ public class CheckersViewModel extends ViewModel {
         gameManager.pingRemotePlayer();
     }
 
+    public Completable notifyStartTimer() {
+
+        if (gameManager.isYourTurn()) {
+            startOrStopTimer.postValue(true);
+            return Completable.complete();
+        }
+        return Completable.complete()
+                .delay(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .doOnEvent(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        startOrStopTimer.postValue(true);
+                    }
+                });
+    }
+
+    public Completable notifyStopTimer() {
+        startOrStopTimer.postValue(false);
+        return Completable.complete();
+    }
+
+    public Observable<Boolean> isOwnerAsync() {
+        return gameManager.isOwnerAsync();
+    }
+
+    @Override
+    protected void onCleared() {
+        compositeDisposable.dispose();
+        super.onCleared();
+    }
 }

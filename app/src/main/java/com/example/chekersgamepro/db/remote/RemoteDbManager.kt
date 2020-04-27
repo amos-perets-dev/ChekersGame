@@ -1,7 +1,7 @@
 package com.example.chekersgamepro.db.remote
 
+import android.graphics.Bitmap
 import android.util.Log
-import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.db.remote.firebase.FirebaseManager
 import com.example.chekersgamepro.enumber.PlayersCode
@@ -12,16 +12,17 @@ import com.example.chekersgamepro.models.player.online.OnlinePlayerEventImpl
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
+import com.example.chekersgamepro.util.NetworkUtil
+import com.google.common.base.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.functions.Functions
+import io.reactivex.schedulers.Schedulers
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
 
-class RemoteDbManager : IRemoteDb {
+class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     private val firebaseManager = FirebaseManager()
 
@@ -35,30 +36,54 @@ class RemoteDbManager : IRemoteDb {
 
     private var isYourTurn = false
 
+    init {
+        if (userProfile != null) {
+            this.userProfile = userProfile
+
+            this.player.setPlayerName(userProfile.getUserName())
+            this.player.setIsCanPlayer(true)
+            this.player.setPlayerId(userProfile.getUserId())
+            this.player.setEncodeImage(userProfile.getEncodeImage())
+
+        }
+    }
+
     override fun isUserNameExistServer(userName: String): Single<Boolean> = firebaseManager.isUserNameExist(userName)
 
-    override fun createUser(id: Long, userName: String): Single<IUserProfile> {
+    override fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<IUserProfile> {
 
         userProfile.setIsRegistered(true)
         userProfile.setUserName(userName)
         userProfile.setUserId(id)
         userProfile.setMoney(200)
+        userProfile.setEncodeImage(encodeImageDefaultPreUpdate)
 
         return firebaseManager.addNewUser(userProfile)
                 .map { userProfile }
     }
 
-    override fun createPlayer(id: Long, userName: String): Single<IPlayer> {
+    override fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<IPlayer>> {
         player.setPlayerName(userName)
         player.setPlayerId(id)
+        player.setIsCanPlayer(true)
+        player.setEncodeImage(encodeImageDefaultPreUpdate)
 
-        return firebaseManager.addNewPlayer(player)
-                .map { player }
+        return createPlayer()
+
+    }
+
+    override fun createPlayer(): Single<Optional<IPlayer>> {
+        return if (player.getPlayerName().isEmpty()) Single.just(Optional.absent())
+                else firebaseManager.addNewPlayer(player)
+                .map { Optional.of(player) }
 
     }
 
     override fun setIsCanPlay(isCanPlay: Boolean): Completable =
             firebaseManager.setIsCanPlay(this.player.getPlayerName(), this.player.getLevelPlayer().toString(), isCanPlay)
+                    .doOnError {
+                        Log.d("TEST_GAME", "RemoteDbManager -> after firebaseManager.setIsCanPlay( doOnError:  ${it.message} ")
+                    }
 
 
     override fun getDataPlayerChanges(): Observable<IPlayer> =
@@ -66,29 +91,31 @@ class RemoteDbManager : IRemoteDb {
                     .doOnNext { this.player = it }
                     .doOnNext { isYourTurn = this.player.getNowPlay() == this.player.getPlayerCode() }
 
-    override fun getAllAvailableOnlinePlayersByLevel(playerName: String, level: Int): Observable<List<IOnlinePlayerEvent>> {
+    override fun getAllAvailableOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> {
         val list = ArrayList<IOnlinePlayerEvent>()
 
-        return firebaseManager.getAllPlayersByLevel(level)
+        return firebaseManager.getAllPlayersByLevel(this.player.getLevelPlayer())
+                .subscribeOn(Schedulers.io())
                 .doOnNext { list.clear() }
                 .flatMap {
                     Observable.fromIterable(it)
                             .map { dataSnapshot -> dataSnapshot.getValue(PlayerImpl::class.java) }
-                            .filter { remotePlayer -> (playerName != remotePlayer.getPlayerName()) && remotePlayer.isCanPlay() }
+                            .filter { remotePlayer -> (this.player.getPlayerName() != remotePlayer.getPlayerName()) && remotePlayer.isCanPlay() }
                             .cast(IPlayer::class.java)
                             .doOnNext { remotePlayer -> remotePlayersCache[remotePlayer.getPlayerId()] = remotePlayer }
-                            .doOnNext { remotePlayer -> list.add(OnlinePlayerEventImpl(remotePlayer.getPlayerName(), remotePlayer.getLevelPlayer(), remotePlayer.getPlayerId())) }
+                            .doOnNext { remotePlayer -> list.add(OnlinePlayerEventImpl(remotePlayer.getPlayerName(), remotePlayer.getLevelPlayer(), remotePlayer.getPlayerId(), remotePlayer.getEncodeImage())) }
                             .map { list }
                 }
                 .map { list }
     }
 
-    override fun sendRequestOnlineGame(idRemotePlayer: Long): Completable {
+    override fun sendRequestOnlineGame(idRemotePlayer: Long): Single<String> {
 
         // Find the player that the user want to be play with him
         this.remotePlayerCacheTmp = remotePlayersCache[idRemotePlayer]!!
 
         this.remotePlayerCacheTmp.setRemotePlayer(player.getPlayerName())
+        this.remotePlayerCacheTmp.setAvatarRemotePlayer(player.getEncodeImage())
         this.remotePlayerCacheTmp.setIsCanPlayer(false)
         this.remotePlayerCacheTmp.setRequestOnlineGameStatus(RequestOnlineGameStatus.RECEIVE_REQUEST)
         this.remotePlayerCacheTmp.setNowPlay(PlayersCode.PLAYER_ONE.ordinal)
@@ -97,6 +124,7 @@ class RemoteDbManager : IRemoteDb {
 
         this.player.setIsOwner(true)
         this.player.setRemotePlayer(remotePlayerCacheTmp.getPlayerName())
+        this.player.setAvatarRemotePlayer(remotePlayerCacheTmp.getEncodeImage())
         this.player.setIsCanPlayer(false)
         this.player.setRequestOnlineGameStatus(RequestOnlineGameStatus.SEND_REQUEST)
         this.player.setNowPlay(PlayersCode.PLAYER_ONE.ordinal)
@@ -106,7 +134,7 @@ class RemoteDbManager : IRemoteDb {
         isYourTurn = true
 
         return firebaseManager.sendRequestOnlineGame(remotePlayerCacheTmp, this.player)
-
+                .andThen(Single.just(remotePlayerCacheTmp.getEncodeImage()))
     }
 
     override fun getRequestGameMsgText(): Observable<String> =
@@ -156,18 +184,12 @@ class RemoteDbManager : IRemoteDb {
         return firebaseManager.acceptOnlineGame(remotePlayerNameOwner, player.getPlayerName(), player.getLevelPlayer().toString())
     }
 
-    override fun setNowPlayer(): Completable =
-            firebaseManager.setNowPlayer(player.isOwner(), player.getPlayerName(), player.getRemotePlayer(), player.getLevelPlayer().toString())
-
-    override fun getNowPlayer(): Observable<Int> = firebaseManager.getNowPlayer(player.getPlayerName(), player.getLevelPlayer().toString())
-
     override fun notifyEndTurn(move: RemoteMove) =
             firebaseManager.notifyMove(move, player.getRemotePlayer(), player.getLevelPlayer().toString())
                     .doOnEvent { isYourTurn = !isYourTurn }
 
     override fun getRemoteMove(): Observable<RemoteMove> =
             firebaseManager.getRemoteMove(player.getPlayerName(), player.getLevelPlayer().toString())
-                    .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                     .filter { it.idEndCell != -1 && it.idStartCell != -1 }
 
 
@@ -194,4 +216,14 @@ class RemoteDbManager : IRemoteDb {
         return firebaseManager.resetPlayer(this.player)
     }
 
+    override fun setImageProfileAndPlayer(encodeImage: String, playerName: String) : Completable =
+            firebaseManager.setImageProfileAndPlayer(this.player.getPlayerName(), this.player.getLevelPlayer().toString(), encodeImage)
+
+    override fun setImageDefaultPreUpdate(): Single<ByteArray?>{
+        if (!NetworkUtil().isAvailableNetwork()){
+            return Single.just(ByteArray(0))
+        }
+        return firebaseManager.setImageDefaultPreUpdate()
+                .onErrorReturnItem(ByteArray(0))
+    }
 }

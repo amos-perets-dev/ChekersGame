@@ -1,6 +1,8 @@
 package com.example.chekersgamepro.data.move;
 
-public class RemoteMove {
+import io.realm.RealmObject;
+
+public class RemoteMove extends RealmObject {
 
     private int idStartCell = -1;
     private int idEndCell = -1;

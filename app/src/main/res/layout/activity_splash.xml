@@ -5,6 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.splash.SplashActivity">
+    tools:context=".screens.splash.SplashActivity"
+    android:background="#333">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="CHECKERS"
+        android:gravity="center"
+        android:textSize="60dp"
+        android:textColor="#FFFFFF"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

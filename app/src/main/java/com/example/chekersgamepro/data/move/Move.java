@@ -2,6 +2,8 @@ package com.example.chekersgamepro.data.move;
 
 import android.graphics.Point;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Creates a new move
  * the current row of the piece
@@ -47,5 +49,24 @@ public class Move {
      */
     public String toString() {
         return "startPoint: (" + startPoint + ", endPoint: " + endPoint + ")";
+    }
+    private Long computerTime;
+
+    public Move setComputerTime() {
+        computerTime = getComputerTime(ThreadLocalRandom.current().nextInt(1, 3));
+        return this;
+    }
+
+    public Long getComputerTime() {
+        return computerTime;
+    }
+
+    private Long getComputerTime(int ComputerTimeType) {
+        switch (ComputerTimeType){
+            case 1: return 2000L;
+            case 2: return 4000L;
+            case 3: return 6000L;
+            default: return 1000L;
+        }
     }
 }

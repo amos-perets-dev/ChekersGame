@@ -1,17 +1,28 @@
 package com.example.chekersgamepro.db.remote.firebase
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.enumber.PlayersCode
 import com.example.chekersgamepro.models.player.IPlayer
 import com.example.chekersgamepro.models.player.PlayerImpl
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.util.NetworkUtil
 import com.google.common.base.Optional
-import com.google.firebase.database.*
-import io.reactivex.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 
 
 class FirebaseManager {
@@ -22,11 +33,7 @@ class FirebaseManager {
     private val networkUtil = NetworkUtil()
 
 
-    init {
-
-    }
-
-    public fun addNewUser(user: IUserProfile): Single<Boolean> {
+    fun addNewUser(user: IUserProfile): Single<Boolean> {
         if (!networkUtil.isAvailableNetwork()) {
             return Single.error(Throwable())
         }
@@ -46,7 +53,7 @@ class FirebaseManager {
         }
     }
 
-    public fun addNewPlayer(player: IPlayer): Single<Boolean> {
+    fun addNewPlayer(player: IPlayer): Single<Boolean> {
 
         if (!networkUtil.isAvailableNetwork()) {
             return Single.error(Throwable("NO INTERNET CONNECTION"))
@@ -69,7 +76,7 @@ class FirebaseManager {
 
     }
 
-    public fun isUserNameExist(userName: String): Single<Boolean> {
+    fun isUserNameExist(userName: String): Single<Boolean> {
         val applesQuery = databaseUsers.child(userName)
 
         return RxFirebaseDatabase.data(applesQuery)
@@ -80,8 +87,9 @@ class FirebaseManager {
     }
 
     fun setIsCanPlay(playerName: String, level: String, isCanPlay: Boolean): Completable {
+        Log.d("TEST_GAME", "PLAYER NAME: $playerName")
 
-        return Completable.create {
+        return Completable.create { emitter ->
             databasePlayers
                     .child(level)
                     .child(playerName)
@@ -89,16 +97,18 @@ class FirebaseManager {
                     .setValue(isCanPlay)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            it.onComplete()
+                            Log.d("TEST_GAME", "FirebaseManager -> setIsCanPlay")
+                            emitter.onComplete()
                             //Do what you need to do
                         } else {
-                            it.onError(Throwable("ERROR SET CAN PLAY"))
+                            Log.d("TEST_GAME", "FirebaseManager -> onError -> task.exception.toString()")
+                            emitter.onError(Throwable("ERROR SET CAN PLAY"))
                         }
                     }
         }
     }
 
-    public fun getRequestStatusChanges(playerName: String, level: String): Observable<RequestOnlineGameStatus> {
+    fun getRequestStatusChanges(playerName: String, level: String): Observable<RequestOnlineGameStatus> {
         val query = databasePlayers
                 .child(level)
                 .child(playerName)
@@ -109,7 +119,7 @@ class FirebaseManager {
 
     }
 
-    public fun getPlayerChanges(playerName: String, level: String): Observable<IPlayer> {
+    fun getPlayerChanges(playerName: String, level: String): Observable<IPlayer> {
         val query = databasePlayers.child(level).child(playerName)
 
         return RxFirebaseDatabase.dataChanges(query)
@@ -118,7 +128,7 @@ class FirebaseManager {
 
     }
 
-    fun deletePlayer(player: PlayerImpl, isNeedUpdateLevel: Boolean): Single<Boolean> {
+    private fun deletePlayer(player: PlayerImpl, isNeedUpdateLevel: Boolean): Single<Boolean> {
 
         // if don't need to update the level player
         // so dont need to delete the player from the current level
@@ -200,33 +210,33 @@ class FirebaseManager {
 
     }
 
-    fun acceptOnlineGame(remotePlayer: String, player: String, level: String): Completable {
+    fun acceptOnlineGame(remotePlayerName: String, playerName: String, level: String): Completable {
 
-        return Completable.create {
+        return Completable.create { emitter ->
             databasePlayers
                     .child(level)
-                    .child(remotePlayer)
+                    .child(remotePlayerName)
                     .child("requestOnlineGameStatus")
                     .setValue(RequestOnlineGameStatus.ACCEPT_BY_GUEST)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             //Do what you need to do
                         } else {
-                            it.onError(Throwable())
+                            emitter.onError(Throwable())
                         }
                     }
 
             databasePlayers
                     .child(level)
-                    .child(player)
+                    .child(playerName)
                     .child("requestOnlineGameStatus")
                     .setValue(RequestOnlineGameStatus.ACCEPT_BY_GUEST)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            it.onComplete()
+                            emitter.onComplete()
                             //Do what you need to do
                         } else {
-                            it.onError(Throwable())
+                            emitter.onError(Throwable())
                         }
                     }
         }
@@ -236,7 +246,7 @@ class FirebaseManager {
 
     fun declineOnlineGame(remotePlayer: String, player: IPlayer): Completable {
 
-        return Completable.create {
+        return Completable.create { emitter ->
 
             // The remote player is the owner
             // that need to notify on the decline game
@@ -247,7 +257,7 @@ class FirebaseManager {
                     .setValue(RequestOnlineGameStatus.DECLINE_BY_GUEST)
                     .addOnCompleteListener { task ->
                         if (!task.isSuccessful) {
-                            it.onError(Throwable("ERROR DECLINE GAME"))
+                            emitter.onError(Throwable("ERROR DECLINE GAME"))
                         }
                     }
 
@@ -257,56 +267,15 @@ class FirebaseManager {
                     .setValue(player)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            it.onComplete()
+                            emitter.onComplete()
                             //Do what you need to do
                         } else {
-                            it.onError(Throwable("ERROR DECLINE GAME"))
+                            emitter.onError(Throwable("ERROR DECLINE GAME"))
                         }
                     }
 
         }
 
-    }
-
-    fun setNowPlayer(isLocalPlayerOwner: Boolean, playerName: String, remotePlayer: String, level: String): Completable {
-
-        return Completable.create {
-            databasePlayers
-                    .child(level)
-                    .child(remotePlayer)
-                    .child("nowPlay")
-                    .setValue(if (isLocalPlayerOwner) PlayersCode.PLAYER_TWO.ordinal else PlayersCode.PLAYER_ONE.ordinal)
-                    .addOnCompleteListener { task ->
-                        if (!task.isSuccessful) {
-                            it.onError(Throwable())
-                        }
-                    }
-
-            databasePlayers
-                    .child(level)
-                    .child(playerName)
-                    .child("nowPlay")
-                    .setValue(if (isLocalPlayerOwner) PlayersCode.PLAYER_TWO.ordinal else PlayersCode.PLAYER_ONE.ordinal)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            it.onComplete()
-                        } else {
-                            it.onError(Throwable())
-                        }
-                    }
-        }
-
-    }
-
-    fun getNowPlayer(playerName: String, level: String): Observable<Int> {
-
-        val query = databasePlayers
-                .child(level)
-                .child(playerName)
-                .child("nowPlay")
-
-        return RxFirebaseDatabase.dataChanges(query)
-                .map { (it.value as Long).toInt() }
     }
 
     fun getRemoteMove(playerName: String, level: String): Observable<RemoteMove> {
@@ -366,10 +335,13 @@ class FirebaseManager {
                 .map { Optional.of(it) }
                 .filter { it.isPresent }
                 .map { it.get() }
-                .map { it.value is Boolean }
+                .filter { it.value is Boolean }
+                .map { it.value as Boolean }
     }
 
     fun setMoney(userName: String, money: Int): Completable {
+        Log.d("TEST_GAME", "FirebaseManager -> setMoney:  fun setMoney(userName: String: $userName")
+
         return Completable.create { emitter ->
             databaseUsers
                     .child(userName)
@@ -403,5 +375,81 @@ class FirebaseManager {
                     }
         }
     }
+
+    fun storeImageToFirebase(image: Bitmap?, playerName: String): Single<String> = Single.create { emitter ->
+        val storage = FirebaseStorage.getInstance()
+        val storageRef = storage.getReferenceFromUrl("gs://checkers-d0d7a.appspot.com/")
+        val mountainImagesRef = storageRef.child("Avatars/$playerName.jpg")
+        val baos = ByteArrayOutputStream()
+        image?.compress(Bitmap.CompressFormat.JPEG, 20, baos)
+        val data = baos.toByteArray()
+        val uploadTask = mountainImagesRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+
+            val ref = FirebaseStorage.getInstance().reference.child(taskSnapshot.metadata?.path!!)
+            ref.downloadUrl.addOnSuccessListener {
+                val imageUrl = it.toString()
+                emitter.onSuccess(imageUrl)
+            }
+
+        }.addOnFailureListener { emitter.onError(Throwable(it.message)) }
+    }
+
+    fun setImageProfileAndPlayer(playerName: String, level: String, encodeImage: String): Completable {
+        return Completable.create { emitter ->
+            databasePlayers
+                    .child(level)
+                    .child(playerName)
+                    .child("encodeImage")
+                    .setValue(encodeImage)
+                    .addOnCompleteListener { task ->
+                        if (!task.isSuccessful) {
+                            emitter.onError(Throwable("ERROR SET IMAGE PROFILE URL"))
+                        }
+                    }
+
+            databaseUsers
+                    .child(playerName)
+                    .child("encodeImage")
+                    .setValue(encodeImage)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            emitter.onComplete()
+                            //Do what you need to do
+                        } else {
+                            emitter.onError(Throwable("ERROR SET IMAGE PROFILE URL"))
+                        }
+                    }
+        }
+    }
+
+    fun setImageDefaultPreUpdate(): Single<ByteArray?> {
+
+        val firebaseStorage = FirebaseStorage.getInstance()
+
+        return Single.create { emitter ->
+            // Create a storage reference from our app
+            // Create a storage reference from our app
+            val storageRef: StorageReference = firebaseStorage.reference
+
+
+            /*In this case we'll use this kind of reference*/
+            //Download file in Memory
+            /*In this case we'll use this kind of reference*/ //Download file in Memory
+            val islandRef = storageRef.child("AvatarsPlayersDefault/default_avatar_icon.jpg")
+
+            val ONE_MEGABYTE = 512 * 512.toLong()
+            islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener { imageByteArray ->
+
+                emitter.onSuccess(imageByteArray)
+            }.addOnFailureListener {
+                emitter.onError(Throwable())
+                // Handle any errors
+            }
+        }
+    }
+
 
 }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00FFFFFF">
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/avatar_pager_fragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="#747474"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/action_ok_button"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.077"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95"
+        android:background="@drawable/border_title_accept_button_avatar"
+        android:text="Update avatar"
+        android:elevation="20dp"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="3dp"
+        android:translationY="57dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/start_buttons_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_buttons_avatar_selected"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_percent="0.09"
+        android:layoutDirection="ltr"
+        android:layout_marginBottom="1dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/end_buttons_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/avatar_image_tmp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:civ_border_width="0.05dp"
+        app:civ_border_color="#FFFFFF"
+        app:layout_constraintTop_toTopOf="@+id/avatar_pager_fragment"
+        app:layout_constraintBottom_toBottomOf="@+id/avatar_pager_fragment"
+        app:layout_constraintEnd_toEndOf="@+id/avatar_pager_fragment"
+        app:layout_constraintStart_toStartOf="@+id/avatar_pager_fragment"
+        android:layout_marginBottom="25dp"
+        android:scaleType="centerCrop"
+        android:alpha="0"
+        android:elevation="40dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

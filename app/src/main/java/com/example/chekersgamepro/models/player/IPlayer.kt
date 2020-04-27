@@ -1,6 +1,5 @@
 package com.example.chekersgamepro.models.player
 
-import com.example.chekersgamepro.data.move.Move
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 
@@ -24,6 +23,9 @@ interface IPlayer {
     fun getRemotePlayer() : String
     fun setRemotePlayer(remotePlayer : String)
 
+    fun getAvatarRemotePlayer() : String
+    fun setAvatarRemotePlayer(avatarRemotePlayer : String)
+
     fun setRequestOnlineGameStatus(requestOnlineGameStatus : RequestOnlineGameStatus)
     fun getRequestOnlineGameStatus() : RequestOnlineGameStatus
 
@@ -38,4 +40,8 @@ interface IPlayer {
 
     fun setIsTechnicalLoss(technicalLoss : Boolean)
     fun isTechnicalLoss(): Boolean
+
+    fun getEncodeImage() : String
+    fun setEncodeImage(encodeImage : String)
+
 }

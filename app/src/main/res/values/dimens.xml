@@ -7,6 +7,9 @@
 
     <dimen name="activity_registration_button_text_size_min">18dp</dimen>
     <dimen name="activity_registration_button_text_size_max">20dp</dimen>
+    <dimen name="avatar_fragment_top_margin">26dp</dimen>
+    <integer name="activity_home_page_avatar_animate_image_translation">650</integer>
+    <integer name="activity_home_page_avatar_change_update_delay">800</integer>
 
 
 </resources>

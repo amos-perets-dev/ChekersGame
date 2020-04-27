@@ -16,39 +16,14 @@ import kotlinx.android.synthetic.main.activity_registration.*
 
 class RegistrationActivity : AppCompatActivity() {
 
-    private val registrationViewModel by lazy {
-        ViewModelProviders.of(this).get(RegistrationViewModel::class.java)
-    }
+    private lateinit var registrationViewModel : RegistrationViewModel
 
     private val compositeDisposable = CompositeDisposable()
-    private var my_image: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.chekersgamepro.R.layout.activity_registration)
-
-//        val ref = FirebaseStorage.getInstance().getReference().child("Avatars/TEST.jpg")
-//        try {
-//            val localFile = File.createTempFile("Avatars", "jpg")
-//            ref.getFile(localFile)
-//                    .addOnSuccessListener(OnSuccessListener<FileDownloadTask.TaskSnapshot> {
-//                        my_image = BitmapFactory.decodeFile(localFile.getAbsolutePath())
-//                        image_test.setImageBitmap(my_image)
-//                    })
-//                    .addOnFailureListener(OnFailureListener {
-//                        e ->           Log.d("TEST_GAME", "ERROR: ${e.message}")
-//
-//                    })
-//        } catch (e: IOException) {
-//            Log.d("TEST_GAME", "ERROR: ${e.message}")
-//            e.printStackTrace()
-//        }
-
-
-
-
-
-
+        registrationViewModel = ViewModelProviders.of(this).get<RegistrationViewModel>(RegistrationViewModel::class.java)
 
         compositeDisposable.addAll(
 
@@ -86,7 +61,8 @@ class RegistrationActivity : AppCompatActivity() {
 
                 KeyboardUtil(registration_activity)
                         .getObservableKeyboardOpen()
-                        .subscribe(this::changeTranslationRegistrationButton))
+                        .subscribe(this::changeTranslationRegistrationButton)
+        )
 
         // Set the click on the registration button
         button_check_validation_registration
@@ -108,6 +84,7 @@ class RegistrationActivity : AppCompatActivity() {
      */
     private fun changeTranslationRegistrationButton(keyboardUtilData: KeyboardUtilData) {
         button_check_validation_registration.animate()
+                .withLayer()
                 .translationY(if (keyboardUtilData.isOpen) -(keyboardUtilData.keybordHeight.toFloat()) else 0f)
                 .start()
     }
@@ -122,6 +99,7 @@ class RegistrationActivity : AppCompatActivity() {
         if (!isRegistrationFromValid) {
             button_check_validation_registration
                     .animate()
+                    .withLayer()
                     .alpha(1f)
                     .withStartAction {
                         edit_text_user_name_registration.error = resources.getString(com.example.chekersgamepro.R.string.activity_registration_user_name_helper_text)

@@ -26,4 +26,8 @@
 
     <color name="activity_game_player_name_shadow_color">#C0C0C0</color>
 
+    <color name="activity_home_page_avatar_gallery_background_color">#383737</color>
+    <color name="activity_home_page_avatar_default_background_color">#383737</color>
+    <color name="activity_home_page_avatar_camera_background_color">#383737</color>
+
 </resources>

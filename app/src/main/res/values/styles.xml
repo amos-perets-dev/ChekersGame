@@ -33,4 +33,12 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
     </style>
+
+    <style name="AvatarFragmentStyle" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowIsFloating">@bool/avatar_fragment_floating</item>
+        <item name="colorAccent">#EC0000</item>
+    </style>
+
+    <style name="AvatarFragmentShowHideStyle" parent="DialogAnimation" />
+
 </resources>

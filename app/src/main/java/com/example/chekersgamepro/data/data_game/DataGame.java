@@ -150,7 +150,7 @@ public class DataGame extends DataGameHelper {
         } else if (pawnData.getPlayer() == CellState.PLAYER_TWO || pawnData.getPlayer() == CellState.PLAYER_TWO_KING){
             pawnsPlayerTwo.put(pawnData.getStartXY(), pawnData);
         }
-        Log.d("TEST_GAME", "putPawnByPlayer: " + pawnData.getPlayer());
+//        Log.d("TEST_GAME", "putPawnByPlayer: " + pawnData.getPlayer());
         pawns.put(pawnData.getStartXY(), pawnData);
     }
 
@@ -162,6 +162,7 @@ public class DataGame extends DataGameHelper {
             cellsPlayerTwo.put(cellDataImpl.getPointCell(), cellDataImpl);
         }
         cells.put(cellDataImpl.getPointCell(), cellDataImpl);
+//        Log.d("TEST_GAME", "DataGame -> SIZE CELLS: " + cells.size());
     }
 
     private void setCellInBoardCells(CellDataImpl cellDataImpl) {
@@ -275,7 +276,8 @@ public class DataGame extends DataGameHelper {
     public void setBoardCells(CellDataImpl[][] boardCells) {
         for (int row = 0; row < GAME_BOARD_SIZE; row++) {
             for (int column = 0; column < GAME_BOARD_SIZE; column++) {
-                this.boardCells[row][column] = new CellDataImpl(boardCells[row][column]);
+//                this.boardCells[row][column] = new CellDataImpl(boardCells[row][column]);
+                this.boardCells = boardCells;
             }
         }
     }

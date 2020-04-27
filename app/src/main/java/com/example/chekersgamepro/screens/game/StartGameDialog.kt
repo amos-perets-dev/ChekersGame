@@ -1,48 +1,52 @@
 package com.example.chekersgamepro.screens.game
 
+import android.app.Activity
 import android.app.Dialog
-import android.app.ProgressDialog.show
-import android.content.Context
-import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
-import android.os.CountDownTimer
+import android.content.res.Resources
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.TextView
-
-import androidx.appcompat.app.AppCompatDialog
+import android.widget.ImageView
+import com.bumptech.glide.Glide
 
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.data.data_game.DataGame
+import com.example.chekersgamepro.models.player.game.PlayerGame
+import com.example.chekersgamepro.checkers.CheckersImageUtil
+import com.example.chekersgamepro.util.animation.AnimationUtil
+import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Completable
 
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.dialog_start_game.*
 import java.util.concurrent.TimeUnit
 
-class StartGameDialog(context: Context, intent: Intent){
+class StartGameDialog(private val activity: Activity
+                      , private val guestPlayer: PlayerGame
+                      , private val ownerPlayer: PlayerGame){
+
+    private val limitMoneyGame = guestPlayer.moneyGame + ownerPlayer.moneyGame
 
     /**
      * time in millisecond for the timer
      */
-    private val DELAY_TO_CLOSE_REPORT = 2000L
+    private val DELAY_TO_CLOSE_DIALOG = 2000L
 
-    private val gameMode = PublishSubject.create<Int>()
-    private val dialog = Dialog(context)
+    private val DELAY_TO_INCREASE_MONEY_GAME = (DELAY_TO_CLOSE_DIALOG / limitMoneyGame)
+
+    private val ANIMATE_ADD_MONEY_GAME_DURATION = 1800L
+
+    private val ANIMATE_NAME_IMAGE_PROFILE_VS_DURATION = 800L
+
+    private val dialog = Dialog(activity)
+
+    private val behaviorSubject = BehaviorSubject.create<Boolean>()
 
     init {
-        val playerOne = intent.getStringExtra("PLAYER_ONE")
-        val playerTwo = intent.getStringExtra("PLAYER_TWO")
-        val title = "$playerOne VS $playerTwo"
-        val gameModeIntent = intent.getIntExtra("GAME_MODE", DataGame.Mode.OFFLINE_GAME_MODE)
-
 
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(false)
@@ -52,16 +56,67 @@ class StartGameDialog(context: Context, intent: Intent){
 
         decreaseWindowSize()
 
-        dialog.show_players_title.text = title
-
-        val disposableTimer = Completable.timer(DELAY_TO_CLOSE_REPORT, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnEvent { dialog.dismiss() }
-                .subscribe { gameMode.onNext(gameModeIntent) }
-
-        dialog.setOnDismissListener { disposableTimer.dispose()}
     }
 
-    fun getGameMode(): Observable<Int> =  gameMode.hide().doOnSubscribe { dialog.show() }
+    fun isShowDialogGame() : Observable<Boolean> = behaviorSubject.hide()
+
+    private fun convertDpToPixel(dp: Float): Float {
+        val metrics = Resources.getSystem().displayMetrics
+        return dp * (metrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
+    }
+
+    fun showDialogGame() {
+        Log.d("TEST_GAME", "dialog: $dialog")
+
+        dialog.guest_player_computer.text = guestPlayer.playerNme
+        dialog.owner_player.text = ownerPlayer.playerNme
+
+        val imageUtil = CheckersImageUtil.create()
+
+        val imageProfilePlayerTwoOwner = imageUtil.createBitmapFromByteArray(ownerPlayer.image)
+        val imageProfileGuestOrComputer = imageUtil.createBitmapFromByteArray(guestPlayer.image)
+
+        dialog.image_profile_owner_player.setImageBitmap(imageProfilePlayerTwoOwner)
+        dialog.image_profile_guest_computer.setImageBitmap(imageProfileGuestOrComputer)
+
+        dialog.show()
+
+        RxView.globalLayouts(dialog.dialog_start_game)
+                .doOnNext {
+                    dialog.money_game_count.translationY = dialog.money_game_count.measuredHeight.toFloat() + convertDpToPixel(35f)
+                    dialog.center_coin.translationY = dialog.center_coin.measuredHeight.toFloat() + convertDpToPixel(35f)
+                }
+                .doOnSubscribe { behaviorSubject.onNext(true) }
+                .distinctUntilChanged()
+                .flatMap {
+                    animateNameImageProfileAndVs(dialog.guest_player_computer, dialog.image_profile_guest_computer, dialog.vs_icon_text, false)
+                            .andThen(animateNameImageProfileAndVs(dialog.owner_player, dialog.image_profile_owner_player, dialog.vs_icon_text, true))
+                            .andThen(animateMoneyGameBug(dialog.money_game_count, dialog.center_coin))
+                            .andThen( animateCoins(dialog.money_bag_guest_computer_player_right, dialog.money_bag_owner_player_left))
+                }
+                .flatMap {
+                    var count = 1
+                    val limitMoneyGame = this.limitMoneyGame + 1
+                    Observable.interval(DELAY_TO_INCREASE_MONEY_GAME, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnNext { dialog.money_game_count.text = count++.toString() }
+                            .takeUntil { count == limitMoneyGame }
+                            .filter { count == limitMoneyGame }
+                            .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                }
+                .doOnNext {
+                    behaviorSubject.onNext(false)
+                    dialog.dismiss()
+                }
+                .subscribe()
+    }
+
+    private fun loadAvatar(view: ImageView, url: String, iconPlaceHolder: Int) {
+        Glide.with(activity)
+                .load(url)
+                .placeholder(iconPlaceHolder)
+                .into(view)
+    }
 
     private fun decreaseWindowSize() {
         val window = dialog.window
@@ -69,8 +124,19 @@ class StartGameDialog(context: Context, intent: Intent){
         val metrics = window.context.resources.displayMetrics
 
         val screenWidth = (metrics.widthPixels * 0.9).toInt()
-        val screenHeight = (metrics.heightPixels * 0.2).toInt()
 
-        window.setLayout(screenWidth, screenHeight)
+        window.setLayout(screenWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    private fun animateCoins(rightView : View, leftView: View): Observable<Boolean> {
+        return AnimationUtil.translateWithAlpha(rightView, leftView, dialog.center_coin, ANIMATE_ADD_MONEY_GAME_DURATION)
+    }
+
+    private fun animateNameImageProfileAndVs(name: View, imageProfile : View, vs : View, isNeedWaitFinish : Boolean): Completable {
+        return AnimationUtil.translateWithRotation(name, imageProfile, vs, isNeedWaitFinish, ANIMATE_NAME_IMAGE_PROFILE_VS_DURATION)
+    }
+
+    private fun animateMoneyGameBug(moneyGameText : View, moneyGameIcon : View): Completable {
+        return AnimationUtil.translateY(0f, 200, moneyGameText, moneyGameIcon)
     }
 }

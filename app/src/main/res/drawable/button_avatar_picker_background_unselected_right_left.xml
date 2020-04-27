@@ -1,0 +1,27 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#FFC107" />
+            <stroke
+                android:color="#FFFFFF"
+                android:width="0.3dp"/>
+            <corners
+                android:radius="30dp"/>
+        </shape>
+    </item>
+    <item android:id="@+id/clip_drawable_unselected_right_left">
+        <clip
+            android:clipOrientation="horizontal"
+            android:gravity="right">
+            <shape
+                android:shape="oval">
+                <stroke
+                    android:color="#FFFFFF"
+                    android:width="0.3dp"/>
+                <corners
+                    android:radius="30dp"/>
+                <solid android:color="#333" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

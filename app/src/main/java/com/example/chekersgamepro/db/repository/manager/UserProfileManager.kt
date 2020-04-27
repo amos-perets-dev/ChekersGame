@@ -3,64 +3,112 @@ package com.example.chekersgamepro.db.repository.manager
 import android.util.Log
 import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
-import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.disposables.Disposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.PublishSubject
+import io.realm.RealmObject
 
-class UserProfileManager(private val realmManager: RealmManager, private val remoteDb: IRemoteDb) : Disposable {
+class UserProfileManager(private val realmManager: RealmManager, private val remoteDb: IRemoteDb) : BaseManager() {
 
-    private lateinit var userProfile: IUserProfile
+     companion object{
+         val FACTOR_MONEY = 50
+     }
 
-    private val FACTOR_MONEY = 50
+    private val moneyChanges = PublishSubject.create<Pair<Int,Int>>()
 
-    fun getUserProfileDataChanges(userName: String): Flowable<UserProfileImpl> =
-            realmManager.getUserProfileDataChanges(userName)
-                    .doOnNext {userProfile ->
-                        this.userProfile = userProfile
-                        Log.d("TEST_GAME", "UserProfileManager -> MONEY: ${userProfile.getMoney()}")
+    fun getUserProfileDataChanges(): Flowable<UserProfileImpl> =
+            realmManager.getUserProfileDataChanges()
+
+    fun getUserProfileMoney() : Single<Int> =
+            realmManager.getUserProfileDataChanges()
+                    .map { it.getMoney() }
+                    .firstOrError()
+
+    fun getImageProfile(): Flowable<String> =
+            realmManager.getUserProfileDataChanges()
+                    .map { it.getEncodeImage() }
+
+    fun getEncodeImageProfile(): Flowable<String> =
+            realmManager.getUserProfileDataChanges()
+                    .map { it.getEncodeImage() }
+
+    fun getUserProfileMoneyChanges(): Observable<Int> =
+            moneyChanges
+                    .hide()
+                    .distinctUntilChanged()
+                    // Check if need to notify the change
+                    .filter { money -> money.first != money.second }
+                    .flatMap {money ->
+                        val oldMoney = money.first
+                        val newMoney = money.second
+
+                        val isNeedToAddMoney = newMoney > oldMoney
+                        if (isNeedToAddMoney){
+                            newMoney - (FACTOR_MONEY * 2)
+                        }
+
+                        Observable.just(newMoney)
                     }
+                    .doOnNext { t1 -> Log.d("TEST_GAME", "   fun getUserProfileMoneyChanges(): Observable<Int> = -> doOnNext: $t1") }
+                    .doOnError { Log.d("TEST_GAME", "  fun getUserProfileMoneyChanges(): Observable<Int> =  -> doOnError: ${it.message}")}
 
-    fun createUser(id: Long, userName: String): Single<IUserProfile> {
-        return remoteDb.createUser(id, userName)
-                .doOnEvent { user, throwable ->
-                    if (throwable == null) {
-                        this.userProfile = user
-                    }
-                }
-    }
 
-    fun insertAsync(): Completable {
-        return realmManager.insertAsync(userProfile as UserProfileImpl)
-    }
+
+    fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
+            remoteDb.createUser(id, userName, encodeImageDefaultPreUpdate)
+                    .cast(UserProfileImpl::class.java)
+                    .flatMapCompletable (this::insertAsync)
+
+
 
     fun setMoney(isYourWin: Boolean?): Completable {
 
-            Log.d("TEST_GAME", "UserProfileManager -> setMoney userProfile.getMoney(): ${userProfile.getMoney()}")
-
-        val moneyByGameResult = getMoneyByGameResult(isYourWin, userProfile.getLevelUser(), userProfile.getMoney())
-
-        return remoteDb.setMoney(moneyByGameResult)
-                .andThen(setMoney(moneyByGameResult))
-    }
-
-    private fun setMoney(money: Int) : Completable{
-        Log.d("TEST_GAME", "1 UserProfileManager -> setMoney: $money")
-
-        return Completable.create {emitter ->
-            Log.d("TEST_GAME", "2 UserProfileManager -> setMoney: $money")
+        return Single.create<Pair<Int, Int>> {emitter ->
 
             realmManager.getDefaultRealm().executeTransaction {realm ->
-                Log.d("TEST_GAME", "3 UserProfileManager -> setMoney: $money")
+
+                val userProfile = realm.where(UserProfileImpl::class.java).findFirst()
+
+                val oldMoney = userProfile!!.getMoney()
+                val moneyByGameResult = getMoneyByGameStatus(isYourWin, userProfile.getLevelUser(), oldMoney)
+                emitter.onSuccess(Pair(oldMoney, moneyByGameResult))
+            }
+        }
+                .flatMapCompletable {money ->
+                    remoteDb.setMoney(money.second)
+                            .doOnEvent { t1 -> Log.d("TEST_GAME", "remoteDb.setMoney(moneyByGameResult)) -> doOnEvent: ") }
+                            .doOnError { Log.d("TEST_GAME", "remoteDb.setMoney(moneyByGameResult) -> doOnError: ${it.message}")}
+                            .andThen(realmManager.setMoney(money.second))
+                            .doOnEvent { t1 -> Log.d("TEST_GAME", "  .andThen(setMoney(moneyByGameResult)) -> doOnEvent: ") }
+                            .doOnError { Log.d("TEST_GAME", "  .andThen(setMoney(moneyByGameResult)) -> doOnError: ${it.message}")}
+                            .doOnEvent { moneyChanges.onNext(money) }
+                }
+
+
+
+
+    }
+
+    private fun getMoneyByGameStatus(isYourWin: Boolean?, levelUser: Int, userMoney: Int) : Int {
+        val moneyStep = (levelUser * FACTOR_MONEY)
+
+        // This is for the state before the game start
+        if (isYourWin == null) return (userMoney -moneyStep)
+
+        return if (isYourWin) (userMoney + (moneyStep * 2)) else userMoney
+    }
+
+    fun setEncodeImageProfile(encode: String?): Completable {
+        return Completable.create {emitter ->
+
+            realmManager.getDefaultRealm().executeTransaction {realm ->
 
                 val userProfileImpl = realm.where(UserProfileImpl::class.java).findFirst()
-                userProfileImpl?.setMoney(money)
-
-                val userProfileImpl1 = realm.where(UserProfileImpl::class.java).findFirst()
-
-                Log.d("TEST_GAME", "55 UserProfileManager -> setMoney: ${userProfileImpl1?.getMoney()}")
+                userProfileImpl?.setEncodeImage(encode!!)
 
                 emitter.onComplete()
 
@@ -68,21 +116,5 @@ class UserProfileManager(private val realmManager: RealmManager, private val rem
         }
     }
 
-    private fun getMoneyByGameResult(isYourWin: Boolean?, levelUser: Int, userMoney: Int) : Int {
-        val moneyStep = (levelUser * FACTOR_MONEY)
-
-        // This for the state of the pre start game
-        if (isYourWin == null) return (userMoney -moneyStep)
-
-        return if (isYourWin) (userMoney + (moneyStep * 2)) else userMoney
-    }
-
-    override fun isDisposed(): Boolean {
-        Log.d("TEST_GAME", "1 UserProfileManager -> isDisposed")
-        return true
-    }
-
-    override fun dispose() {
-        Log.d("TEST_GAME", "1 UserProfileManager -> dispose")
-    }
+    override fun <E : RealmObject> insertAsync(`object`: E): Completable  = realmManager.insertAsync(`object` as UserProfileImpl)
 }

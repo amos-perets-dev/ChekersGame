@@ -2,7 +2,6 @@ package com.example.chekersgamepro.data.game_board;
 
 import android.graphics.Color;
 import android.graphics.Point;
-import android.util.Log;
 
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.data.BorderLine;
@@ -10,8 +9,11 @@ import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.reactivex.Completable;
 
 public class GameInitialImpl {
     private final int GAME_BOARD_SIZE = DataGame.GAME_BOARD_SIZE;
@@ -31,6 +33,8 @@ public class GameInitialImpl {
 
     private CellDataImpl[][] boardCells;
 
+    private Map<Point, CellDataImpl> cells;
+
     public GameInitialImpl(int x, int y, int width, int height, int gameMode) {
         this.x = x;
         this.y = y;
@@ -41,15 +45,20 @@ public class GameInitialImpl {
         dataGame = DataGame.getInstance();
         dataGame.setGameMode(gameMode);
 
-        initBorderLines();
-        initGameBoard();
-        initPawns();
+        cells = new HashMap<>();
+    }
+
+    public Completable init(){
+        return initBorderLines()
+                .andThen(initGameBoardCells())
+                .andThen(initPawns());
     }
 
     /**
      * Init the pawns on the board game
-     **/
-    public void initPawns() {
+     *
+     * @return*/
+    private Completable initPawns() {
         dataGame.clearCachePawns();
 
         int i = 0;
@@ -62,7 +71,7 @@ public class GameInitialImpl {
 
             if (cellData.getCellContain() == DataGame.CellState.PLAYER_ONE
                     || cellData.getCellContain() == DataGame.CellState.PLAYER_TWO) {
-                
+
                 PawnDataImpl pawnData = new PawnDataImpl(i
                         , cellData.getPointCell()
                         , cellData.getCellContain()
@@ -75,9 +84,11 @@ public class GameInitialImpl {
             i++;
 
         }
+
+        return Completable.complete();
     }
 
-    public void initBorderLines() {
+    private Completable initBorderLines() {
         List<BorderLine> borderLines = new ArrayList<>();
 
         // measure the all inside borders between the cells
@@ -114,12 +125,14 @@ public class GameInitialImpl {
         }
 
         dataGame.setBorderLines(borderLines);
+
+        return Completable.complete();
+
     }
 
-    private int idCell = 1;
-
-    public void initGameBoard() {
+    private Completable initGameBoardCells() {
         dataGame.clearCacheCells();
+        cells.clear();
 
         boolean isMasterCell = false;
         int cellContain;
@@ -156,7 +169,8 @@ public class GameInitialImpl {
                     cellContain = DataGame.CellState.EMPTY_INVALID;
                 }
 
-                Log.d("TEST_GAME", "CELL CONTAIN: " + cellContain + ", idCell: " + idCell);
+//                Log.d("TEST_GAME", "CELL CONTAIN: " + cellContain + ", idCell: " + idCell);
+                int idCell = (row * GAME_BOARD_SIZE) + column + 1;
 
                 CellDataImpl cellData = new CellDataImpl(idCell
                         , cellContain
@@ -166,13 +180,10 @@ public class GameInitialImpl {
                         , widthCell - BORDER_WIDTH
                         , heightCell - BORDER_WIDTH);
 
-                idCell++;
-
                 this.boardCells[row][column] = cellData;
+                cells.put(cellData.getPointCell(), cellData);
                 tmpX += widthCell;
                 isMasterCell = false;
-                dataGame.putCellByPlayer(cellData);
-                dataGame.puCellById(cellData.getIdCell(), cellData.getPointCell());
             }
             // initGameBoard the next row
             tmpY = (y) + (heightCell) * (row + 1);
@@ -186,14 +197,17 @@ public class GameInitialImpl {
                 CellDataImpl cellData = setNextCellByCell(this.boardCells[row][column]);
                 this.boardCells[row][column] = cellData;
                 dataGame.putCellByPlayer(cellData);
+                dataGame.puCellById(cellData.getIdCell(), cellData.getPointCell());
             }
         }
 
         dataGame.setBoardCells(this.boardCells);
+
+        return Completable.complete();
+
     }
 
-
-    public CellDataImpl setNextCellByCell(CellDataImpl cellData) {
+    private CellDataImpl setNextCellByCell(CellDataImpl cellData) {
 
         int pointX;
         int pointY;
@@ -206,20 +220,20 @@ public class GameInitialImpl {
             pointX = pointCurrCell.x - widthCell;
             pointY = pointCurrCell.y + heightCell;
 
-            CellDataImpl nextCellLeftPlayerOne = dataGame.getCellByPoint(new Point(pointX, pointY));
+            CellDataImpl nextCellLeftPlayerOne = cells.get(new Point(pointX, pointY));
 
             pointX = pointCurrCell.x + widthCell;
             pointY = pointCurrCell.y + heightCell;
-            CellDataImpl nextCellRightPlayerOne = dataGame.getCellByPoint(new Point(pointX, pointY));
+            CellDataImpl nextCellRightPlayerOne = cells.get(new Point(pointX, pointY));
 
             //set By Player two
             pointX = pointCurrCell.x - widthCell;
             pointY = pointCurrCell.y - heightCell;
-            CellDataImpl nextCellLeftPlayerTwo = dataGame.getCellByPoint(new Point(pointX, pointY));
+            CellDataImpl nextCellLeftPlayerTwo = cells.get(new Point(pointX, pointY));
 
             pointX = pointCurrCell.x + widthCell;
             pointY = pointCurrCell.y - heightCell;
-            CellDataImpl nextCellRightPlayerTwo = dataGame.getCellByPoint(new Point(pointX, pointY));
+            CellDataImpl nextCellRightPlayerTwo = cells.get(new Point(pointX, pointY));
 
             cellData.setNextCellDataLeftBottom(nextCellLeftPlayerOne)
                     .setNextCellDataRightBottom(nextCellRightPlayerOne)

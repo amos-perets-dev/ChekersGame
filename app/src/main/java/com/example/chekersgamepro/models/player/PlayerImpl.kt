@@ -3,16 +3,20 @@ package com.example.chekersgamepro.models.player
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.enumber.PlayersCode
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
+import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
 
 open class PlayerImpl(private var id: Long = -1
                       , private var playerName: String = ""
                       , private var remotePlayer: String = ""
+                      , private var avatarRemotePlayer: String = ""
+                      , private var encodeImage: String = ""
 
                       , private var owner: Boolean = false
                       , private var canPlay: Boolean = false
                       , private var technicalLoss: Boolean = false
 
-                      , private var requestOnlineGameStatus: RequestOnlineGameStatus = RequestOnlineGameStatus.EMPTY
+                      , private var requestOnlineGameStatus: Int = RequestOnlineGameStatus.EMPTY.ordinal
 
                       , private var userLevel: Int = 1
 
@@ -20,6 +24,18 @@ open class PlayerImpl(private var id: Long = -1
                       , private var playerCode: Int = PlayersCode.EMPTY.ordinal
 
                       , private var remoteMove: RemoteMove = RemoteMove()) : IPlayer {
+
+    override fun getEncodeImage()= this.encodeImage
+
+    override fun setEncodeImage(encodeImage: String) {
+        this.encodeImage = encodeImage
+    }
+
+    override fun getAvatarRemotePlayer(): String = this.avatarRemotePlayer
+
+    override fun setAvatarRemotePlayer(avatarRemotePlayer: String) {
+        this.avatarRemotePlayer = avatarRemotePlayer
+    }
 
     override fun setIsTechnicalLoss(technicalLoss: Boolean) {
         this.technicalLoss = technicalLoss
@@ -52,10 +68,10 @@ open class PlayerImpl(private var id: Long = -1
     }
 
     override fun setRequestOnlineGameStatus(requestOnlineGameStatus: RequestOnlineGameStatus) {
-        this.requestOnlineGameStatus = requestOnlineGameStatus
+        this.requestOnlineGameStatus = requestOnlineGameStatus.ordinal
     }
 
-    override fun getRequestOnlineGameStatus(): RequestOnlineGameStatus = requestOnlineGameStatus
+    override fun getRequestOnlineGameStatus(): RequestOnlineGameStatus = RequestOnlineGameStatus.values().get(requestOnlineGameStatus)
 
     override fun getPlayerName(): String = playerName
 
@@ -86,6 +102,5 @@ open class PlayerImpl(private var id: Long = -1
     override fun setLevelUser(userLevel: Int) {
         this.userLevel = userLevel
     }
-
 
 }

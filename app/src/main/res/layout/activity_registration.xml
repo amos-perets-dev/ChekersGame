@@ -8,12 +8,6 @@
     android:id="@+id/registration_activity"
     tools:context=".screens.registration.RegistrationActivity">
 
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/image_test"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/title_registration"
         android:layout_width="0dp"

@@ -1,15 +1,21 @@
 package com.example.chekersgamepro.models.user
 
-import android.util.Log
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
 open class UserProfileImpl(@PrimaryKey private var key: String = ""
                            , private var userName: String = " "
+                           , private var encodeImage: String = ""
                            , private var id: Long = -1
                            , private var money: Int = 0
                            , private var userLevel: Int = 1
                            , private var isRegistered: Boolean = false) : RealmObject(), IUserProfile {
+    override fun getEncodeImage()= this.encodeImage
+
+    override fun setEncodeImage(encodeImage: String) {
+        this.encodeImage = encodeImage
+    }
+
     override fun setKey(key: String) {
         this.key = key
     }
@@ -27,10 +33,7 @@ open class UserProfileImpl(@PrimaryKey private var key: String = ""
     }
 
     override fun setMoney(money: Int)  {
-        Log.d("TEST_GAME", "UserProfileImpl -> setMoney")
-
         this.money = money
-
     }
 
     override fun setLevelUser(userLevel: Int) {

@@ -8,7 +8,6 @@ import com.example.chekersgamepro.data.BorderLine;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.data.cell.CellDataImpl;
 import com.example.chekersgamepro.data.data_game.DataGame;
-import com.example.chekersgamepro.data.game_board.GameInitialImpl;
 import com.example.chekersgamepro.data.move.Move;
 import com.example.chekersgamepro.data.move.RemoteMove;
 import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl;
@@ -17,7 +16,6 @@ import com.example.chekersgamepro.data.pawn.total.TotalPawnsDataByPlayer;
 import com.example.chekersgamepro.db.repository.RepositoryManager;
 import com.example.chekersgamepro.enumber.PlayersCode;
 import com.example.chekersgamepro.game_validation.GameValidationImpl;
-import com.example.chekersgamepro.models.player.IPlayer;
 import com.example.chekersgamepro.screens.game.model.GameFinishData;
 import com.example.chekersgamepro.screens.game.model.GameFinishState;
 import com.google.common.base.Optional;
@@ -25,25 +23,21 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Consumer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.subjects.PublishSubject;
 
 public class GameManager {
-
-    private GameInitialImpl gameInitialImpl;
 
     private GameValidationImpl gameValidation;
 
     private GameCreatorImpl gameCreator;
 
     private DataGame dataGame = DataGame.getInstance();
-
-    private String playerOne;
-    private String playerTwo;
 
     private int gameMode;
 
@@ -55,34 +49,32 @@ public class GameManager {
 
     private boolean isPlayerOneTurn;
     private boolean isYourTurn;
-    private boolean isOwner = repositoryManager.getPlayer().isOwner();
-
-    private boolean isInitGame = false;
 
     private ImmutableList<DataCellViewClick> relevantCellsStart;
 
-    public void initGame(int x, int y, int width, int height, int gameMode, String playerOne, String playerTwo) {
-        this.gameMode = gameMode;
+    public Completable initGame() {
+        this.gameMode = this.dataGame.getGameMode();
+        return isOwnerAsync()
+                .flatMapCompletable(isOwner -> repositoryManager.getNowPlayAsync()
+                        .flatMapCompletable(nowPlayer -> initPlayerTurn(isOwner, nowPlayer)));
+    }
 
-        this.playerOne = playerOne;
-        this.playerTwo = playerTwo;
-
-        if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-            this.isPlayerOneTurn = PlayersCode.PLAYER_ONE.ordinal() == repositoryManager.getPlayer().getNowPlay();
-            this.isYourTurn = !isOwner;
+    private Completable initPlayerTurn(boolean isOwner, int nowPlayer) {
+        Log.d("TEST_GAME", "GameManager -> initPlayerTurn -> isOwner: " + isOwner);
+        if (GameManager.this.gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
+            GameManager.this.isPlayerOneTurn = PlayersCode.PLAYER_ONE.ordinal() == nowPlayer;
+            GameManager.this.isYourTurn = !isOwner;
         } else {
-            this.isPlayerOneTurn = true;
-            this.isYourTurn = false;
+            GameManager.this.isPlayerOneTurn = true;
+            GameManager.this.isYourTurn = false;
         }
 
-        this.dataGame.setPlayerTurn(isPlayerOneTurn);
-
-        gameInitialImpl = new GameInitialImpl(x, y, width, height, gameMode);
+        GameManager.this.dataGame.setPlayerTurn(isPlayerOneTurn);
 
         gameCreator = new GameCreatorImpl();
 
         gameValidation = new GameValidationImpl(null);
-        isInitGame = true;
+        return Completable.complete();
     }
 
     public List<BorderLine> getBorderLines() {
@@ -107,16 +99,6 @@ public class GameManager {
 
     public void createRelevantCellsStart() {
         relevantCellsStart = gameCreator.createRelevantCellsStart();
-    }
-
-    public String getPlayerName() {
-
-        if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-            return isYourTurn ? repositoryManager.getPlayer().getPlayerName() : repositoryManager.getPlayer().getRemotePlayer();
-        }
-
-        return isYourTurn ? playerTwo : playerOne;
-
     }
 
     public void nextTurnChangePlayer() {
@@ -184,18 +166,6 @@ public class GameManager {
         return gameValidation.isQueenPawn(dataGame.getCellByPoint(currPawnPoint));
     }
 
-    public String getWinPlayerName() {
-
-        String baseText = "The winning player is";
-
-        if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-            IPlayer player = RepositoryManager.create().getPlayer();
-            return baseText + " " + (isYourTurn ? player.getRemotePlayer() : player.getPlayerName()) + " you " + (isYourTurn ? "LOOSE" : "WIN");
-        }
-
-        return baseText + " " + (isYourTurn ? playerOne : playerTwo);
-    }
-
     public boolean isYourWin() {
         return !isYourTurn;
     }
@@ -229,7 +199,7 @@ public class GameManager {
         return new GameFinishData(isYourWin, isNeedUpdateUserProfile);
     }
 
-    public boolean isFinishGame(){
+    public boolean isFinishGame() {
         return relevantCellsStart.size() == 0;
     }
 
@@ -262,11 +232,18 @@ public class GameManager {
     public Observable<Move> getRemoteMove() {
         Observable<Move> remoteMoveChanges =
                 repositoryManager
-                    .getRemoteMove()
-                    .startWith(new RemoteMove())
-                    .map(this::convertRemoteMoveToMove);
+                        .getRemoteMove()
+                        .startWith(new RemoteMove())
+                        .map(this::convertRemoteMoveToMove);
 
-        Observable<Move> aiMoves = getMoveAI.hide().startWith(new Move());
+        Observable<Move> aiMoves = getMoveAI.hide()
+                .flatMap(move -> {
+                    Long computerTime = move.getComputerTime();
+                    Log.d("TEST_GAME", "nextInt: " + computerTime);
+                    return Observable.fromCallable(() -> move)
+                            .delay(computerTime, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread());
+                })
+                .startWith(new Move());
 
         return Observable.combineLatest(remoteMoveChanges, aiMoves
                 , (remoteMove, move) -> isOnlineGameMode() ? remoteMove : move)
@@ -302,15 +279,11 @@ public class GameManager {
     public Observable<Boolean> isTechnicalWin() {
         int onlineGameMode = DataGame.Mode.ONLINE_GAME_MODE;
 
-        return  repositoryManager.isTechnicalWin()
+        return repositoryManager.isTechnicalWin()
                 .filter(ignored -> gameMode == onlineGameMode);
     }
 
-    public boolean isValid() {
-        return gameCreator != null;
+    public Observable<Boolean> isOwnerAsync() {
+        return repositoryManager.isOwnerPlayerAsync();
     }
-
-//    public void resetRemoteMove() {
-//        RepositoryManager.create().resetRemoteMove();
-//    }
 }

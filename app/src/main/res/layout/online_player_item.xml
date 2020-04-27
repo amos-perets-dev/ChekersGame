@@ -1,45 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="60dp"
     android:layout_margin="5dp"
-    app:cardElevation="2dp"
     app:cardCornerRadius="10dp"
-    >
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/name_player"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintWidth_percent="0.7"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:gravity="center"
-        tools:text="Amos"
-        app:autoSizeMaxTextSize="26dp"
-        app:autoSizeMinTextSize="15dp"
-        app:autoSizeTextType="uniform"/>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/image_profile"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            app:civ_border_width="0.5dp"
+            app:civ_border_color="#333"
+            android:src="@drawable/ic_pawn_one"
+            android:scaleType="centerCrop"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:padding="8dp"
+            android:elevation="20dp"/>
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/level_player"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintWidth_percent="0.3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/name_player"
-        app:layout_constraintTop_toTopOf="parent"
-        android:gravity="center"
-        tools:text="1"
-        app:autoSizeMaxTextSize="26dp"
-        app:autoSizeMinTextSize="15dp"
-        app:autoSizeTextType="uniform"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/name_player"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            app:autoSizeMaxTextSize="26dp"
+            app:autoSizeMinTextSize="15dp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/image_profile"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.7"
+            tools:text="Amos" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/level_player"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            app:autoSizeMaxTextSize="26dp"
+            app:autoSizeMinTextSize="15dp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/name_player"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.15"
+            tools:text="1" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -1,15 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:id="@+id/dialog_start_game"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardCornerRadius="20dp">
+    android:layout_height="220dp"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/show_players_title"
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/vs_icon_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="fweffrefger"/>
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:gravity="center"
+        android:text="VS"
+        android:textColor="#6A726E6E"
+        android:textSize="190dp"
+        android:typeface="serif" />
 
-</LinearLayout>
+    <!--    LEFT PLAYER / OWNER PLAYER-->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/image_profile_owner_player"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="5dp"
+        android:elevation="20dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_pawn_one"
+        android:translationX="-110dp"
+        app:civ_border_color="#333"
+        app:civ_border_width="0.5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/owner_player"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="owner_player"
+        android:textColor="#1B1B1B"
+        android:textSize="16dp"
+        android:translationX="-144dp"
+        app:layout_constraintHeight_percent="0.13"
+        app:layout_constraintLeft_toLeftOf="@+id/image_profile_owner_player"
+        app:layout_constraintRight_toRightOf="@+id/image_profile_owner_player"
+        app:layout_constraintTop_toBottomOf="@+id/image_profile_owner_player"
+        app:layout_constraintWidth_percent="0.35" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/money_bag_owner_player_left"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:alpha="0"
+        android:scaleX="-1"
+        android:src="@drawable/ic_money_bag_hand"
+        app:layout_constraintLeft_toLeftOf="@+id/image_profile_owner_player"
+        app:layout_constraintRight_toRightOf="@+id/image_profile_owner_player"
+        app:layout_constraintTop_toTopOf="@+id/image_profile_owner_player" />
+
+    <!--    RIGHT PLAYER / GUEST PLAYER-->
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/image_profile_guest_computer"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="30dp"
+        android:elevation="20dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_pawn_one"
+        android:translationX="110dp"
+        app:civ_border_color="#333"
+        app:civ_border_width="0.5dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/guest_player_computer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="guest player"
+        android:textColor="#1B1B1B"
+        android:textSize="16dp"
+        android:translationX="142dp"
+        app:layout_constraintHeight_percent="0.13"
+        app:layout_constraintLeft_toLeftOf="@+id/image_profile_guest_computer"
+        app:layout_constraintRight_toRightOf="@+id/image_profile_guest_computer"
+        app:layout_constraintTop_toBottomOf="@+id/image_profile_guest_computer"
+        app:layout_constraintWidth_percent="0.35" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/money_bag_guest_computer_player_right"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:alpha="0"
+        android:src="@drawable/ic_money_bag_hand"
+        app:layout_constraintLeft_toLeftOf="@+id/image_profile_guest_computer"
+        app:layout_constraintRight_toRightOf="@+id/image_profile_guest_computer"
+        app:layout_constraintTop_toTopOf="@+id/image_profile_guest_computer" />
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/center_coin"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="8dp"
+        android:src="@drawable/ic_money_bag"
+        app:layout_constraintBottom_toTopOf="@+id/money_game_count"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/money_game_count"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="#1B1B1B"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_percent="0.15"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintWidth_percent="0.25" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -161,7 +161,8 @@ public class DataGameBoard {
         this.playerTwoCount = dataGame.getPawnsPlayerTwo().size();
         this.playerOneKingsCount = dataGame.getPawnsKingPlayerOne();
         this.playerTwoKingsCount = dataGame.getPawnsKingPlayerTwo();
-        return  ai.getMoveAI(this, isPlayerOneCurrently);
+        return  ai.getMoveAI(this, isPlayerOneCurrently)
+                .setComputerTime();
     }
 
     public List<DataMove> createMovesByCellsStart(boolean isPlayerOnCurrently) {

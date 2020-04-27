@@ -13,4 +13,6 @@ interface IOnlinePlayerEvent {
     fun onClickItem(onlinePlayerEvent : IOnlinePlayerEvent)
 
     fun getClick(): Observable<IOnlinePlayerEvent>
+
+    fun getEncodeImageProfile(): String
 }
