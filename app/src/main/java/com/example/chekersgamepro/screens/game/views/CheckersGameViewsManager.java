@@ -67,7 +67,7 @@ public class CheckersGameViewsManager {
 
         gameBoardView = activity.findViewById(R.id.game_board_view);
 
-        startGameDialog     = new StartGameDialog(activity, playerOne, playerTwo);
+        startGameDialog     = new StartGameDialog(activity, playerOne, playerTwo, gameMode == DataGame.Mode.COMPUTER_GAME_MODE);
 
         computerIconView    = new ComputerIconView(activity, gameBoardView, checkersViewModel.isOwnerAsync());
         playersNamesView    = new PlayersNamesView(activity, playerOne.getPlayerNme(), playerTwo.getPlayerNme());

@@ -11,14 +11,13 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.models.player.game.PlayerGame
 import com.example.chekersgamepro.checkers.CheckersImageUtil
+import com.example.chekersgamepro.data.data_game.DataGame
+import com.example.chekersgamepro.models.player.game.PlayerGame
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Completable
-
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
@@ -27,7 +26,8 @@ import java.util.concurrent.TimeUnit
 
 class StartGameDialog(private val activity: Activity
                       , private val guestPlayer: PlayerGame
-                      , private val ownerPlayer: PlayerGame){
+                      , private val ownerPlayer: PlayerGame
+                      , private val isComputerGame: Boolean) {
 
     private val limitMoneyGame = guestPlayer.moneyGame + ownerPlayer.moneyGame
 
@@ -58,7 +58,7 @@ class StartGameDialog(private val activity: Activity
 
     }
 
-    fun isShowDialogGame() : Observable<Boolean> = behaviorSubject.hide()
+    fun isShowDialogGame(): Observable<Boolean> = behaviorSubject.hide()
 
     private fun convertDpToPixel(dp: Float): Float {
         val metrics = Resources.getSystem().displayMetrics
@@ -92,23 +92,41 @@ class StartGameDialog(private val activity: Activity
                     animateNameImageProfileAndVs(dialog.guest_player_computer, dialog.image_profile_guest_computer, dialog.vs_icon_text, false)
                             .andThen(animateNameImageProfileAndVs(dialog.owner_player, dialog.image_profile_owner_player, dialog.vs_icon_text, true))
                             .andThen(animateMoneyGameBug(dialog.money_game_count, dialog.center_coin))
-                            .andThen( animateCoins(dialog.money_bag_guest_computer_player_right, dialog.money_bag_owner_player_left))
+                            .andThen(animateAddMoneyByGameState())
                 }
                 .flatMap {
-                    var count = 1
-                    val limitMoneyGame = this.limitMoneyGame + 1
-                    Observable.interval(DELAY_TO_INCREASE_MONEY_GAME, TimeUnit.MILLISECONDS)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .doOnNext { dialog.money_game_count.text = count++.toString() }
-                            .takeUntil { count == limitMoneyGame }
-                            .filter { count == limitMoneyGame }
-                            .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+
+                    val observable : Observable<*>
+
+                    if (isComputerGame){
+                        observable =  Observable.just(true)
+                    } else{
+                        var count = 1
+                        val limitMoneyGame = this.limitMoneyGame + 1
+                        observable =  Observable.interval(DELAY_TO_INCREASE_MONEY_GAME, TimeUnit.MILLISECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .doOnNext { dialog.money_game_count.text = count++.toString() }
+                                .takeUntil { count == limitMoneyGame }
+                                .filter { count == limitMoneyGame }
+
+                    }
+
+                    return@flatMap observable
+                            .delay(200, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 }
                 .doOnNext {
                     behaviorSubject.onNext(false)
                     dialog.dismiss()
                 }
                 .subscribe()
+    }
+
+    private fun animateAddMoneyByGameState(): Observable<Boolean> {
+       return if (isComputerGame){
+            Observable.just(true)
+        } else{
+            animateCoins(dialog.money_bag_guest_computer_player_right, dialog.money_bag_owner_player_left)
+        }
     }
 
     private fun loadAvatar(view: ImageView, url: String, iconPlaceHolder: Int) {
@@ -128,15 +146,15 @@ class StartGameDialog(private val activity: Activity
         window.setLayout(screenWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-    private fun animateCoins(rightView : View, leftView: View): Observable<Boolean> {
+    private fun animateCoins(rightView: View, leftView: View): Observable<Boolean> {
         return AnimationUtil.translateWithAlpha(rightView, leftView, dialog.center_coin, ANIMATE_ADD_MONEY_GAME_DURATION)
     }
 
-    private fun animateNameImageProfileAndVs(name: View, imageProfile : View, vs : View, isNeedWaitFinish : Boolean): Completable {
+    private fun animateNameImageProfileAndVs(name: View, imageProfile: View, vs: View, isNeedWaitFinish: Boolean): Completable {
         return AnimationUtil.translateWithRotation(name, imageProfile, vs, isNeedWaitFinish, ANIMATE_NAME_IMAGE_PROFILE_VS_DURATION)
     }
 
-    private fun animateMoneyGameBug(moneyGameText : View, moneyGameIcon : View): Completable {
+    private fun animateMoneyGameBug(moneyGameText: View, moneyGameIcon: View): Completable {
         return AnimationUtil.translateY(0f, 200, moneyGameText, moneyGameIcon)
     }
 }
