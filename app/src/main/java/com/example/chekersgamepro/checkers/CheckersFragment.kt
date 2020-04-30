@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatDialogFragment
+import com.bumptech.glide.manager.LifecycleListener
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.util.SwipeUtil
 import io.reactivex.disposables.CompositeDisposable
@@ -38,9 +39,9 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
     protected fun getInteger(resId: Int) = checkersApplication.getInteger(resId)
 
     override fun onDestroy() {
+
         notifyOnDestroy()
         this.compositeDisposableOnDestroyed.clear()
-        Log.d("TEST_GAME", "AvatarPickerFragment -> onDestroy")
 
         super.onDestroy()
     }
@@ -65,12 +66,14 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
 
     interface FragmentLifecycle {
         fun onPauseFragment(){
+            Log.d("TEST_GAME", "CheckersFragment -> onPauseFragment")
 
         }
         fun onResumeFragment(newPosition: Int){
-
+            Log.d("TEST_GAME", "CheckersFragment -> onResumeFragment")
         }
         fun isRightDirection(isRightDirection : Boolean){
+            Log.d("TEST_GAME", "CheckersFragment -> isRightDirection")
 
         }
     }

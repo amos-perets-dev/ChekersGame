@@ -2,7 +2,8 @@ package com.example.chekersgamepro.screens.homepage.avatar.fragemnts
 
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,6 +20,7 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
+import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_avatar.view.*
 
@@ -52,7 +54,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
 
     private fun animateVisibilityAvatarImageTmp(it: Float) {
 //        if (it == this.avatarImageTmp.alpha )return
-        AnimationUtil.alpha(this.avatarImageTmp, it, 100)
+        AnimationUtil.alpha(this.avatarImageTmp, it, 200)
     }
 
     private fun animateImageProfile(): Completable {
@@ -75,6 +77,10 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
 
 
         compositeDisposableOnDestroyed.addAll(
+
+                this.avatarViewModel.isCloseScreen(this)
+                        .filter(Functions.equalsWith(true))
+                        .subscribe { dismissAllowingStateLoss() },
 
                 this.avatarViewModel
                         .getPagerManager(
@@ -100,7 +106,6 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                             animateImageProfile()
                                     .observeOn(Schedulers.io())
                                     .doOnEvent { avatarViewModel.finishAnimateImageProfile() }
-                                    .doOnEvent { dismissAllowingStateLoss() }
                         }
                         ?.subscribe()!!,
 
@@ -149,7 +154,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                             .subscribeOn(Schedulers.io())
                             .filter { this.avatarImageTmp.alpha != it }
                             .observeOn(AndroidSchedulers.mainThread())
-                            .doOnNext { Log.d("TEST_GAME", "1 AvatarPickerFragment -> animateAvatarImageTmp") }
+                            .doOnNext { Log.d("TEST_GAME", "1 AvatarPickerFragment -> animateAvatarImageTmp: $it") }
                             .doOnNext(this::animateVisibilityAvatarImageTmp)
                             .flatMap { Observable.fromCallable { actionOkButton.measuredHeight.toFloat() } }
                             .doOnNext(this::animateActionOkButton)

@@ -8,5 +8,5 @@ import io.reactivex.subjects.PublishSubject
 
 interface IDefaultAvatars  {
 
-    fun getAvatarsDefaultList() : Single<DefaultAvatarAdapter>?
+    fun getAvatarsDefaultAdapter() : Single<DefaultAvatarAdapter>?
 }

@@ -126,6 +126,12 @@ open class HomePageActivity : AppCompatActivity() {
 
         compositeDisposable.add(
                 RxView.clicks(image_profile_hp)
+                        .subscribe { homePageViewModel.clickOnAvatar(this) }
+//                        .subscribe(Functions.actionConsumer(this::startAvatarPickerFragment))
+        )
+
+        compositeDisposable.add(
+                homePageViewModel.openAvatarScreen(this)
                         .subscribe(Functions.actionConsumer(this::startAvatarPickerFragment))
         )
 
@@ -200,19 +206,18 @@ open class HomePageActivity : AppCompatActivity() {
     override fun onPause() {
         Log.d("TEST_GAME", "HomePageActivity -> onPause")
 
-//        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
-//        if (fragment != null && fragment.isVisible) {
-//            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
-//
+        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
+        if (fragment != null && fragment.isVisible) {
+            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
+            fragment.dismissAllowingStateLoss()
 //            val resresf = Intent(this, HomePageActivity::class.java)
 //            startActivity(resresf)
 //            finish()
-
-//        }
+//
+        }
 
         super.onPause()
     }
-
 
 
     override fun onDestroy() {

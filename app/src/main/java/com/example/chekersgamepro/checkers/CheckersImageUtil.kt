@@ -1,16 +1,23 @@
 package com.example.chekersgamepro.checkers
 
+import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.media.ExifInterface
+import android.os.Build
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
 import android.util.Base64
+import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -18,16 +25,18 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.example.chekersgamepro.R
+import com.example.chekersgamepro.util.FileUtils
 import io.reactivex.Completable
 import io.reactivex.CompletableEmitter
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.ByteArrayOutputStream
-import java.nio.charset.StandardCharsets
+import java.io.File
+import java.io.InputStream
 import kotlin.math.roundToInt
 
 
-class CheckersImageUtil {
+open class CheckersImageUtil {
     private val resources = CheckersApplication.create().resources
 
     private val context = CheckersApplication.create().applicationContext
@@ -40,8 +49,8 @@ class CheckersImageUtil {
                     .placeholder(R.drawable.ic_computer_game)
                     .into(object : CustomTarget<Bitmap>() {
                         override fun onLoadFailed(errorDrawable: Drawable?) {
-                            if(drawable != null){
-                                emitter.onSuccess( drawableToBitmap(drawable)!!)
+                            if (drawable != null) {
+                                emitter.onSuccess(drawableToBitmap(drawable)!!)
                             }
                         }
 
@@ -79,9 +88,9 @@ class CheckersImageUtil {
 
     }
 
-    fun bitmapToDrawable(bitmap: Bitmap): Drawable  = BitmapDrawable(resources, bitmap)
+    fun bitmapToDrawable(bitmap: Bitmap): Drawable = BitmapDrawable(resources, bitmap)
 
-    fun blurBitmapFromDrawble(drawableResId: Int){
+    fun blurBitmapFromDrawble(drawableResId: Int) {
         val options = BitmapFactory.Options()
         options.inSampleSize = 8
         val blurTemplate = BitmapFactory.decodeResource(resources, drawableResId, options)
@@ -129,20 +138,110 @@ class CheckersImageUtil {
 
     fun createByteArrayFromBitmap(bitmap: Bitmap): ByteArray {
         val streamGuestOrComputer = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, streamGuestOrComputer)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, streamGuestOrComputer)
         return streamGuestOrComputer.toByteArray()
     }
 
-    fun createBitmapFromByteArray(byteArray: ByteArray): Bitmap =  BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+    fun createBitmapFromByteArray(byteArray: ByteArray): Bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
 
-    fun compressBitmap(image: Bitmap): Bitmap  = createBitmapFromByteArray(createByteArrayFromBitmap(image))
+    fun compressBitmap(image: Bitmap): Bitmap {
+        val createScaledBitmap = resize(image, 600, 600)
+        Log.d("TEST_GAME", "2 imageBitmap size after compress: ${sizeOfBitmap(createScaledBitmap)}")
 
-    fun createByteArrayFromEncodeBase(encodeBase: String): ByteArray =  Base64.decode(encodeBase, Base64.DEFAULT)
+        return createBitmapFromByteArray(createByteArrayFromBitmap(createScaledBitmap))
 
-    fun encodeBase64Image(image : Bitmap): String?  = Base64.encodeToString(createByteArrayFromBitmap(image), Base64.DEFAULT)
+    }
 
-    fun encodeBase64Image(byteArray: ByteArray): String?  = Base64.encodeToString(byteArray, Base64.DEFAULT)
+    private fun resize(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        var image = image
+        return if (maxHeight > 0 && maxWidth > 0) {
+            val width = image.width
+            val height = image.height
+            val ratioBitmap = width.toFloat() / height.toFloat()
+            val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+            var finalWidth = maxWidth
+            var finalHeight = maxHeight
+            if (ratioMax > ratioBitmap) {
+                finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+            } else {
+                finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+            }
+            image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true)
+            image
+        } else {
+            image
+        }
+    }
 
+    public fun modifyOrientation(bitmap: Bitmap, image_absolute_path: String): Bitmap {
+        val ei = ExifInterface(image_absolute_path)
+        val orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        return when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> rotate(bitmap, 90F)
+            ExifInterface.ORIENTATION_ROTATE_180 -> rotate(bitmap, 180F)
+            ExifInterface.ORIENTATION_ROTATE_270 -> rotate(bitmap, 270F)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> flip(bitmap, horizontal = true, vertical = false)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> flip(bitmap, horizontal = false, vertical = true)
+            else -> bitmap
+        }
+    }
+
+    public fun modifyOrientationFromCamera(bitmap: Bitmap, image_absolute_path: String): Bitmap {
+        val ei = ExifInterface(image_absolute_path)
+        val orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        return when (orientation) {
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> flip(bitmap, horizontal = true, vertical = false)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> flip(bitmap, horizontal = false, vertical = true)
+            else -> bitmap
+        }
+    }
+
+    private fun rotate(bitmap: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    public fun flip(bitmap: Bitmap, horizontal: Boolean, vertical: Boolean): Bitmap {
+        val matrix = Matrix()
+        matrix.preScale(if (horizontal) -1f else 1f, if (vertical) -1f else 1f)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    fun creteBitmapFromData(data: Intent?, isCompress : Boolean): Bitmap {
+        val imageUri = data?.data!!
+        val path = FileUtils.getPath(context, imageUri)
+        val imageStream = context.contentResolver.openInputStream(imageUri!!)
+        val bitmap = BitmapFactory.decodeStream(imageStream)
+
+        var modifyOrientationBitmap = modifyOrientation(bitmap, path!!)
+
+        if (isCompress){
+            modifyOrientationBitmap = compressBitmap(modifyOrientationBitmap)
+        }
+
+
+
+        return modifyOrientationBitmap
+    }
+
+    fun createByteArrayFromEncodeBase(encodeBase: String): ByteArray = Base64.decode(encodeBase, Base64.DEFAULT)
+
+    fun encodeBase64Image(image: Bitmap): String? = Base64.encodeToString(createByteArrayFromBitmap(image), Base64.DEFAULT)
+
+    fun encodeBase64Image(byteArray: ByteArray): String? = Base64.encodeToString(byteArray, Base64.DEFAULT)
+
+    @SuppressLint("ObsoleteSdkInt")
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+    fun sizeOfBitmap(bitmap: Bitmap): Int {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1) {
+            bitmap.rowBytes * bitmap.height
+        } else {
+            bitmap.byteCount
+        }
+    }
 
     fun decodeBase64(input: String?): Bitmap? {
         val decodedBytes = Base64.decode(input, 0)

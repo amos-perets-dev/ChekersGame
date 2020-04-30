@@ -2,27 +2,23 @@ package com.example.chekersgamepro.screens.homepage.avatar.fragemnts
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat.getColor
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.CheckersImageUtil
-import com.example.chekersgamepro.screens.homepage.avatar.AvatarState
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
-import com.example.chekersgamepro.screens.homepage.avatar.model.data.AvatarData
 import com.example.chekersgamepro.util.IntentUtil
+import com.example.chekersgamepro.util.PermissionUtil
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.BiFunction
-import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.personal_avatar_gallery_item.view.*
-import java.io.FileNotFoundException
 
 class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
         AvatarFragmentBase(avatarViewModel), CheckersFragment.FragmentLifecycle {
@@ -37,7 +33,7 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
         }
 
         private const val OPEN_GALLERY_REQUEST = 1111
-        private const val ANIMATE_GALLERY_BUTTON_DURATION = 500L
+        private const val ANIMATE_GALLERY_BUTTON_DURATION = 400L
         private const val CANCEL_ANIMATE_GALLERY_BUTTON_DURATION = 0L
     }
 
@@ -46,11 +42,9 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
 
         textButtonGallery = view.text_button_gallery
 
-        val isNeedAnimateGalleryButton = avatarViewModel.isNeedAnimateGalleryButton(this)
-                .subscribeOn(Schedulers.io())
-
         compositeDisposableOnDestroyed.addAll(
-                isNeedAnimateGalleryButton
+                avatarViewModel.isNeedAnimateGalleryButton(this)
+                        .subscribeOn(Schedulers.io())
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .doOnNext {
                             animateButtonGallery(
@@ -63,14 +57,23 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
                 avatarViewModel
                         .getImageProfileTmpChange(this)
                         .subscribeOn(Schedulers.io())
-                        .map { imageUtil.blurBitmapFromBitmap(it) }
-                        .map { imageUtil.bitmapToDrawable(it) }
                         .subscribeOn(AndroidSchedulers.mainThread())
-                        .subscribe(view::setBackgroundDrawable),
+                        .subscribe {
+                            AnimationUtil.animateTransitionAlpha(view, it)
+                        },
+
+                avatarViewModel
+                        .getOpenGalleryText(this)
+                        .subscribe { textButtonGallery.text  = it },
+
+                avatarViewModel
+                        .openGallery(this)
+                        .subscribe {
+                            startActivityForResult(it, OPEN_GALLERY_REQUEST)
+                        },
 
                 RxView.clicks(textButtonGallery)
-                        .map { IntentUtil.createOpenGalleryIntent() }
-                        .subscribe { startActivityForResult(it, OPEN_GALLERY_REQUEST) },
+                        .subscribe { avatarViewModel.clickOnGallery(context!!) },
 
                 avatarViewModel
                         .saveImage(activity!!)
@@ -87,7 +90,7 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
         return R.layout.personal_avatar_gallery_item
     }
 
-    private fun clearBackground(){
+    private fun clearBackground() {
         textButtonGallery.translationX = 0f
         textButtonGallery.translationY = 0f
         textButtonGallery.scaleX = 1f
@@ -97,22 +100,15 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
     }
 
     override fun onPauseFragment() {
+        Log.d("TEST_GAME", "1 AvatarGalleryFragment -> onPauseFragment")
+
         clearBackground()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == OPEN_GALLERY_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-                try {
-                    val imageUri = data?.data
-                    val imageStream = activity!!.contentResolver.openInputStream(imageUri!!)
-
-                    avatarViewModel.setChangeAvatarData(
-                            AvatarData(AvatarState.CAPTURE_AVATAR, imageUtil.compressBitmap(BitmapFactory.decodeStream(imageStream))))
-
-                } catch (ex: FileNotFoundException) {
-                    ex.printStackTrace()
-                }
+                avatarViewModel.setDataFromGallery(data)
             }
         }
     }

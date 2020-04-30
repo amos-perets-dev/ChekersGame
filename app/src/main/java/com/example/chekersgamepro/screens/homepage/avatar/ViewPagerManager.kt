@@ -5,16 +5,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.AvatarPagerAdapter
-import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarPickerFragment
 import com.example.chekersgamepro.screens.homepage.avatar.model.data.ScrollPageData
 import com.example.chekersgamepro.util.DisplayUtil
+import com.jakewharton.rxbinding2.InitialValueObservable
 import com.jakewharton.rxbinding2.support.v4.view.RxViewPager
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 
@@ -29,6 +29,8 @@ class ViewPagerManager(private val pager: ViewPager
     private val infoScrollPage = PublishSubject.create<ScrollPageData>()
 
     private val compositeDisposable = CompositeDisposable()
+
+    private val pagerAdapter = AvatarPagerAdapter(childFragmentManager, fragmentsList)
 
     init {
 
@@ -79,6 +81,8 @@ class ViewPagerManager(private val pager: ViewPager
         )
 
     }
+
+    fun getPagerAdapter() = pagerAdapter
 
     private fun scrollToPosition(position : Int){
         pager.setCurrentItem(position, true)

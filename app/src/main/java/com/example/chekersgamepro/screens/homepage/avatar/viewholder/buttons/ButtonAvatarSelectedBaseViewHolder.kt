@@ -23,13 +23,6 @@ open class ButtonAvatarSelectedBaseViewHolder(parent: ViewGroup, layoutId : Int 
 
         Log.d("TEST_GAME", "ButtonAvatarSelectedViewHolder bindData")
 
-//        if (model.isStartsSelected()) {
-//            avatarSelectedButton.background = itemView.context.getDrawable(R.drawable.button_avatar_picker_background_unselected_left_right)
-//
-//        } else{
-//            avatarSelectedButton.background = itemView.context.getDrawable(R.drawable.button_avatar_picker_background_selected_left_right)
-//        }
-
         avatarSelectedButton.setCompoundDrawablesWithIntrinsicBounds(0, 0, model.getDrawbleResId(), 0)
 
         compositeDisposable.addAll(

@@ -18,11 +18,14 @@ class IntentUtil {
         private val checkersConfiguration = CheckersConfiguration.getInstance()
 
         fun createOpenGalleryIntent(): Intent {
-            val intent = Intent()
-            intent.type = "image/*"
-            intent.action = Intent.ACTION_GET_CONTENT
+//            val intent = Intent()
+//            intent.type = "image/*"
+//            intent.action = Intent.ACTION_GET_CONTENT
 
-            return intent
+                        return  Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+
+
+//            return intent
         }
 
         fun createPlayersGameIntent(playerAsync: Single<IPlayer?>, gameMode: Int, imageUtil: CheckersImageUtil, context: Context) : Single<Intent>{

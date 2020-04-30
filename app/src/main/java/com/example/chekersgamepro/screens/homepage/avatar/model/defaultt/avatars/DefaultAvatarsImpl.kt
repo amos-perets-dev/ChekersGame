@@ -11,7 +11,6 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Consumer
-import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 
@@ -25,7 +24,7 @@ class DefaultAvatarsImpl(
     private val defaultAvatarsList = BehaviorSubject.create<List<IDefaultAvatar>>()
 
     init {
-        Log.d("TEST_GAME", "DefaultAvatarsImpl -> init ")
+        Log.d("TEST_GAME", "1 DefaultAvatarsImpl -> init ")
 
         val selectedId = BehaviorSubject.createDefault(-1)
         val movePage = isMovePage.doOnNext { selectedId.onNext(-1) }
@@ -33,6 +32,8 @@ class DefaultAvatarsImpl(
         compositeDisposable.add(avatarViewModel.getDefaultAvatarsList()
                 .subscribeOn(Schedulers.io())
                 .map { defaultAvatarsImageList ->
+                    Log.d("TEST_GAME", "2 DefaultAvatarsImpl -> init defaultAvatarsImageList size: ${defaultAvatarsImageList.size}")
+
                     val defaultAvatarsList = ArrayList<IDefaultAvatar>()
                     for ((index, image) in defaultAvatarsImageList.withIndex()) {
 
@@ -53,7 +54,7 @@ class DefaultAvatarsImpl(
         avatarViewModel.setChangeAvatarData(AvatarData(AvatarState.CAPTURE_AVATAR, bitmap))
     }
 
-    override fun getAvatarsDefaultList(): Single<DefaultAvatarAdapter>? =
+    override fun getAvatarsDefaultAdapter(): Single<DefaultAvatarAdapter>? =
             this.defaultAvatarsList.hide()
                     .map {  DefaultAvatarAdapter(it) }
                     .firstOrError()

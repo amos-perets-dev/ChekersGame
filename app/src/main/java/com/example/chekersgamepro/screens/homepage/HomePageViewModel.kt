@@ -1,17 +1,15 @@
 package com.example.chekersgamepro.screens.homepage
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.chekersgamepro.R
 import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
-import com.example.chekersgamepro.screens.game.CheckersGameActivity
 import com.example.chekersgamepro.screens.homepage.dialog.DialogStateCreator
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.util.PermissionUtil
@@ -20,7 +18,6 @@ import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
-import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 class HomePageViewModel : ViewModel() {
@@ -32,6 +29,8 @@ class HomePageViewModel : ViewModel() {
     private val computerGame = MutableLiveData<Intent>()
 
     private val msgState = MutableLiveData<DialogStateCreator>()
+
+    private val openAvatarScreen = MutableLiveData<Boolean>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -94,6 +93,9 @@ class HomePageViewModel : ViewModel() {
     fun getMsgState(lifecycleOwner: LifecycleOwner): Observable<DialogStateCreator> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, msgState))
 
+    fun openAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, openAvatarScreen))
+
     fun startOnlineGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onlineGame))
                     .filter { it.isPresent }
@@ -145,5 +147,15 @@ class HomePageViewModel : ViewModel() {
     override fun onCleared() {
         compositeDisposable.clear()
         super.onCleared()
+    }
+
+    fun clickOnAvatar(context: Context) {
+        compositeDisposable.add(
+                PermissionUtil
+                        .isStorageAndCameraPermissionGranted(context)
+                        .subscribe {
+                            openAvatarScreen.postValue(true)
+                        }
+        )
     }
 }

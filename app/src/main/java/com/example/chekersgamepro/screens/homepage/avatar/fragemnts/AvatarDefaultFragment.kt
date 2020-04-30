@@ -9,6 +9,10 @@ import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
 import com.example.chekersgamepro.screens.homepage.avatar.ViewPagerManager
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.DefaultAvatarAdapter
 import com.example.chekersgamepro.screens.homepage.avatar.model.defaultt.avatar.DefaultAvatarsImpl
+import com.example.chekersgamepro.screens.homepage.avatar.model.defaultt.avatar.IDefaultAvatars
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.grid_default_avatars_item.view.*
 
@@ -29,8 +33,9 @@ class AvatarDefaultFragment(private val avatarViewModel: AvatarViewModel) : Avat
         val defaultAvatars = DefaultAvatarsImpl(avatarViewModel, isMovePage(), saveImage)
 
         compositeDisposableOnDestroyed.add(
-                defaultAvatars.getAvatarsDefaultList()
+                defaultAvatars.getAvatarsDefaultAdapter()
                         ?.subscribeOn(Schedulers.io())
+                        ?.observeOn(AndroidSchedulers.mainThread())
                         ?.doOnEvent { defaultAvatarAdapter, t2 -> addListener(defaultAvatarAdapter) }
                         ?.subscribe { defaultAvatarAdapter, t2 -> initRecyclerView(defaultAvatarAdapter) }!!
         )

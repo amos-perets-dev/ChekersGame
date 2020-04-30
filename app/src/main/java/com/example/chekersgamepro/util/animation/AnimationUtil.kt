@@ -1,11 +1,9 @@
 package com.example.chekersgamepro.util.animation
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
+import android.animation.*
 import android.annotation.SuppressLint
 import android.content.res.Resources
+import android.graphics.drawable.Drawable
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -21,7 +19,6 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 class AnimationUtil {
 
@@ -424,6 +421,18 @@ class AnimationUtil {
         fun alpha(view: View, alpha: Float = 0f, duration: Long = 0L) {
             Log.d("TEST_GAME", "AnimationUtil -> alpha")
             view.animate().withLayer().alpha(alpha).setDuration(duration).start()
+        }
+
+        fun animateTransitionAlpha(view: View, it: Drawable) {
+
+            val alphaAnimator: ObjectAnimator = ObjectAnimator.ofFloat(view, View.ALPHA, 0.0f, 1.0f)
+            alphaAnimator.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    view.setBackgroundDrawable(it)
+                }
+            })
+            alphaAnimator.setDuration(800)
+            alphaAnimator.start()
         }
 
 

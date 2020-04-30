@@ -157,6 +157,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         this.player.setIsOwner(false)
         this.player.setIsCanPlayer(true)
         this.player.setRemotePlayer("")
+        this.player.setAvatarRemotePlayer("")
         this.player.setRequestOnlineGameStatus(RequestOnlineGameStatus.EMPTY)
         return firebaseManager.setDataPlayer(player, false)
                 .filter(Functions.equalsWith(true))
@@ -170,6 +171,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         val remotePlayerNameOwner = this.player.getRemotePlayer()
 
         this.player.setRemotePlayer("")
+        this.player.setAvatarRemotePlayer("")
         this.player.setIsCanPlayer(true)
         this.player.setRequestOnlineGameStatus(RequestOnlineGameStatus.EMPTY)
 
@@ -207,6 +209,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     override fun resetPlayer() : Completable {
         this.player.setIsOwner(false)
         this.player.setRemotePlayer("")
+        this.player.setAvatarRemotePlayer("")
         this.player.setIsCanPlayer(true)
         this.player.setRequestOnlineGameStatus(RequestOnlineGameStatus.EMPTY)
         this.player.setNowPlay(PlayersCode.EMPTY.ordinal)

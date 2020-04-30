@@ -8,8 +8,8 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
 import com.example.chekersgamepro.screens.homepage.avatar.ViewPagerManager
-import com.example.chekersgamepro.util.CameraUtil
 import com.example.chekersgamepro.util.PermissionUtil
+import com.example.chekersgamepro.util.camera.CameraPreview
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.personal_avatar_camera_item.view.*
 
 class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : AvatarFragmentBase(avatarViewModel), CheckersFragment.FragmentLifecycle {
 
-    private lateinit var cameraUtil: CameraUtil
+    private lateinit var cameraPreview: CameraPreview
 
     private var isAlreadyOpenPermission = false
 
@@ -33,30 +33,31 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        cameraUtil = CameraUtil(view)
+        cameraPreview = view.camera
 
         val permissionText = view.permission_text
 
         if (PermissionUtil.isAllPermissionsGranted(android.Manifest.permission.CAMERA)) {
             isAlreadyOpenPermission = true
+            openCameraByState(true)
         } else{
             setPermissionMsgVisibility(permissionText, true)
         }
 
-        val permissionGranted = PermissionUtil.isCameraPermissionGranted(activity)
+        val permissionGranted = PermissionUtil.isCameraPermissionGranted(context!!)
 
         compositeDisposableOnDestroyed.addAll(
                 avatarViewModel
                         .saveImage(activity!!)
                         .distinctUntilChanged()
-                        .subscribe(Functions.actionConsumer(cameraUtil::hideButtonsCameraVisibility)),
+                        .subscribe(Functions.actionConsumer(cameraPreview::hideButtonsCameraVisibility)),
 
-                cameraUtil.imageFromCamera
+                cameraPreview.imageFromCamera
                         .subscribeOn(Schedulers.io())
                         .subscribe(avatarViewModel::setChangeAvatarData),
 
-                permissionGranted
-                        .subscribe(this::openCameraByState),
+//                permissionGranted
+//                        .subscribe(this::openCameraByState),
 
                 RxView.clicks(permissionText)
                         .flatMap { permissionGranted }
@@ -70,8 +71,8 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
         val permissionText = view!!.permission_text
         if (isGranted) {
             setPermissionMsgVisibility(permissionText, false)
-            cameraUtil.initCamera()
-            if (!isAlreadyOpenPermission) startCamera(cameraUtil)
+            cameraPreview.initCamera(view)
+            if (!isAlreadyOpenPermission) startCamera(cameraPreview)
         } else {
             setPermissionMsgVisibility(permissionText, true)
         }
@@ -83,11 +84,11 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
         textViewMsg.permission_text.isEnabled = isShow
     }
 
-    private fun startCamera(cameraUtil: CameraUtil) {
+    private fun startCamera(cameraPreview: CameraPreview) {
         Observable.just("")
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext { cameraUtil.startCamera() }
+                .doOnNext { cameraPreview.startCamera() }
                 .subscribe()
     }
 

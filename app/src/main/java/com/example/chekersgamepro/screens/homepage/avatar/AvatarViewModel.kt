@@ -1,6 +1,9 @@
 package com.example.chekersgamepro.screens.homepage.avatar
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -9,25 +12,29 @@ import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.viewpager.widget.ViewPager
+import com.example.chekersgamepro.R
+import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersConfiguration
+import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.ButtonsAvatarSelectedAdapter
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarFragmentBase
+import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarGalleryFragment
 import com.example.chekersgamepro.screens.homepage.avatar.model.button.buttons.ButtonsAvatarImpl
 import com.example.chekersgamepro.screens.homepage.avatar.model.button.buttons.IButtonsAvatar
-import com.example.chekersgamepro.screens.homepage.avatar.model.pages.IPagesManager
-import com.example.chekersgamepro.screens.homepage.avatar.model.pages.PagesManagerImpl
 import com.example.chekersgamepro.screens.homepage.avatar.model.data.AvatarData
 import com.example.chekersgamepro.screens.homepage.avatar.model.data.ScrollPageData
+import com.example.chekersgamepro.screens.homepage.avatar.model.defaultt.avatar.IDefaultAvatars
+import com.example.chekersgamepro.screens.homepage.avatar.model.pages.IPagesManager
+import com.example.chekersgamepro.screens.homepage.avatar.model.pages.PagesManagerImpl
+import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.PermissionUtil
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_avatar.view.*
 import java.util.concurrent.TimeUnit
 
 class AvatarViewModel : ViewModel() {
@@ -38,6 +45,10 @@ class AvatarViewModel : ViewModel() {
 
     private val imageProfile = MutableLiveData<Bitmap>()
 
+    private val closeScreen = MutableLiveData<Boolean>()
+
+    private val isOpenGallery = MutableLiveData<Boolean>()
+
     private val compositeDisposable = CompositeDisposable()
 
     private val repositoryManager = RepositoryManager.create()
@@ -45,6 +56,12 @@ class AvatarViewModel : ViewModel() {
     private val pagesManager: IPagesManager = PagesManagerImpl(this)
 
     private val buttonsAvatar: IButtonsAvatar = ButtonsAvatarImpl()
+
+    private val imageUtil = CheckersImageUtil.create()
+
+    private val context = CheckersApplication.create().applicationContext
+
+    private lateinit var defaultAvatars: IDefaultAvatars
 
     init {
         compositeDisposable.add(
@@ -66,16 +83,7 @@ class AvatarViewModel : ViewModel() {
 
     private fun getFragments() = pagesManager.getFragments()
 
-//    fun saveImageProfile()/*: Completable*/ {
-//        Log.d("TEST_GAME", "1 saveImageProfile")
-//        Log.d("TEST_GAME", "2 saveImageProfile")
-////        saveAvatar()
-//        /*return*/ this.repositoryManager.storeImage()
-////                .subscribeOn(Schedulers.io())
-//    }
-
     fun actionOkClick() {
-//        this.repositoryManager.storeImage()
         Log.d("TEST_GAME", "AvatarViewModel saveAvatar")
         setAvatarData(AvatarData(AvatarState.AVATAR_SAVE, null))
     }
@@ -114,21 +122,51 @@ class AvatarViewModel : ViewModel() {
     fun getImageProfileTmp(lifecycleOwner: LifecycleOwner): Observable<Bitmap> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, imageProfile))
 
+    fun isCloseScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, closeScreen))
+                    .startWith(false)
+
+    fun getOpenGalleryText(lifecycleOwner: LifecycleOwner): Observable<String> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, isOpenGallery))
+                    .map { isPermissionsGranted ->
+                        context.getString(
+                                if (isPermissionsGranted) {
+                                    R.string.activity_home_page_avatar_add_gallery_photo
+                                } else {
+                                    R.string.activity_home_page_avatar_add_gallery_photo_permission
+                                })
+
+                    }
+                    .startWith(context.getString(
+                            if (PermissionUtil.isAllPermissionsGranted(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                R.string.activity_home_page_avatar_add_gallery_photo
+                            } else {
+                                R.string.activity_home_page_avatar_add_gallery_photo_permission
+                            })
+                    )
+
+    fun openGallery(lifecycleOwner: LifecycleOwner): Observable<Intent> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, isOpenGallery))
+                    .filter(Functions.equalsWith(true))
+                    .map { IntentUtil.createOpenGalleryIntent() }
 
     fun isNeedAnimateGalleryButton(page: AvatarFragmentBase): Observable<Boolean> =
-            getImageProfileTmp(page)
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(page, avatarData))
                     .subscribeOn(Schedulers.io())
-                    .flatMap { Observable.fromCallable { isActivePage(page) } }
-                    .delay(450, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                    .map { it.avatarState.ordinal == AvatarState.AVATAR_FROM_GALLERY.ordinal }
+                    .delay(600, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                     .filter(Functions.equalsWith(true))
 
-    fun getImageProfileTmpChange(page: AvatarFragmentBase): Observable<Bitmap> =
+    fun getImageProfileTmpChange(page: AvatarFragmentBase): Observable<Drawable> =
             getImageProfileTmp(page)
                     .subscribeOn(Schedulers.io())
                     .flatMap { image ->
                         Observable.fromCallable { isActivePage(page) }
                                 .filter(Functions.equalsWith(true))
                                 .map { image }
+                                .map { imageUtil.blurBitmapFromBitmap(it) }
+                                .map { imageUtil.bitmapToDrawable(it) }
+
                     }
 
     fun notifyMovePage(newPosition: Int) {
@@ -149,7 +187,9 @@ class AvatarViewModel : ViewModel() {
     }
 
     fun getButtonsAvatarSelectedAdapter(infoScrollPageData: Observable<ScrollPageData>) =
-            buttonsAvatar.createButtonAvatarSelectedList(infoScrollPageData).subscribeOn(Schedulers.io()).map { ButtonsAvatarSelectedAdapter(it) }
+            buttonsAvatar.createButtonAvatarSelectedList(infoScrollPageData)
+                    .subscribeOn(Schedulers.io())
+                    .map { ButtonsAvatarSelectedAdapter(it) }
 
     override fun onCleared() {
         Log.d("TEST_GAME", "AvatarViewModel -> onCleared")
@@ -160,11 +200,17 @@ class AvatarViewModel : ViewModel() {
     }
 
     fun finishAnimateImageProfile() {
+        notifyCloseScreen()
         compositeDisposable.add(
                 this.repositoryManager
                         .storeImage()
                         .subscribe()
         )
+    }
+
+    private fun notifyCloseScreen() {
+        closeScreen.postValue(true)
+
     }
 
     fun getPagerManager(avatarPager: ViewPager
@@ -175,5 +221,27 @@ class AvatarViewModel : ViewModel() {
                 it.onSuccess(ViewPagerManager(
                         avatarPager, activity, bottom, childFragmentManager, getFragments(), changeAvatarScreen(activity)))
             }
+
+    fun setDataFromGallery(data: Intent?) {
+        setChangeAvatarData(AvatarData(AvatarState.AVATAR_FROM_GALLERY, null))
+        compositeDisposable.add(
+                Observable.fromCallable { data }
+                        .subscribeOn(Schedulers.io())
+                        .map { dataImage -> imageUtil.creteBitmapFromData(dataImage, true) }
+                        .map { AvatarData(AvatarState.CAPTURE_AVATAR, it) }
+                        .subscribe(this::setChangeAvatarData)
+        )
+    }
+
+    fun permissionDenied() {
+        notifyCloseScreen()
+    }
+
+    fun clickOnGallery(context: Context) {
+        PermissionUtil.isStoragePermissionGranted(context)
+                .subscribe { isOpenGallery.postValue(it) }
+
+    }
+
 
 }

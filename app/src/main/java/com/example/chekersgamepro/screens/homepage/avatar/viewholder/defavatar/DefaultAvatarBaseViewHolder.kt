@@ -15,20 +15,16 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.avatar_default_item.view.*
 
 
-open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId : Int = R.layout.avatar_default_item) :
+open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId: Int = R.layout.avatar_default_item) :
         CheckersRecyclerView.Companion.ViewHolder<IDefaultAvatar>(parent, layoutId) {
 
-    private val avatarDefaultImageView= itemView.avatar_default_image
+    private val avatarDefaultImageView = itemView.avatar_default_image
 
-    private val circleImageAnimation= CircleAngleAnimation(avatarDefaultImageView)
+    private val circleImageAnimation = CircleAngleAnimation(avatarDefaultImageView)
 
     override fun bindData(model: IDefaultAvatar) {
 
         compositeDisposable.addAll(
-
-                initAnimation()
-                        .observeOn(Schedulers.io())
-                        .subscribe(),
 
                 RxView.clicks(itemView)
                         .observeOn(Schedulers.io())
@@ -40,7 +36,7 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId : Int = R.lay
                         .doOnNext { setDuration(400) }
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext(this::drawOrRemoveCircle)
-                        .subscribe (),
+                        .subscribe(),
 
                 model.isSelected()
                         .observeOn(Schedulers.io())
@@ -59,7 +55,6 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId : Int = R.lay
                         .subscribe(),
 
                 model.isClearSelected()
-                        .doOnNext { Log.d("TEST_GAME", "DefaultAvatarViewHolder -> isClearSelected") }
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext(this::drawOrRemoveCircle)
                         .subscribe(),
@@ -68,13 +63,6 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId : Int = R.lay
                         .subscribeOn(Schedulers.io())
                         .subscribe { avatarDefaultImage, t2 -> avatarDefaultImageView.setImageBitmap(avatarDefaultImage) }
         )
-    }
-
-    private fun initAnimation(): Completable {
-        return Completable.create {
-            it.onComplete()
-            avatarDefaultImageView.startAnimation(circleImageAnimation)
-        }
     }
 
     private fun setDuration(duration: Long) {
