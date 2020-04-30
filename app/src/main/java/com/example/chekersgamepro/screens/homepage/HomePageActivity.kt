@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
@@ -206,17 +207,20 @@ open class HomePageActivity : AppCompatActivity() {
     override fun onPause() {
         Log.d("TEST_GAME", "HomePageActivity -> onPause")
 
-        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
-        if (fragment != null && fragment.isVisible) {
-            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
-            fragment.dismissAllowingStateLoss()
-//            val resresf = Intent(this, HomePageActivity::class.java)
-//            startActivity(resresf)
-//            finish()
-//
-        }
 
         super.onPause()
+    }
+
+
+    override fun onStop() {
+        Log.d("TEST_GAME", "HomePageActivity -> onStop")
+
+        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
+        if (fragment != null && fragment.isVisible) {
+            fragment.dismissAllowingStateLoss()
+            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
+        }
+        super.onStop()
     }
 
 
