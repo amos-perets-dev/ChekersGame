@@ -12,6 +12,7 @@ import android.view.animation.Animation
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
+import com.airbnb.lottie.model.layer.Layer
 import com.google.android.gms.common.util.CollectionUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.hdodenhof.circleimageview.CircleImageView
@@ -30,6 +31,8 @@ class AnimationUtil {
 
         @SuppressLint("ObjectAnimatorBinding")
         fun animatePulse(view: View) {
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
             val animatePulse = ObjectAnimator.ofPropertyValuesHolder(view,
                     PropertyValuesHolder.ofFloat("scaleX", 1.2f),
                     PropertyValuesHolder.ofFloat("scaleY", 1.2f))
@@ -433,6 +436,81 @@ class AnimationUtil {
             })
             alphaAnimator.setDuration(800)
             alphaAnimator.start()
+        }
+
+        fun animateTranslateX(view: View, from: Float, to: Float) {
+
+            val alphaAnimator: ObjectAnimator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, from, to)
+            alphaAnimator.setDuration(800)
+            alphaAnimator.start()
+        }
+
+        fun animateTranslateY(view: View, from: Float, to: Float) {
+
+            val alphaAnimator: ObjectAnimator = ObjectAnimator.ofFloat(view, View.TRANSLATION_Y, from, to)
+            alphaAnimator.setDuration(800)
+            alphaAnimator.start()
+        }
+
+        fun scaleWithRotation(view : View, animateDuration: Long) : Completable {
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            return Completable.create {emitter ->
+                // cancel animator
+                if (view.tag is Animator) {
+                    (view.tag as Animator).cancel()
+                }
+
+                val rotate = 360f
+
+                // PARAMS
+                // translateX
+                val rotation = ObjectAnimator.ofFloat(view, View.ROTATION, rotate)
+                val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f)
+                val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1f)
+
+
+                // sequential animator
+                val set = AnimatorSet()
+                set.interpolator = AccelerateDecelerateInterpolator()
+                set.playTogether(/*rotation,*/ scaleX, scaleY)
+                set.duration = animateDuration
+
+                set.start()
+                // set the AnimatorSet as a tag, to cancel for animate next time.
+                set.addListener(object : Animation.AnimationListener, Animator.AnimatorListener {
+
+                    override fun onAnimationRepeat(p0: Animator?) {
+
+                    }
+
+                    override fun onAnimationEnd(p0: Animator?) {
+                        Log.d("TEST_GAME", "AnimationUtil -> onAnimationEnd")
+                        emitter.onComplete()
+                    }
+
+                    override fun onAnimationCancel(p0: Animator?) {
+                        Log.d("TEST_GAME", "AnimationUtil -> onAnimationCancel")
+//                    set.cancel()
+                    }
+
+                    override fun onAnimationStart(p0: Animator?) {
+                        Log.d("TEST_GAME", "AnimationUtil -> onAnimationStart 1")
+
+
+                    }
+
+                    override fun onAnimationRepeat(p0: Animation?) {}
+
+                    override fun onAnimationEnd(p0: Animation?) {}
+
+                    override fun onAnimationStart(p0: Animation?) {}
+
+
+                })
+            }
+
+
+
         }
 
 

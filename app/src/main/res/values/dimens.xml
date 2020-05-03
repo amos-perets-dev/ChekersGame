@@ -10,6 +10,11 @@
     <dimen name="avatar_fragment_top_margin">26dp</dimen>
     <integer name="activity_home_page_avatar_animate_image_translation">650</integer>
     <integer name="activity_home_page_avatar_change_update_delay">800</integer>
+    <dimen name="activity_home_page_avatar_default_grid_margin">-32dp</dimen>
+    <dimen name="activity_home_page_avatar_default_grid_item_width">95dp</dimen>
+    <dimen name="activity_home_page_avatar_default_grid_item_height">95dp</dimen>
+    <dimen name="activity_home_page_avatar_size">130dp</dimen>
 
+    <integer name="activity_home_page_default_avatar_draw_circle_animation_duration">300</integer>
 
 </resources>

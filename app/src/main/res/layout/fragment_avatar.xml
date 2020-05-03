@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     android:background="#00FFFFFF">
 
-    <androidx.viewpager.widget.ViewPager
+    <com.example.chekersgamepro.views.custom.CustomViewPager
         android:id="@+id/avatar_pager_fragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_buttons_avatar_selected"
         android:background="#747474"/>
 
     <androidx.appcompat.widget.AppCompatButton
@@ -29,7 +29,7 @@
         android:elevation="20dp"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="3dp"
-        android:translationY="57dp"/>
+        android:translationY="70dp"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_buttons_picker"
@@ -45,26 +45,18 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHeight_percent="0.09"
         android:layoutDirection="ltr"
-        android:layout_marginBottom="1dp"/>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/end_buttons_picker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95"/>
+        android:background="@color/activity_home_page_avatar_buttons_background_color"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/avatar_image_tmp"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="@dimen/activity_home_page_avatar_size"
+        android:layout_height="@dimen/activity_home_page_avatar_size"
         app:civ_border_width="0.05dp"
         app:civ_border_color="#FFFFFF"
         app:layout_constraintTop_toTopOf="@+id/avatar_pager_fragment"
-        app:layout_constraintBottom_toBottomOf="@+id/avatar_pager_fragment"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_buttons_avatar_selected"
         app:layout_constraintEnd_toEndOf="@+id/avatar_pager_fragment"
         app:layout_constraintStart_toStartOf="@+id/avatar_pager_fragment"
-        android:layout_marginBottom="25dp"
         android:scaleType="centerCrop"
         android:alpha="0"
         android:elevation="40dp"/>

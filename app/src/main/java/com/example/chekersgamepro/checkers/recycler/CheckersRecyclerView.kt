@@ -1,22 +1,43 @@
 package com.example.chekersgamepro.checkers.recycler
 
+import android.R
+import android.animation.AnimatorInflater
+import android.animation.AnimatorSet
+import android.annotation.SuppressLint
+import android.content.Context
+import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
 import androidx.annotation.CallSuper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
+import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.google.common.base.Objects
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.android.synthetic.main.activity_home_page.*
 import java.util.*
 import kotlin.collections.ArrayList
 
-class CheckersRecyclerView {
+
+@SuppressLint("ViewConstructor")
+class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : RecyclerView(context, attributeSet) {
+
+    init {
+        setHasFixedSize(true)
+        setItemViewCacheSize(20)
+        isDrawingCacheEnabled = true
+        drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
+        isNestedScrollingEnabled = false
+    }
 
     companion object {
 
-        abstract class Adapter<Model>(private val items: List<Model>) :
+        abstract class Adapter<Model>(private var items: List<Model>) :
                 RecyclerView.Adapter<ViewHolder<Model>>() {
+            constructor() : this(Collections.emptyList())
 
             private val setVH = HashSet<ViewHolder<Model>>()
 
@@ -25,14 +46,40 @@ class CheckersRecyclerView {
              */
             private val onItemClickListener: OnItemClickListener? = null
 
+            private lateinit var recyclerView: RecyclerView
+
             /**
              * listeners for click events
              */
             private val clickListeners: ArrayList<OnItemClickListener> = ArrayList()
 
-            override fun onBindViewHolder(holder: ViewHolder<Model>, position: Int) {
-                holder.setDataModel(getItem(position))
+//            init {
+//                setHasStableIds(true)
+//            }
 
+            fun updateList(listPlayerEvents: List<Model>) {
+                this.items = ArrayList(listPlayerEvents)
+                notifyDataSetChanged()
+//                notifyItemChanged(1)
+//                notifyItemRangeChanged( listPlayerEvents.size - 1,1 )
+                notifyItemRangeInserted(this.items.size - 1, 1)
+                Log.d("TEST_GAME", "CheckersRecyclerView updateList size: ${listPlayerEvents.size} ")
+            }
+
+            override fun onBindViewHolder(holder: ViewHolder<Model>, position: Int) {
+                Log.d("TEST_GAME", "CheckersRecyclerView onBindViewHolder:  ")
+
+                val model = getItemByPos(position) ?: getItem(position)
+
+                holder.setDataModel(model)
+
+//                screenWidth = (holder.itemView.context ).resources.displayMetrics.widthPixels
+//                val itemWidth = (screenWidth / 2.8f)
+//
+//                val lp = holder.itemView.layoutParams
+//                lp.width = itemWidth.toInt()
+//                holder.itemView.layoutParams = lp
+//
 //                holder.setOnClickListener(View.OnClickListener { v: View? ->
 //                    if (holder.adapterPosition == holder.layoutPosition
 //                            && holder.adapterPosition < itemCount
@@ -43,7 +90,11 @@ class CheckersRecyclerView {
 //                })
             }
 
-            open fun dispose(){
+            private fun getItemByPos(position: Int): Model{
+                return items[position]
+            }
+
+            open fun dispose() {
                 Log.d("TEST_GAME", "CheckersRecyclerView dispose dispose dispose:  ")
 
                 setVH.forEach { it.destroy() }
@@ -71,6 +122,7 @@ class CheckersRecyclerView {
 
             @CallSuper
             override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+                this.recyclerView = recyclerView
                 Log.d("TEST_GAME", "CheckersRecyclerView onAttachedToRecyclerView")
 
             }
@@ -100,6 +152,7 @@ class CheckersRecyclerView {
                 setVH.add(viewHolder)
                 return viewHolder
             }
+
 
             interface OnItemClickListener {
                 fun onItemClick(v: View?, itemPosition: Int)
@@ -150,7 +203,7 @@ class CheckersRecyclerView {
 
             protected fun getDataModel() = this.currentModel
 
-//            fun setOnClickListener(onClickListener: View.OnClickListener?) {
+            //            fun setOnClickListener(onClickListener: View.OnClickListener?) {
 //                itemView.setOnClickListener(onClickListener)
 //            }
         }

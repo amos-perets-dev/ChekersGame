@@ -26,6 +26,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Function3
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import java.util.concurrent.TimeUnit
 
 
@@ -48,12 +49,23 @@ class RepositoryManager : Repository {
     private val remoteDb: IRemoteDb = RemoteDbManager(realmManager.getDefaultRealm().where(UserProfileImpl::class.java).findFirst())
 
     private val userProfileManager = UserProfileManager(realmManager, remoteDb)
+
     private val playerManager = PlayerManager(realmManager, remoteDb)
 
     private var imageProfileTmpEncodeBase: String? = null
 
+    private val availableOnlinePlayersList = BehaviorSubject.create<List<IOnlinePlayerEvent>>()
+
     init {
         Log.d("TEST_GAME", "RepositoryManager init: $this")
+
+        remoteDb.getAllAvailableOnlinePlayersByLevel()
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    Log.d("TEST_GAME", "RepositoryManager getAllAvailableOnlinePlayersByLevel")
+                    availableOnlinePlayersList.onNext(it)
+                }
+
     }
 
     fun isRegistered(): Boolean = sharedPreferencesManager.isRegistered()
@@ -110,7 +122,7 @@ class RepositoryManager : Repository {
 
     fun setIsCanPlay(isCanPlay: Boolean): Completable = playerManager.setIsCanPlay(isCanPlay)
 
-    fun getOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> = remoteDb.getAllAvailableOnlinePlayersByLevel()
+    fun getOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> = availableOnlinePlayersList.hide()
 
     fun sendRequestOnlineGame(remotePlayerId: Long): Completable = playerManager.sendRequestOnlineGame(remotePlayerId).ignoreElement()
 
@@ -188,13 +200,6 @@ class RepositoryManager : Repository {
     fun isDefaultImage() = sharedPreferencesManager.isDefaultImage()
 
     override fun storeImage(): Completable {
-
-        val image = Observable.fromCallable { getImageProfileTmp() }
-
-//        image
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .flatMapCompletable {
         return userProfileManager.setEncodeImageProfile(getImageProfileTmp())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .andThen(sharedPreferencesManager.setIsDefaultImage())
@@ -204,46 +209,6 @@ class RepositoryManager : Repository {
                         .flatMapCompletable { playerName ->
                             remoteDb.setImageProfileAndPlayer(getImageProfileTmp()!!, playerName)
                         })
-
-//                }
-//                .subscribe()
-
-//        getPlayerNameAsync()
-//                .subscribeOn(Schedulers.io())
-//                .flatMapCompletable {playerName ->
-//                    remoteDb.setImageProfileAndPlayer(getImageProfileTmp()!!, playerName)
-//                }
-//                .subscribe()
-//                .flatMapCompletable { playerName ->
-//                    Observable.fromCallable { getImageProfileTmp() }
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .flatMapCompletable {newImageProfileEncodeBase ->
-//                                //                                val encodeImage = imageUtil.encodeBase64Image(newImageProfileEncodeBase)
-//                                userProfileManager.setEncodeImageProfile(newImageProfileEncodeBase)
-////                                        .andThen(remoteDb.setImageProfileAndPlayer(newImageProfileEncodeBase, playerName)
-////                                                .andThen(sharedPreferencesManager.setIsDefaultImage())
-////                                        )
-////                                Completable.complete()
-//
-//                            }
-//                }.subscribe()
-
-
-//        getPlayerNameAsync()
-//                .subscribeOn(Schedulers.io())
-//                .flatMapCompletable { playerName ->
-//                    Observable.fromCallable { getImageProfileTmp() }
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .flatMapCompletable {newImageProfileEncodeBase ->
-////                                val encodeImage = imageUtil.encodeBase64Image(newImageProfileEncodeBase)
-//                                userProfileManager.setEncodeImageProfile(newImageProfileEncodeBase)
-////                                        .andThen(remoteDb.setImageProfileAndPlayer(newImageProfileEncodeBase, playerName)
-////                                                .andThen(sharedPreferencesManager.setIsDefaultImage())
-////                                        )
-////                                Completable.complete()
-//
-//                            }
-//                }.subscribe()
     }
 
     fun getUserProfileMoneyChanges(): Observable<Int> = userProfileManager.getUserProfileMoneyChanges()

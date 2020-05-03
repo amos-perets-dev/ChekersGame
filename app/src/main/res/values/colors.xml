@@ -29,5 +29,6 @@
     <color name="activity_home_page_avatar_gallery_background_color">#383737</color>
     <color name="activity_home_page_avatar_default_background_color">#383737</color>
     <color name="activity_home_page_avatar_camera_background_color">#383737</color>
+    <color name="activity_home_page_avatar_buttons_background_color">#B6B6B6</color>
 
 </resources>

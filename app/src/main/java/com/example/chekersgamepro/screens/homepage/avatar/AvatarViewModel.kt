@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersApplication
@@ -19,7 +20,6 @@ import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.ButtonsAvatarSelectedAdapter
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarFragmentBase
-import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarGalleryFragment
 import com.example.chekersgamepro.screens.homepage.avatar.model.button.buttons.ButtonsAvatarImpl
 import com.example.chekersgamepro.screens.homepage.avatar.model.button.buttons.IButtonsAvatar
 import com.example.chekersgamepro.screens.homepage.avatar.model.data.AvatarData
@@ -29,6 +29,8 @@ import com.example.chekersgamepro.screens.homepage.avatar.model.pages.IPagesMana
 import com.example.chekersgamepro.screens.homepage.avatar.model.pages.PagesManagerImpl
 import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.PermissionUtil
+import com.example.chekersgamepro.views.custom.CustomViewPager
+import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -53,7 +55,7 @@ class AvatarViewModel : ViewModel() {
 
     private val repositoryManager = RepositoryManager.create()
 
-    private val pagesManager: IPagesManager = PagesManagerImpl(this)
+    private lateinit var pagesManager: IPagesManager
 
     private val buttonsAvatar: IButtonsAvatar = ButtonsAvatarImpl()
 
@@ -73,6 +75,12 @@ class AvatarViewModel : ViewModel() {
                         .subscribe(changeAvatarScreen::postValue)
         )
     }
+
+
+    fun visibleMainScreen(avatarImageTmp: CircleImageView, viewPager: CustomViewPager, recyclerButtons: RecyclerView) {
+        pagesManager = PagesManagerImpl(this, avatarImageTmp, viewPager,recyclerButtons)
+    }
+
 
     fun setChangeAvatarData(avatarData: AvatarData) {
         if (avatarData.image != null) {
@@ -113,7 +121,7 @@ class AvatarViewModel : ViewModel() {
 
     fun saveImage(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, avatarData))
-//                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(Schedulers.io())
                     .map { it.avatarState.ordinal == AvatarState.AVATAR_SAVE.ordinal }
                     .startWith(false)
                     .filter(Functions.equalsWith(true))
@@ -238,9 +246,16 @@ class AvatarViewModel : ViewModel() {
     }
 
     fun clickOnGallery(context: Context) {
-        PermissionUtil.isStoragePermissionGranted(context)
-                .subscribe { isOpenGallery.postValue(it) }
 
+        compositeDisposable.add(
+                PermissionUtil.isStoragePermissionGranted(context)
+                .subscribe { isOpenGallery.postValue(it) }
+        )
+    }
+
+    fun defaultAvatarsClick(): Boolean {
+
+        return true
     }
 
 

@@ -7,6 +7,7 @@ import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.avatar.model.button.button.IButtonAvatarSelected
 import com.example.chekersgamepro.screens.homepage.avatar.viewholder.buttons.ButtonAvatarSelectedBaseViewHolder
 import com.example.chekersgamepro.screens.homepage.avatar.viewholder.buttons.ButtonAvatarSelectedFirstViewHolder
+import com.example.chekersgamepro.util.animation.AnimationUtil
 
 class ButtonsAvatarSelectedAdapter(private val buttonsAvatarSelectedList: List<IButtonAvatarSelected>)
     : CheckersRecyclerView.Companion.Adapter<IButtonAvatarSelected>(buttonsAvatarSelectedList), CheckersFragment.LifecycleListener {

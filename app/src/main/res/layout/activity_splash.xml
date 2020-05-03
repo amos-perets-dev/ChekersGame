@@ -9,11 +9,44 @@
     android:background="#333">
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/logo_checkers"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:text="CHECKERS"
         android:gravity="center"
-        android:textSize="60dp"
-        android:textColor="#FFFFFF"/>
+        app:autoSizeTextType="uniform"
+        app:autoSizeMaxTextSize="65dp"
+        app:autoSizeMinTextSize="50dp"
+        android:singleLine="true"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:scaleX="10"
+        android:scaleY="10"
+        android:typeface="serif"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <com.example.chekersgamepro.views.custom.Typewriter
+        android:id="@+id/logo_game"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:layout_marginTop="170dp"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMaxTextSize="60dp"
+        app:autoSizeMinTextSize="50dp"
+        android:singleLine="true"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:scaleX="1"
+        android:scaleY="1"
+        android:typeface="serif"
+        app:layout_constraintTop_toBottomOf="@+id/logo_checkers"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

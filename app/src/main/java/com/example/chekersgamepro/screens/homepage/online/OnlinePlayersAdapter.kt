@@ -1,32 +1,19 @@
 package com.example.chekersgamepro.screens.homepage.online
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
-import com.example.chekersgamepro.R
+import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 
-class OnlinePlayersAdapter : RecyclerView.Adapter<OnlinePlayersViewHolder>() {
+class OnlinePlayersAdapter() : CheckersRecyclerView.Companion.Adapter<IOnlinePlayerEvent>() {
 
     private var listPlayerEvents = ArrayList<IOnlinePlayerEvent>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OnlinePlayersViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.online_player_item, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckersRecyclerView.Companion.ViewHolder<IOnlinePlayerEvent> {
 
-        return OnlinePlayersViewHolder(view)
+        return OnlinePlayersViewHolder(parent)
     }
 
-    override fun getItemCount(): Int {
-        return listPlayerEvents.size
-    }
-
-    override fun onBindViewHolder(holder: OnlinePlayersViewHolder, position: Int) {
-        holder.bindData(listPlayerEvents[position])
-    }
-
-    fun updateList(listPlayerEvents : List<IOnlinePlayerEvent>){
-
-        this.listPlayerEvents = ArrayList(listPlayerEvents)
-        notifyDataSetChanged()
+    override fun getItem(position: Int): IOnlinePlayerEvent {
+        return listPlayerEvents[position]
     }
 }

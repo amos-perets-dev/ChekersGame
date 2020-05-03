@@ -79,6 +79,7 @@ dependencies {
     implementation 'com.airbnb.android:lottie:2.5.0'
     implementation 'de.hdodenhof:circleimageview:3.0.0'
     implementation 'com.karumi:dexter:6.0.1'
+    implementation 'jp.wasabeef:recyclerview-animators:3.0.0'
 
 //    testImplementation "io.mockk:mockk:1.9.3.kotlin12"
     testImplementation "org.mockito:mockito-core:3.3.0"

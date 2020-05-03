@@ -1,7 +1,7 @@
 package com.example.chekersgamepro.db.remote
 
-import android.graphics.Bitmap
 import android.util.Log
+import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.db.remote.firebase.FirebaseManager
 import com.example.chekersgamepro.enumber.PlayersCode
@@ -35,6 +35,8 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     private var remotePlayerCacheTmp: IPlayer = PlayerImpl()
 
     private var isYourTurn = false
+
+    private val imageUtil = CheckersImageUtil.create()
 
     init {
         if (userProfile != null) {
@@ -103,11 +105,21 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                             .filter { remotePlayer -> (this.player.getPlayerName() != remotePlayer.getPlayerName()) && remotePlayer.isCanPlay() }
                             .cast(IPlayer::class.java)
                             .doOnNext { remotePlayer -> remotePlayersCache[remotePlayer.getPlayerId()] = remotePlayer }
-                            .doOnNext { remotePlayer -> list.add(OnlinePlayerEventImpl(remotePlayer.getPlayerName(), remotePlayer.getLevelPlayer(), remotePlayer.getPlayerId(), remotePlayer.getEncodeImage())) }
+                            .doOnNext { remotePlayer -> list.add(createOnlinePlayerEvent(remotePlayer)) }
                             .map { list }
                 }
                 .map { list }
     }
+
+
+    private fun createOnlinePlayerEvent(remotePlayer: IPlayer): IOnlinePlayerEvent  =
+            OnlinePlayerEventImpl(
+                    remotePlayer.getPlayerName()
+                    , remotePlayer.getLevelPlayer()
+                    , remotePlayer.getPlayerId()
+                    , imageUtil.decodeBase64Async(remotePlayer.getEncodeImage())!!
+            )
+
 
     override fun sendRequestOnlineGame(idRemotePlayer: Long): Single<String> {
 

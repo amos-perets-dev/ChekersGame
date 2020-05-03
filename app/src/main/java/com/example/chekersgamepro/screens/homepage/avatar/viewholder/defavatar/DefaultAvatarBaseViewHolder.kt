@@ -28,24 +28,12 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId: Int = R.layo
 
                 RxView.clicks(itemView)
                         .observeOn(Schedulers.io())
-                        .subscribe { model.click() },
-
-                model.isSelected()
-                        .observeOn(Schedulers.io())
+                        .map { model.isNotSelected() }
                         .filter(Functions.equalsWith(true))
-                        .doOnNext { setDuration(400) }
+//                        .doOnNext { setDuration(400) }
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext(this::drawOrRemoveCircle)
-                        .subscribe(),
-
-                model.isSelected()
-                        .observeOn(Schedulers.io())
-                        .firstOrError()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe { isSelected, t2 ->
-                            setDuration(0)
-                            drawOrRemoveCircle(isSelected)
-                        },
+                        .subscribe { model.click() },
 
                 model.avoidClick()
                         .distinctUntilChanged()
@@ -65,9 +53,9 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId: Int = R.layo
         )
     }
 
-    private fun setDuration(duration: Long) {
-        circleImageAnimation.setAnimateDuration(duration)
-    }
+//    private fun setDuration(duration: Long) {
+//        circleImageAnimation.setAnimateDuration(duration)
+//    }
 
     private fun drawOrRemoveCircle(isSelected: Boolean) {
         circleImageAnimation.setAngle(isSelected)

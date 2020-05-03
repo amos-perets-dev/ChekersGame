@@ -14,6 +14,7 @@ import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
 import com.example.chekersgamepro.screens.homepage.avatar.ViewPagerManager
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.ButtonsAvatarSelectedAdapter
 import com.example.chekersgamepro.util.animation.AnimationUtil
+import com.example.chekersgamepro.views.custom.CustomViewPager
 import com.jakewharton.rxbinding2.view.RxView
 import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.Completable
@@ -33,6 +34,8 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
     private lateinit var actionOkButton: AppCompatButton
 
     private lateinit var avatarImageTmp: CircleImageView
+
+    private lateinit var viewPager: CustomViewPager
 
     private val avatarViewModel by lazy {
         ViewModelProviders.of(this).get(AvatarViewModel::class.java)
@@ -74,63 +77,8 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
         this.avatarImageTmp = view.avatar_image_tmp
         this.actionOkButton = view.action_ok_button
         this.recyclerButtons = view.recycler_buttons_avatar_selected
+        this.viewPager = view.avatar_pager_fragment
 
-
-        compositeDisposableOnDestroyed.addAll(
-
-                this.avatarViewModel.isCloseScreen(this)
-                        .filter(Functions.equalsWith(true))
-                        .subscribe { dismissAllowingStateLoss() },
-
-                this.avatarViewModel
-                        .getPagerManager(
-                                view.avatar_pager_fragment
-                                , this.activity!!
-                                , this.image_profile_hp.bottom
-                                , this.childFragmentManager
-                        )
-                        .subscribeOn(Schedulers.io())
-                        .doOnEvent { viewPagerManager, t2 -> addListener(viewPagerManager) }
-                        .map(ViewPagerManager::getInfoScrollPageData)
-                        .flatMap(this.avatarViewModel::getButtonsAvatarSelectedAdapter)
-                        .doOnEvent { buttonsAvatarSelectedAdapter, t2 -> addListener(buttonsAvatarSelectedAdapter) }
-                        .subscribe(this::initRecyclerViewButtonsAvatarSelected),
-
-                avatarViewModel
-                        .saveImage(activity!!)
-                        .subscribeOn(Schedulers.io())
-                        .map { actionOkButton.measuredHeight.toFloat() }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnNext(this::animateActionOkButton)
-                        .flatMapCompletable {
-                            animateImageProfile()
-                                    .observeOn(Schedulers.io())
-                                    .doOnEvent { avatarViewModel.finishAnimateImageProfile() }
-                        }
-                        ?.subscribe()!!,
-
-                avatarViewModel
-                        .getImageProfileTmp(this)
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(avatarImageTmp::setImageBitmap),
-
-                avatarViewModel
-                        .imageProfileTmpChange(this)
-                        .subscribeOn(Schedulers.io())
-                        .map { 1f }
-                        .filter { this.avatarImageTmp.alpha != it }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnNext { Log.d("TEST_GAME", "2 AvatarPickerFragment -> animateAvatarImageTmp") }
-                        .doOnNext(this::animateVisibilityAvatarImageTmp)
-                        .map { 0f }
-                        .doOnNext(this::animateActionOkButton)
-                        .subscribe(),
-
-                RxView.clicks(actionOkButton)
-                        .firstOrError()
-                        .doOnEvent { t1, t2 -> avatarViewModel.actionOkClick() }
-                        .subscribe()
-        )
     }
 
     private fun initRecyclerViewButtonsAvatarSelected(buttonsAvatarSelectedAdapter: ButtonsAvatarSelectedAdapter) {
@@ -141,6 +89,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
     override fun onGlobalLayout() {
         view?.viewTreeObserver?.removeOnGlobalLayoutListener(this)
         if (view != null) {
+            Log.d("TEST_GAME", "AvatarPickerFragment -> this.recyclerButtons height: ${this.recyclerButtons!!.measuredHeight}")
 
             val refreshImageProfile = avatarViewModel.refreshImageProfile(this)
                     .subscribeOn(Schedulers.io())
@@ -148,7 +97,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
             val movePage = avatarViewModel.movePage(this)
                     .subscribeOn(Schedulers.io())
 
-            compositeDisposableOnDestroyed.add(
+            compositeDisposableOnDestroyed.addAll(
                     Observable.combineLatest(refreshImageProfile.startWith(0f), movePage.startWith(0f),
                             BiFunction { refreshImageAlpha: Float, movePageAlpha: Float -> 0f })
                             .subscribeOn(Schedulers.io())
@@ -158,6 +107,66 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                             .doOnNext(this::animateVisibilityAvatarImageTmp)
                             .flatMap { Observable.fromCallable { actionOkButton.measuredHeight.toFloat() } }
                             .doOnNext(this::animateActionOkButton)
+                            .subscribe()
+            )
+
+            this.avatarViewModel.visibleMainScreen(this.avatarImageTmp, viewPager, this.recyclerButtons)
+
+
+            compositeDisposableOnDestroyed.addAll(
+
+                    this.avatarViewModel.isCloseScreen(this)
+                            .filter(Functions.equalsWith(true))
+                            .subscribe { dismissAllowingStateLoss() },
+
+                    this.avatarViewModel
+                            .getPagerManager(
+                                    viewPager
+                                    , this.activity!!
+                                    , this.image_profile_hp.bottom + this.recyclerButtons!!.measuredHeight
+                                    , this.childFragmentManager
+                            )
+                            .observeOn(Schedulers.io())
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .doOnEvent { viewPagerManager, t2 -> addListener(viewPagerManager) }
+                            .map(ViewPagerManager::getInfoScrollPageData)
+                            .flatMap(this.avatarViewModel::getButtonsAvatarSelectedAdapter)
+                            .doOnEvent { buttonsAvatarSelectedAdapter, t2 -> addListener(buttonsAvatarSelectedAdapter) }
+                            .subscribe(this::initRecyclerViewButtonsAvatarSelected),
+
+                    avatarViewModel
+                            .saveImage(activity!!)
+                            .subscribeOn(Schedulers.io())
+                            .map { actionOkButton.measuredHeight.toFloat() }
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnNext(this::animateActionOkButton)
+                            .flatMapCompletable {
+                                animateImageProfile()
+                                        .observeOn(Schedulers.io())
+                                        .doOnEvent { avatarViewModel.finishAnimateImageProfile() }
+                            }
+                            ?.subscribe()!!,
+
+                    avatarViewModel
+                            .getImageProfileTmp(this)
+                            .subscribeOn(Schedulers.io())
+                            .subscribe(avatarImageTmp::setImageBitmap),
+
+                    avatarViewModel
+                            .imageProfileTmpChange(this)
+                            .subscribeOn(Schedulers.io())
+                            .map { 1f }
+                            .filter { this.avatarImageTmp.alpha != it }
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnNext { Log.d("TEST_GAME", "2 AvatarPickerFragment -> animateAvatarImageTmp") }
+                            .doOnNext(this::animateVisibilityAvatarImageTmp)
+                            .map { 0f }
+                            .doOnNext(this::animateActionOkButton)
+                            .subscribe(),
+
+                    RxView.clicks(actionOkButton)
+                            .firstOrError()
+                            .doOnEvent { t1, t2 -> avatarViewModel.actionOkClick() }
                             .subscribe()
             )
 

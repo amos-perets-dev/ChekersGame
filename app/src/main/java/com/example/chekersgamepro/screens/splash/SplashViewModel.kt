@@ -1,6 +1,7 @@
 package com.example.chekersgamepro.screens.splash
 
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.chekersgamepro.screens.homepage.HomePageActivity
 import com.example.chekersgamepro.db.repository.RepositoryManager
@@ -22,6 +23,8 @@ class SplashViewModel : ViewModel() {
     private val compositeDisposable = CompositeDisposable()
 
     init {
+        Log.d("TEST_GAME", "SplashViewModel init: $this")
+
         val checkersConfiguration = CheckersConfiguration.create(context)
 
         compositeDisposable.add(
@@ -46,9 +49,12 @@ class SplashViewModel : ViewModel() {
     }
 
     fun setImageDefaultPreUpdate(): Single<Boolean> =
-            if (repositoryManager.isRegistered())
-                Single.just(true).delay(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-            else repositoryManager.setImageDefaultPreUpdate()
+            if (repositoryManager.isRegistered()) {
+                repositoryManager
+                        .getOnlinePlayersByLevel()
+                        .firstOrError()
+                        .map { true }
+            } else repositoryManager.setImageDefaultPreUpdate()
 
     override fun onCleared() {
         compositeDisposable.clear()

@@ -17,7 +17,7 @@
     <!--///Registration///>>>-->
 
 
-    <string name="activity_home_page_avatar_add_gallery_photo">Add gallery photo</string>
+    <string name="activity_home_page_avatar_add_gallery_photo">Add photo</string>
     <string name="activity_home_page_avatar_add_gallery_photo_permission">Open storage permission</string>
     <string name="activity_home_page_avatar_add_open_camera_permission">Open camera permission</string>
 

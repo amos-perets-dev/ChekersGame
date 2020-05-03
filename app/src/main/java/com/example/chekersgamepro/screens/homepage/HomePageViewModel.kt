@@ -12,12 +12,14 @@ import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.screens.homepage.dialog.DialogStateCreator
 import com.example.chekersgamepro.checkers.CheckersApplication
+import com.example.chekersgamepro.screens.homepage.avatar.AvatarScreenState
 import com.example.chekersgamepro.util.PermissionUtil
 import com.google.common.base.Optional
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
+import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 class HomePageViewModel : ViewModel() {
@@ -30,7 +32,7 @@ class HomePageViewModel : ViewModel() {
 
     private val msgState = MutableLiveData<DialogStateCreator>()
 
-    private val openAvatarScreen = MutableLiveData<Boolean>()
+    private val avatarScreenState = MutableLiveData<AvatarScreenState>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -94,13 +96,19 @@ class HomePageViewModel : ViewModel() {
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, msgState))
 
     fun openAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, openAvatarScreen))
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, avatarScreenState))
+                    .map{it.ordinal == AvatarScreenState.OPEN_SCREEN.ordinal}
+                    .filter(Functions.equalsWith(true))
 
     fun startOnlineGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onlineGame))
                     .filter { it.isPresent }
                     .map { it.get() }
 
+
+    fun isHideGameButtons() {
+
+    }
 
     fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerGame))
@@ -137,6 +145,7 @@ class HomePageViewModel : ViewModel() {
             Single.just(repositoryManager.isDefaultImage())
                     .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                     .filter(Functions.equalsWith(true))
+                    .subscribeOn(Schedulers.io())
 
     fun getPlayerName(): Observable<String> = repositoryManager.getPlayerNameAsync()
 
@@ -154,8 +163,9 @@ class HomePageViewModel : ViewModel() {
                 PermissionUtil
                         .isStorageAndCameraPermissionGranted(context)
                         .subscribe {
-                            openAvatarScreen.postValue(true)
+                            avatarScreenState.postValue(AvatarScreenState.OPEN_SCREEN)
                         }
         )
     }
+
 }

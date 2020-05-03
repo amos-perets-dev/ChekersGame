@@ -28,8 +28,10 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.util.FileUtils
 import io.reactivex.Completable
 import io.reactivex.CompletableEmitter
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -138,7 +140,7 @@ open class CheckersImageUtil {
 
     fun createByteArrayFromBitmap(bitmap: Bitmap): ByteArray {
         val streamGuestOrComputer = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, streamGuestOrComputer)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, streamGuestOrComputer)
         return streamGuestOrComputer.toByteArray()
     }
 
@@ -246,6 +248,12 @@ open class CheckersImageUtil {
     fun decodeBase64(input: String?): Bitmap? {
         val decodedBytes = Base64.decode(input, 0)
         return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    }
+
+    fun decodeBase64Async(input: String?): Observable<Bitmap> {
+        val decodedBytes = Base64.decode(input, 0)
+        return Observable.just( BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size))
+                .subscribeOn(Schedulers.io())
     }
 
     companion object Factory {

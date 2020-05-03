@@ -15,6 +15,7 @@ public class CircleAngleAnimation extends Animation {
     public CircleAngleAnimation( CircleImageViewCustom circle) {
         this.oldAngle = circle.getAngle();
         this.circle = circle;
+        setDuration(circle.getDrawAnimationDuration());
     }
 
     @Override
@@ -29,7 +30,4 @@ public class CircleAngleAnimation extends Animation {
         this.newAngle = isSelected ? 360 : 0;
     }
 
-    public void setAnimateDuration(long duration) {
-        setDuration(duration);
-    }
 }

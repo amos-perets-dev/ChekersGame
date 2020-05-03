@@ -9,6 +9,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.example.chekersgamepro.R;
 import com.example.chekersgamepro.util.DisplayUtil;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -58,6 +59,10 @@ public class CircleImageViewCustom extends CircleImageView {
 
     public float getAngle() {
         return angle;
+    }
+
+    public long getDrawAnimationDuration() {
+        return getResources().getInteger(R.integer.activity_home_page_default_avatar_draw_circle_animation_duration);
     }
 
     public void setAngle(float angle) {

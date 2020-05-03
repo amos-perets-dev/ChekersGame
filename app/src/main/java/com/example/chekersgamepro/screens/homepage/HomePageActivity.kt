@@ -6,10 +6,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
+import com.example.chekersgamepro.checkers.CheckersActivity
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarPickerFragment
 import com.example.chekersgamepro.screens.homepage.dialog.RequestGameDialog
@@ -23,9 +23,10 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_home_page.*
+import java.util.*
 
 
-open class HomePageActivity : AppCompatActivity() {
+open class HomePageActivity : CheckersActivity() {
 
     private val LOAD_IMG_REQUEST = 100
     private val CAMERA_REQUEST = 200
@@ -44,15 +45,19 @@ open class HomePageActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_page)
-        Log.d("TEST_GAME", "onCreate")
+        Log.d("TEST_GAME", "HomePageActivity onCreate")
 
         initRequestGameDialog()
 
         val onlinePlayersAdapter = OnlinePlayersAdapter()
         initRecyclerView(onlinePlayersAdapter)
 
+        homePageViewModel
+                .isHideGameButtons()
+
         compositeDisposable.add(
                 homePageViewModel.isDefaultImage()
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe {
                             AnimationUtil.animatePulse(image_profile_hp)
                         }
@@ -70,7 +75,9 @@ open class HomePageActivity : AppCompatActivity() {
 
         compositeDisposable.add(
                 RxView.clicks(online_game_button)
-                        .doOnNext { players_list_container.animate().withLayer().translationY(0F).start() }
+                        .observeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnNext { players_list_container.animate().setDuration(500).withLayer().translationY(0F).start() }
                         .subscribe()
         )
 
@@ -128,7 +135,6 @@ open class HomePageActivity : AppCompatActivity() {
         compositeDisposable.add(
                 RxView.clicks(image_profile_hp)
                         .subscribe { homePageViewModel.clickOnAvatar(this) }
-//                        .subscribe(Functions.actionConsumer(this::startAvatarPickerFragment))
         )
 
         compositeDisposable.add(
@@ -201,7 +207,10 @@ open class HomePageActivity : AppCompatActivity() {
 
     private fun initRecyclerView(onlinePlayersAdapter: OnlinePlayersAdapter) {
         recycler_view_players.adapter = onlinePlayersAdapter
-        recycler_view_players.layoutManager = LinearLayoutManager(this)
+        val linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.isAutoMeasureEnabled = false
+
+        recycler_view_players.layoutManager = linearLayoutManager
     }
 
     override fun onPause() {
@@ -213,13 +222,13 @@ open class HomePageActivity : AppCompatActivity() {
 
 
     override fun onStop() {
-        Log.d("TEST_GAME", "HomePageActivity -> onStop")
-
-        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
-        if (fragment != null && fragment.isVisible) {
-            fragment.dismissAllowingStateLoss()
-            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
-        }
+//        Log.d("TEST_GAME", "HomePageActivity -> onStop")
+//
+//        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
+//        if (fragment != null && fragment.isVisible) {
+//            fragment.dismissAllowingStateLoss()
+//            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
+//        }
         super.onStop()
     }
 
