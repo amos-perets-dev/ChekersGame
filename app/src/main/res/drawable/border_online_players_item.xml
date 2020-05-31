@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape
+    android:shape="rectangle"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid
+        android:color="@color/activity_home_page_online_players_item_background_color"/>
+
+    <corners
+        android:radius="20dp"/>
+
+</shape>

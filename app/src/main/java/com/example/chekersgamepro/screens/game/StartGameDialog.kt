@@ -112,7 +112,7 @@ class StartGameDialog(private val activity: Activity
                     }
 
                     return@flatMap observable
-                            .delay(200, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                            .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 }
                 .doOnNext {
                     behaviorSubject.onNext(false)
@@ -134,6 +134,10 @@ class StartGameDialog(private val activity: Activity
                 .load(url)
                 .placeholder(iconPlaceHolder)
                 .into(view)
+    }
+
+    public fun closeDialog(){
+        dialog.dismiss()
     }
 
     private fun decreaseWindowSize() {

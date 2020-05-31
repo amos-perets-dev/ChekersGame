@@ -7,6 +7,7 @@
     <color name="color_withe_pawn">#FF0000</color>
     <color name="color_black_cell">#1AFFEB3B</color>
     <color name="color_withe_cell">#4D4EFF00</color>
+    <color name="color_red">#AA0000</color>
 
     <!--///Registration///-->
     <color name="activity_registration_title_text_color">#109710</color>
@@ -30,5 +31,12 @@
     <color name="activity_home_page_avatar_default_background_color">#383737</color>
     <color name="activity_home_page_avatar_camera_background_color">#383737</color>
     <color name="activity_home_page_avatar_buttons_background_color">#B6B6B6</color>
+    <color name="activity_home_page_online_players_title_background_color">#B6B6B6</color>
+    <color name="activity_home_page_online_players_waiting_player_msg_background_color">@color/color_red</color>
+    <color name="activity_home_page_online_players_item_background_color">#B6B6B6</color>
+    <color name="activity_home_page_dialog_players_draw_circle_button_color">#2DAA00</color>
+    <color name="dark_gray">#333</color>
+    <color name="white">#FFFFFF</color>
+    <color name="dark_gray_50_alpha">#A6333333</color>
 
 </resources>

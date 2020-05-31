@@ -6,6 +6,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowContentTransitions">true</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -36,9 +38,46 @@
 
     <style name="AvatarFragmentStyle" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:windowIsFloating">@bool/avatar_fragment_floating</item>
+        <item name="android:windowContentTransitions">true</item>
         <item name="colorAccent">#EC0000</item>
     </style>
 
-    <style name="AvatarFragmentShowHideStyle" parent="DialogAnimation" />
+    <style name="AvatarFragmentShowHideStyle" parent="DialogAnimation" >
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <!-- Transparent Window Activity -->
+    <style name="AppTheme.TransparentWindow" parent="Theme.MaterialComponents.NoActionBar">
+        <!--
+        We want the translucent background painted by the root layout instead
+        of painted by the window.
+        -->
+        <item name="android:windowIsTranslucent">true</item>
+
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+    </style>
+
+<!--    <style name="NotFullScreen" parent="AppTheme.NoActionBar">-->
+<!--        <item name="android:windowBackground">@android:color/transparent</item>-->
+<!--        <item name="android:windowNoTitle">true</item>-->
+<!--        <item name="android:windowIsFloating">true</item>-->
+
+<!--        <item name="android:windowActivityTransitions">true</item>-->
+
+<!--        <item name="windowActionBar">false</item>-->
+<!--        <item name="windowNoTitle">true</item>-->
+<!--        <item name="android:windowIsTranslucent">true</item>-->
+<!--        <item name="android:backgroundDimEnabled">true</item>-->
+
+<!--        <item name="android:windowFrame">@null</item>-->
+<!--        <item name="android:windowContentOverlay">@null</item>-->
+<!--        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>-->
+<!--        <item name="android:windowActionModeOverlay">true</item>-->
+<!--    </style>-->
 
 </resources>

@@ -1,28 +1,23 @@
 package com.example.chekersgamepro.db.remote.firebase
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.models.player.IPlayer
-import com.example.chekersgamepro.models.player.PlayerImpl
+import com.example.chekersgamepro.models.player.data.IPlayer
+import com.example.chekersgamepro.models.player.data.PlayerImpl
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.util.NetworkUtil
 import com.google.common.base.Optional
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 
 
 class FirebaseManager {
@@ -76,58 +71,6 @@ class FirebaseManager {
 
     }
 
-    fun isUserNameExist(userName: String): Single<Boolean> {
-        val applesQuery = databaseUsers.child(userName)
-
-        return RxFirebaseDatabase.data(applesQuery)
-                .map(DataSnapshot::getChildren)
-                .map { it.toSet() }
-                .map { it.size }
-                .flatMap { Single.just(it != 0) }
-    }
-
-    fun setIsCanPlay(playerName: String, level: String, isCanPlay: Boolean): Completable {
-        Log.d("TEST_GAME", "PLAYER NAME: $playerName")
-
-        return Completable.create { emitter ->
-            databasePlayers
-                    .child(level)
-                    .child(playerName)
-                    .child("canPlay")
-                    .setValue(isCanPlay)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("TEST_GAME", "FirebaseManager -> setIsCanPlay")
-                            emitter.onComplete()
-                            //Do what you need to do
-                        } else {
-                            Log.d("TEST_GAME", "FirebaseManager -> onError -> task.exception.toString()")
-                            emitter.onError(Throwable("ERROR SET CAN PLAY"))
-                        }
-                    }
-        }
-    }
-
-    fun getRequestStatusChanges(playerName: String, level: String): Observable<RequestOnlineGameStatus> {
-        val query = databasePlayers
-                .child(level)
-                .child(playerName)
-                .child("requestOnlineGameStatus")
-
-        return RxFirebaseDatabase.dataChanges(query)
-                .map { it.getValue(RequestOnlineGameStatus::class.java) }
-
-    }
-
-    fun getPlayerChanges(playerName: String, level: String): Observable<IPlayer> {
-        val query = databasePlayers.child(level).child(playerName)
-
-        return RxFirebaseDatabase.dataChanges(query)
-                .map { it.getValue(PlayerImpl::class.java) }
-                .cast(IPlayer::class.java)
-
-    }
-
     private fun deletePlayer(player: PlayerImpl, isNeedUpdateLevel: Boolean): Single<Boolean> {
 
         // if don't need to update the level player
@@ -164,213 +107,46 @@ class FirebaseManager {
         }
     }
 
-    fun setDataPlayer(player: IPlayer, isNeedUpdateLevel: Boolean): Single<Boolean> {
-        return deletePlayer(player as PlayerImpl, isNeedUpdateLevel)
-                .doOnEvent { isFinished, t2 ->
-                    if (isFinished) {
-                        databasePlayers.child(player.getLevelPlayer().toString()).child(player.getPlayerName()).setValue(player)
-                    }
-                }
-    }
+    fun setIsCanPlay(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR SET CAN PLAY")
 
-    fun getAllPlayersByLevel(levelPlayer: Int): Observable<MutableIterable<DataSnapshot>> {
+    fun finishRequestOnlineGame(fieldsMap: HashMap<String, Any>, level: String) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR FINISH REQUEST GAME")
 
-        val databaseReference = databasePlayers.child(levelPlayer.toString())
+    fun sendRequestOnlineGame(fieldsMap: HashMap<String, Any>, level: String) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR SEND REQUEST GAME")
 
-        return RxFirebaseDatabase.dataChanges(databaseReference)
-                .map { it.children }
-    }
+    fun acceptOnlineGame(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR ACCEPT GAME")
 
-    fun sendRequestOnlineGame(remotePlayer: IPlayer, player: IPlayer): Completable {
+    fun declineOnlineGame(fieldsMap: HashMap<String, Any>, levelPlayer: String) =
+            setData(databasePlayers.child(levelPlayer), fieldsMap, "ERROR DECLINE GAME")
+
+    fun cancelRequestGame(fieldsMap: HashMap<String, Any>, levelPlayer: String) =
+            setData(databasePlayers.child(levelPlayer), fieldsMap, "ERROR CANCEL REQUEST GAME")
+
+    fun notifyMove(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR NOTIFY MOVE")
+
+    fun pingFinishGameTechnicalLoss(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "TECHNICAL LOSS ERROR")
+
+    fun resetPlayer(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR RESET PLAYER")
+
+    fun setMoney(fieldsMap: HashMap<String, Any>) =
+            setData(databaseUsers, fieldsMap, "ERROR SET MONEY")
+
+    private fun setData(databaseReference: DatabaseReference, fieldsMap: HashMap<String, Any>, exception: String): Completable {
         return Completable.create { emitter ->
-
-            databasePlayers
-                    .child(remotePlayer.getLevelPlayer().toString())
-                    .child(remotePlayer.getPlayerName())
-                    .setValue(remotePlayer)
-                    .addOnCompleteListener {
-                        if (!it.isSuccessful) {
-                            emitter.onError(Throwable("ERROR REQUEST GAME(remotePlayer)"))
-                        }
-                    }
-
-            databasePlayers
-                    .child(player.getLevelPlayer().toString())
-                    .child(player.getPlayerName())
-                    .setValue(player)
-                    .addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            emitter.onComplete()
-                            //Do what you need to do
-                        } else {
-                            emitter.onError(Throwable("ERROR REQUEST GAME(player)"))
-                        }
-                    }
-        }
-
-    }
-
-    fun acceptOnlineGame(remotePlayerName: String, playerName: String, level: String): Completable {
-
-        return Completable.create { emitter ->
-            databasePlayers
-                    .child(level)
-                    .child(remotePlayerName)
-                    .child("requestOnlineGameStatus")
-                    .setValue(RequestOnlineGameStatus.ACCEPT_BY_GUEST)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            //Do what you need to do
-                        } else {
-                            emitter.onError(Throwable())
-                        }
-                    }
-
-            databasePlayers
-                    .child(level)
-                    .child(playerName)
-                    .child("requestOnlineGameStatus")
-                    .setValue(RequestOnlineGameStatus.ACCEPT_BY_GUEST)
+            databaseReference
+                    .updateChildren(fieldsMap)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             emitter.onComplete()
                             //Do what you need to do
                         } else {
-                            emitter.onError(Throwable())
-                        }
-                    }
-        }
-
-
-    }
-
-    fun declineOnlineGame(remotePlayer: String, player: IPlayer): Completable {
-
-        return Completable.create { emitter ->
-
-            // The remote player is the owner
-            // that need to notify on the decline game
-            databasePlayers
-                    .child(player.getLevelPlayer().toString())
-                    .child(remotePlayer)
-                    .child("requestOnlineGameStatus")
-                    .setValue(RequestOnlineGameStatus.DECLINE_BY_GUEST)
-                    .addOnCompleteListener { task ->
-                        if (!task.isSuccessful) {
-                            emitter.onError(Throwable("ERROR DECLINE GAME"))
-                        }
-                    }
-
-            databasePlayers
-                    .child(player.getLevelPlayer().toString())
-                    .child(player.getPlayerName())
-                    .setValue(player)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            emitter.onComplete()
-                            //Do what you need to do
-                        } else {
-                            emitter.onError(Throwable("ERROR DECLINE GAME"))
-                        }
-                    }
-
-        }
-
-    }
-
-    fun getRemoteMove(playerName: String, level: String): Observable<RemoteMove> {
-
-        val query = databasePlayers
-                .child(level)
-                .child(playerName)
-                .child("remoteMove")
-
-        return RxFirebaseDatabase.dataChanges(query)
-                .map { it.getValue(RemoteMove::class.java) }
-    }
-
-    fun notifyMove(remoteMove: RemoteMove, playerName: String, level: String): Completable {
-        return Completable.create {
-            databasePlayers
-                    .child(level)
-                    .child(playerName)
-                    .child("remoteMove")
-                    .setValue(remoteMove)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            it.onComplete()
-                        } else {
-                            it.onError(Throwable("ERROR DECLINE GAME"))
-                        }
-                    }
-        }
-    }
-
-    fun pingFinishGameTechnicalLoss(playerName: String, level: String/*, isPingTechnicalLoss : Boolean*/): Completable {
-        return Completable.create { emitter ->
-            databasePlayers
-                    .child(level)
-                    .child(playerName)
-                    .child("technicalLoss")
-                    .setValue(true)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            emitter.onComplete()
-
-                        } else {
-                            emitter.onError(Throwable("PING FINISH GAME TECHNICAL LOSS ERROR"))
-                        }
-                    }
-        }
-    }
-
-    fun isTechnicalWin(remotePlayer: String, level: String): Observable<Boolean> {
-
-        val query = databasePlayers
-                .child(level)
-                .child(remotePlayer)
-                .child("technicalLoss")
-
-        return RxFirebaseDatabase.dataChanges(query)
-                .map { Optional.of(it) }
-                .filter { it.isPresent }
-                .map { it.get() }
-                .filter { it.value is Boolean }
-                .map { it.value as Boolean }
-    }
-
-    fun setMoney(userName: String, money: Int): Completable {
-        Log.d("TEST_GAME", "FirebaseManager -> setMoney:  fun setMoney(userName: String: $userName")
-
-        return Completable.create { emitter ->
-            databaseUsers
-                    .child(userName)
-                    .child("money")
-                    .setValue(money)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("TEST_GAME", "FirebaseManager -> setMoney: ${task.isSuccessful}")
-
-                            emitter.onComplete()
-                        } else {
-                            emitter.onError(Throwable("ERROR SET MONEY"))
-                        }
-                    }
-        }
-    }
-
-    fun resetPlayer(player: IPlayer): Completable {
-        return Completable.create { emitter ->
-            databasePlayers
-                    .child(player.getLevelPlayer().toString())
-                    .child(player.getPlayerName())
-                    .setValue(player)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            emitter.onComplete()
-                            //Do what you need to do
-                        } else {
-                            emitter.onError(Throwable("ERROR RESET PLAYER"))
+                            emitter.onError(Throwable(exception))
                         }
                     }
         }
@@ -402,7 +178,7 @@ class FirebaseManager {
             databasePlayers
                     .child(level)
                     .child(playerName)
-                    .child("encodeImage")
+                    .child("avatarEncode")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
                         if (!task.isSuccessful) {
@@ -412,7 +188,7 @@ class FirebaseManager {
 
             databaseUsers
                     .child(playerName)
-                    .child("encodeImage")
+                    .child("avatarEncode")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -452,4 +228,68 @@ class FirebaseManager {
     }
 
 
+    fun getRemoteMove(playerName: String, level: String): Observable<RemoteMove> {
+
+        val query = databasePlayers
+                .child(level)
+                .child(playerName)
+                .child("remoteMove")
+
+        return RxFirebaseDatabase.dataChanges(query)
+                .map { it.getValue(RemoteMove::class.java) }
+    }
+
+    fun isTechnicalWin(remotePlayer: String, level: String): Observable<Boolean> {
+
+        val query = databasePlayers
+                .child(level)
+                .child(remotePlayer)
+                .child("technicalLoss")
+
+        return RxFirebaseDatabase.dataChanges(query)
+                .map { Optional.of(it) }
+                .filter { it.isPresent }
+                .map { it.get() }
+                .filter { it.value is Boolean }
+                .map { it.value as Boolean }
+    }
+
+    fun isUserNameExist(userName: String): Single<Boolean> {
+        val applesQuery = databaseUsers.child(userName)
+
+        return RxFirebaseDatabase.data(applesQuery)
+                .map(DataSnapshot::getChildren)
+                .map { it.toSet() }
+                .map { it.size }
+                .flatMap { Single.just(it != 0) }
+    }
+
+    fun getRequestStatusChanges(playerName: String, level: String): Observable<RequestOnlineGameStatus> {
+        val query = databasePlayers
+                .child(level)
+                .child(playerName)
+                .child("requestOnlineGameStatus")
+
+        return RxFirebaseDatabase.dataChanges(query)
+                .map { it.getValue(RequestOnlineGameStatus::class.java) }
+
+    }
+
+    fun getPlayerChanges(playerName: String, level: String): Observable<IPlayer> {
+        val query = databasePlayers.child(level).child(playerName)
+
+        return RxFirebaseDatabase.dataChanges(query)
+                .map { it.getValue(PlayerImpl::class.java) }
+                .cast(IPlayer::class.java)
+
+    }
+
+    fun getAllPlayersByLevel(levelPlayer: Int): Observable<MutableIterable<DataSnapshot>> {
+
+        val databaseReference = databasePlayers.child(levelPlayer.toString())
+
+        return RxFirebaseDatabase.dataChanges(databaseReference)
+                .subscribeOn(Schedulers.io())
+                .map { it.children }
+    }
 }

@@ -17,10 +17,18 @@
     <!--///Registration///>>>-->
 
 
-    <string name="activity_home_page_avatar_add_gallery_photo">Add photo</string>
-    <string name="activity_home_page_avatar_add_gallery_photo_permission">Open storage permission</string>
-    <string name="activity_home_page_avatar_add_open_camera_permission">Open camera permission</string>
-
+    <string name="activity_home_page_avatar_add_gallery_photo_text">Add photo</string>
+    <string name="activity_home_page_avatar_add_gallery_photo_permission_text">Open storage permission</string>
+    <string name="activity_home_page_avatar_add_open_camera_permission_text">Open camera permission</string>
+    <string name="activity_home_page_online_players_title_text">Online players</string>
+    <string name="activity_home_page_online_players_request_play_button_text">PLAY</string>
+    <string name="activity_home_page_dialog_players_close_button_text">DONE</string>
+    <string name="activity_home_page_online_players_decline_request_play_button_text">DECLINE</string>
+    <string name="activity_home_page_online_players_accept_request_play_button_text">ACCEPT</string>
+    <string name="activity_home_page_online_players_waiting_opponent_play_button_text">PLAY</string>
+    <string name="activity_home_page_online_players_active_game_request_msg_text">Active Game Request</string>
+    <string name="activity_home_page_online_players_dialog_waiting_text">Waiting to %1$s</string>
+    <string name="activity_home_page_online_players_dialog_request_game_text">Hi %1$s! let\'s play?</string>
 
 
 </resources>

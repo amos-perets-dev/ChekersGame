@@ -1,8 +1,5 @@
 package com.example.chekersgamepro.checkers.recycler
 
-import android.R
-import android.animation.AnimatorInflater
-import android.animation.AnimatorSet
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
@@ -10,14 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.AttrRes
 import androidx.annotation.CallSuper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
-import com.example.chekersgamepro.util.animation.AnimationUtil
+import androidx.recyclerview.widget.SnapHelper
+import com.example.chekersgamepro.checkers.CheckersApplication
 import com.google.common.base.Objects
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.activity_home_page.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -27,11 +24,33 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
 
     init {
         setHasFixedSize(true)
-        setItemViewCacheSize(20)
+        setItemViewCacheSize(40)
         isDrawingCacheEnabled = true
         drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
         isNestedScrollingEnabled = false
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
     }
+
+    fun addPagerSnap(){
+        val snapHelper: SnapHelper = PagerSnapHelper()
+        snapHelper.attachToRecyclerView(this)
+    }
+
+    override fun onAttachedToWindow() {
+        Log.d("TEST_GAME", "CheckersRecyclerView onAttachedToWindow: ")
+
+        super.onAttachedToWindow()
+        // View is now attached
+    }
+
+    override fun onDetachedFromWindow() {
+        Log.d("TEST_GAME", "CheckersRecyclerView onDetachedFromWindow: ")
+
+        super.onDetachedFromWindow()
+        // View is now detached, and about to be destroyed
+    }
+
+
 
     companion object {
 
@@ -41,12 +60,24 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
 
             private val setVH = HashSet<ViewHolder<Model>>()
 
+            private var screenWidth : Int = 0
+            private var itemWidth : Int = 0
+            private var itemOffset : Int = 0
+            private val context = CheckersApplication.create().applicationContext
+
+            init {
+                screenWidth = context.resources.displayMetrics.widthPixels
+                itemWidth = ((screenWidth / 1.4f).toInt())
+                itemOffset = (screenWidth * 0.1).toInt()
+            }
+
             /**
              * the onItemClickListener holder
              */
             private val onItemClickListener: OnItemClickListener? = null
 
             private lateinit var recyclerView: RecyclerView
+            private lateinit var linearLayoutManager: LinearLayoutManager
 
             /**
              * listeners for click events
@@ -62,7 +93,7 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
                 notifyDataSetChanged()
 //                notifyItemChanged(1)
 //                notifyItemRangeChanged( listPlayerEvents.size - 1,1 )
-                notifyItemRangeInserted(this.items.size - 1, 1)
+//                notifyItemRangeInserted(this.items.size - 1, 1)
                 Log.d("TEST_GAME", "CheckersRecyclerView updateList size: ${listPlayerEvents.size} ")
             }
 
@@ -73,21 +104,26 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
 
                 holder.setDataModel(model)
 
-//                screenWidth = (holder.itemView.context ).resources.displayMetrics.widthPixels
-//                val itemWidth = (screenWidth / 2.8f)
-//
-//                val lp = holder.itemView.layoutParams
-//                lp.width = itemWidth.toInt()
-//                holder.itemView.layoutParams = lp
-//
-//                holder.setOnClickListener(View.OnClickListener { v: View? ->
-//                    if (holder.adapterPosition == holder.layoutPosition
-//                            && holder.adapterPosition < itemCount
-//                            && holder.adapterPosition >= 0){
-//                        notifyClickEvent(holder.itemView, holder.adapterPosition)
-//
-//                    }
-//                })
+                if (isNeedChangeItemSize()) changeItemSize(holder)
+            }
+
+            protected open fun isNeedChangeItemSize() =  false
+
+
+            protected open fun getScreenWidth() = 0
+
+            protected open fun getScreenHeight() = 0
+
+            private fun changeItemSize(holder: ViewHolder<Model>){
+                val screenWidth = (holder.itemView.context).resources.displayMetrics.widthPixels
+//                itemWidth = ((screenWidth / 1.4f).toInt())
+
+                val lp = holder.itemView.layoutParams
+//                lp.width = itemWidth
+                val screenHeight = getScreenHeight()
+
+                lp.height = ((screenHeight / 1.8f).toInt())
+                holder.itemView.layoutParams = lp
             }
 
             private fun getItemByPos(position: Int): Model{
@@ -123,6 +159,7 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
             @CallSuper
             override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
                 this.recyclerView = recyclerView
+
                 Log.d("TEST_GAME", "CheckersRecyclerView onAttachedToRecyclerView")
 
             }
@@ -149,8 +186,16 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
             }
 
             protected open fun addViewHolder(viewHolder: ViewHolder<Model>): ViewHolder<Model> {
+                Log.d("TEST_GAME", "CheckersRecyclerView lsetVH.add(viewHolder)")
+
                 setVH.add(viewHolder)
                 return viewHolder
+            }
+
+            fun scrollToPositionWithOffset() {
+                val layoutManager = recyclerView.layoutManager
+                Log.d("TEST_GAME", "CheckersRecyclerView scrollToPositionWithOffset layoutManager: ${layoutManager} itemcount: $itemCount")
+                (layoutManager as LinearLayoutManager).scrollToPositionWithOffset(1, itemOffset)
             }
 
 
@@ -164,6 +209,10 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
                 RecyclerView.ViewHolder(itemView) {
 
             constructor(parent: ViewGroup, layoutId: Int) : this(getLayout(parent, layoutId))
+
+            init {
+                itemView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            }
 
             protected val compositeDisposable = CompositeDisposable()
 

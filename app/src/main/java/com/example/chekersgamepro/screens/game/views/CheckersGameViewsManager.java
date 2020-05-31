@@ -184,9 +184,10 @@ public class CheckersGameViewsManager {
     }
 
     public void setFinishGame(GameFinishData finishGame) {
-        timerView.dispose();
+        this.timerView.dispose();
+        this.startGameDialog.closeDialog();
         String winOrLoose = finishGame.getWinOrLoose();
-        textViewTestStart.setText(winOrLoose);
+        this.textViewTestStart.setText(winOrLoose);
         CheckersApplication.create().showToast(winOrLoose);
     }
 

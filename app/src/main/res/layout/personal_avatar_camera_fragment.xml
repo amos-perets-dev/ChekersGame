@@ -43,7 +43,7 @@
         android:id="@+id/permission_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/activity_home_page_avatar_add_open_camera_permission"
+        android:text="@string/activity_home_page_avatar_add_open_camera_permission_text"
         android:padding="20dp"
         android:textColor="#FFFFFF"
         android:textSize="30dp"

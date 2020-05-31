@@ -11,7 +11,7 @@
         android:id="@+id/text_button_gallery"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:text="@string/activity_home_page_avatar_add_gallery_photo"
+        android:text="@string/activity_home_page_avatar_add_gallery_photo_text"
         android:padding="20dp"
         android:textColor="#FFFFFF"
         app:autoSizeMinTextSize="26dp"

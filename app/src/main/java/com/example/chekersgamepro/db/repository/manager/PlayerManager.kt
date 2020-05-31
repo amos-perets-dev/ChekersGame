@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
-import com.example.chekersgamepro.models.player.IPlayer
+import com.example.chekersgamepro.models.player.data.IPlayer
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -27,8 +27,8 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun startGetDataPlayerChanges(){
         remoteDb.getDataPlayerChanges()
                 .doOnNext {
-                    Log.d("TEST_GAME", "startGetDataPlayerChanges")
                     this.player = it
+                    Log.d("TEST_GAME", "PlayerManager startGetDataPlayerChanges doOnNext player: ${this.player.toString()}")
                 }
                 .doOnNext { playerAsync.onNext(it) }
                 .subscribe ()
@@ -53,7 +53,7 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
 
     fun getNowPlayAsync(): Observable<Int> = getPlayerAsync().map(IPlayer::getNowPlay).distinctUntilChanged()
 
-    fun sendRequestOnlineGame(remotePlayerId: Long): Single<String> =  remoteDb.sendRequestOnlineGame(remotePlayerId)
+    fun sendRequestOnlineGame(remotePlayerId: Long): Completable =  remoteDb.sendRequestOnlineGame(remotePlayerId)
 
     fun declineOnlineGame(): Completable =  remoteDb.declineOnlineGame()
 
@@ -64,5 +64,8 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun getRemoteMove(): Observable<RemoteMove> = remoteDb.getRemoteMove()
 
     fun resetPlayer(): Completable = remoteDb.resetPlayer()
+
+    fun isRequestGameStatusEmpty(): Observable<Boolean> = remoteDb.isRequestGameStatusEmpty()
+
 
 }

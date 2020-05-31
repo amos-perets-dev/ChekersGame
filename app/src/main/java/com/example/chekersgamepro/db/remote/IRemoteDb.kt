@@ -1,11 +1,11 @@
 package com.example.chekersgamepro.db.remote
 
-import android.graphics.Bitmap
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.models.player.IPlayer
+import com.example.chekersgamepro.models.player.data.IPlayer
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
 import com.google.common.base.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -21,25 +21,23 @@ interface IRemoteDb {
 
     fun isUserNameExistServer(userName: String): Single<Boolean>
 
-    fun setIsCanPlay(isCanPlay : Boolean) : Completable?//
+    fun setIsCanPlay(isCanPlay : Boolean) : Completable?
 
     fun getDataPlayerChanges() : Observable<IPlayer>
 
     fun getAllAvailableOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>>
 
-    fun sendRequestOnlineGame(idRemotePlayer : Long) : Single<String>//
+    fun sendRequestOnlineGame(idRemotePlayer : Long) : Completable
 
-    fun getRequestGameMsgText() : Observable<String>//??
+    fun declineOnlineGame(): Completable
 
-    fun getRequestGameStatus() : Observable<RequestOnlineGameStatus>//??
-
-    fun declineOnlineGame(): Completable//
-
-    fun acceptOnlineGame(): Completable//
+    fun acceptOnlineGame(): Completable
 
     fun finishRequestOnlineGame() : Completable
 
-    fun notifyEndTurn(move: RemoteMove): Completable//??
+    fun cancelRequestGame(): Completable
+
+    fun notifyEndTurn(move: RemoteMove): Completable
 
     fun getRemoteMove() : Observable<RemoteMove>
 
@@ -54,5 +52,21 @@ interface IRemoteDb {
     fun setImageProfileAndPlayer(encodeImage: String, playerName: String): Completable
 
     fun setImageDefaultPreUpdate() : Single<ByteArray?>
+
+    fun getDialogState(): Observable<DialogStateCreator>
+
+    fun startOnlineGame() : Observable<Boolean>
+
+    fun isRequestGameStatusEmpty() : Observable<Boolean>
+
+    fun isWaitingPlayer(): Observable<Boolean>
+
+    fun isCanPlay() : Single<Boolean>
+
+    fun getRemotePlayerById(playerId: Long): IPlayer
+
+    fun setDialogCreator(dialogStateCreator: DialogStateCreator)
+
+    fun getRequestGameStatus() : Observable<RequestOnlineGameStatus>
 
 }

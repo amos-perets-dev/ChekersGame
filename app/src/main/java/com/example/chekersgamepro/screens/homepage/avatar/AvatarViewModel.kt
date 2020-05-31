@@ -139,17 +139,17 @@ class AvatarViewModel : ViewModel() {
                     .map { isPermissionsGranted ->
                         context.getString(
                                 if (isPermissionsGranted) {
-                                    R.string.activity_home_page_avatar_add_gallery_photo
+                                    R.string.activity_home_page_avatar_add_gallery_photo_text
                                 } else {
-                                    R.string.activity_home_page_avatar_add_gallery_photo_permission
+                                    R.string.activity_home_page_avatar_add_gallery_photo_permission_text
                                 })
 
                     }
                     .startWith(context.getString(
                             if (PermissionUtil.isAllPermissionsGranted(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                R.string.activity_home_page_avatar_add_gallery_photo
+                                R.string.activity_home_page_avatar_add_gallery_photo_text
                             } else {
-                                R.string.activity_home_page_avatar_add_gallery_photo_permission
+                                R.string.activity_home_page_avatar_add_gallery_photo_permission_text
                             })
                     )
 
@@ -196,7 +196,7 @@ class AvatarViewModel : ViewModel() {
 
     fun getButtonsAvatarSelectedAdapter(infoScrollPageData: Observable<ScrollPageData>) =
             buttonsAvatar.createButtonAvatarSelectedList(infoScrollPageData)
-                    .subscribeOn(Schedulers.io())
+//                    .subscribeOn(Schedulers.io())
                     .map { ButtonsAvatarSelectedAdapter(it) }
 
     override fun onCleared() {

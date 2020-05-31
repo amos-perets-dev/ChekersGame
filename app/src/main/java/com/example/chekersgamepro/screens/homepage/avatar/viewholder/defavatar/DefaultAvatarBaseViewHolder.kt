@@ -1,14 +1,11 @@
 package com.example.chekersgamepro.screens.homepage.avatar.viewholder.defavatar
 
-import android.util.Log
 import android.view.ViewGroup
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.avatar.model.defaultt.avatar.IDefaultAvatar
-import com.example.chekersgamepro.views.custom.circle.CircleAngleAnimation
-import com.example.chekersgamepro.views.custom.circle.CircleImageViewCustom
+import com.example.chekersgamepro.views.custom.circle.AngleAnimation
 import com.jakewharton.rxbinding2.view.RxView
-import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
@@ -20,7 +17,7 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId: Int = R.layo
 
     private val avatarDefaultImageView = itemView.avatar_default_image
 
-    private val circleImageAnimation = CircleAngleAnimation(avatarDefaultImageView)
+    private val circleImageAnimation = AngleAnimation(avatarDefaultImageView)
 
     override fun bindData(model: IDefaultAvatar) {
 
@@ -49,6 +46,7 @@ open class DefaultAvatarBaseViewHolder(parent: ViewGroup, layoutId: Int = R.layo
 
                 model.getAvatarDefaultImage()
                         .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe { avatarDefaultImage, t2 -> avatarDefaultImageView.setImageBitmap(avatarDefaultImage) }
         )
     }

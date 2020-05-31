@@ -22,6 +22,10 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
+        return getViewInflater(inflater, container)
+    }
+
+    protected open fun getViewInflater(inflater: LayoutInflater, container: ViewGroup?): View? {
         return inflater.inflate(getLayoutResId(), container, false)
 
     }
@@ -37,6 +41,8 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
     }
 
     protected fun getInteger(resId: Int) = checkersApplication.getInteger(resId)
+
+    protected fun getColor(resId: Int) = checkersApplication.getColorRes(resId)
 
     override fun onDestroy() {
 
@@ -82,10 +88,12 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
 
     }
 
-
-
     override fun onStart() {
         super.onStart()
+        changeWindowSize()
+    }
+
+    protected open fun changeWindowSize(){
         if (dialog != null) {
             val window = dialog!!.window
             if (window != null) { // height  - to prohibit screen resizing when keyboard is open

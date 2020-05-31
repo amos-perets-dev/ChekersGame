@@ -7,5 +7,13 @@
 
     </declare-styleable>
 
+    <declare-styleable name="SpecialTextView">
+        <attr name="SpecialTextColor" format="reference"/>
+        <attr name="SpecialTextSize" format="float"/>
+        <attr name="SpecialTextFont" format="reference"/>
+        <attr name="SpecialBorderWidth" format="integer"/>
+        <attr name="SpecialBorderColor" format="reference"/>
+        <attr name="SpecialBackgroundColor" format="integer"/>
+    </declare-styleable>
 
 </resources>

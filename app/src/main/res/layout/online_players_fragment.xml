@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/players_list_fragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:tag="playersListFragment">
+
+    <com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
+        android:id="@+id/recycler_view_players"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="#FFFFFF"
+        android:layoutDirection="ltr"/>
+
+<!--    <androidx.appcompat.widget.AppCompatTextView-->
+<!--        android:id="@+id/waiting_player_msg"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:text="@string/activity_home_page_online_players_active_game_request_msg_text"-->
+<!--        app:layout_constraintHeight_percent="0.1"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:autoSizeTextType="uniform"-->
+<!--        app:autoSizeMinTextSize="12dp"-->
+<!--        app:autoSizeMaxTextSize="16dp"-->
+<!--        app:fontFamily="@font/english_first"-->
+<!--        android:gravity="start|center_vertical"-->
+<!--        android:elevation="10dp"-->
+<!--        android:layout_marginLeft="10dp"-->
+<!--        android:layout_marginRight="10dp"-->
+<!--        android:background="@drawable/border_waiting_player_msg"-->
+<!--        android:textColor="#FFFFFF"-->
+<!--        android:translationY="-0dp"/>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

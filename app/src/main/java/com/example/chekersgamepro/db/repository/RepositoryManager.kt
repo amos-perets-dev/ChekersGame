@@ -10,11 +10,9 @@ import com.example.chekersgamepro.db.remote.IRemoteDb
 import com.example.chekersgamepro.db.remote.RemoteDbManager
 import com.example.chekersgamepro.db.repository.manager.PlayerManager
 import com.example.chekersgamepro.db.repository.manager.UserProfileManager
-import com.example.chekersgamepro.models.player.IPlayer
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.UserProfileImpl
-import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.screens.homepage.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
 import com.example.chekersgamepro.screens.registration.RegistrationStatus
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersConfiguration
@@ -23,8 +21,6 @@ import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.StringUtil
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Function3
-import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import java.util.concurrent.TimeUnit
@@ -124,60 +120,42 @@ class RepositoryManager : Repository {
 
     fun getOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> = availableOnlinePlayersList.hide()
 
-    fun sendRequestOnlineGame(remotePlayerId: Long): Completable = playerManager.sendRequestOnlineGame(remotePlayerId).ignoreElement()
+    fun sendRequestOnlineGame(remotePlayerId: Long): Completable =
+            Observable.timer(200, TimeUnit.MILLISECONDS)
+                    .flatMapCompletable { playerManager.sendRequestOnlineGame(remotePlayerId) }
 
     fun declineOnlineGame(): Completable = playerManager.declineOnlineGame()
 
     fun acceptOnlineGame(): Completable = playerManager.acceptOnlineGame()
 
-    fun getMsgIfNeeded(): Observable<DialogStateCreator> =
-            Observable.combineLatest(getRequestGameMsgText(), isNeedShowMessage(), isNeedShowActionMessage(),
-                    Function3 { msg: String, isNeedShowMessage: Boolean, isNeedShowActionMessage: Boolean ->
-                        DialogStateCreator(msg, isNeedShowMessage, isNeedShowActionMessage)
-                    })
+    fun getDialogState(): Observable<DialogStateCreator> = remoteDb.getDialogState()
 
-    private fun getRequestGameMsgText(): Observable<String> = remoteDb.getRequestGameMsgText().distinctUntilChanged()
+    fun setDialogCreator(dialogStateCreator: DialogStateCreator) {
+        remoteDb.setDialogCreator(dialogStateCreator)
+    }
 
-    private fun isNeedShowMessage(): Observable<Boolean> =
-            remoteDb.getRequestGameStatus()
-                    .flatMap { requestGame ->
-                        isOwnerPlayerAsync()
-                                ?.map { isOwner ->
-                                    requestGame.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !isOwner
-                                            || requestGame.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && isOwner
-                                }
-                    }
-                    .distinctUntilChanged()
+    fun isWaitingPlayer(): Observable<Boolean> = remoteDb.isWaitingPlayer()
 
-    private fun isNeedShowActionMessage(): Observable<Boolean> =
-            remoteDb.getRequestGameStatus()
-                    .flatMap { requestGame ->
-                        isOwnerPlayerAsync()
-                                ?.map { isOwner ->
-                                    requestGame.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !isOwner
-                                }
-                    }
-                    .distinctUntilChanged()
+    fun isCanPlay() = remoteDb.isCanPlay()
 
+    override fun getRemotePlayerById(playerId: Long) = remoteDb.getRemotePlayerById(playerId)
+
+    fun getRequestGameStatus() = remoteDb.getRequestGameStatus()
+
+    override fun technicalFinishGamePlayer() = resetPlayer()
+
+    /**
+     * If the oner get the notify on the decline request game, he needed to clean the request
+     */
     fun finishRequestOnlineGame(): Completable =
-            remoteDb.getRequestGameStatus()
-                    .flatMap { requestGame ->
-                        isOwnerPlayerAsync()
-                                ?.filter { isOwner -> requestGame.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && isOwner }
-                    }
-                    .delay(2000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            Observable.timer(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                     .flatMapCompletable { remoteDb.finishRequestOnlineGame() }
 
     fun isOwnerPlayerAsync() = playerManager.isOwnerPlayerAsync()
 
-    fun startOnlineGame(): Observable<Boolean> =
-            remoteDb.getRequestGameStatus()
-                    .map { status -> status.ordinal == RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal }
-                    .filter(Functions.equalsWith(true))
+    fun startOnlineGame(): Observable<Boolean> = remoteDb.startOnlineGame()
 
     fun getRemoteMove(): Observable<RemoteMove> = playerManager.getRemoteMove()
-
-    fun getPlayer(): Single<IPlayer?> = playerManager.getPlayer()
 
     fun getPlayerNameAsync(): Observable<String> = playerManager.getPlayerNameAsync()
 
@@ -224,7 +202,7 @@ class RepositoryManager : Repository {
             .filter { it.isNotEmpty() }
             .map { encodeImage -> imageUtil.decodeBase64(encodeImage) }
 
-    fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(repositoryManager!!.getPlayer(), gameMode, imageUtil, context)
+    fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync(), gameMode, imageUtil, context)
 
     fun setImageDefaultPreUpdate(): Single<Boolean> = remoteDb.setImageDefaultPreUpdate()
             .flatMap { arrayFromBitmap ->
@@ -242,6 +220,8 @@ class RepositoryManager : Repository {
     }
 
     override fun getImageProfileTmp(): String? = this.imageProfileTmpEncodeBase
+
+    fun cancelRequestGame(): Completable = this.remoteDb.cancelRequestGame()
 
     companion object Factory {
 

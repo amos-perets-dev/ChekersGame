@@ -1,5 +1,4 @@
 <resources>
-    <dimen name="fab_margin">16dp</dimen>
     <item name="dialog_choose_player" format="float" type="dimen">0.9</item>
 
     <dimen name="activity_registration_title_text_size_min">20dp</dimen>
@@ -8,6 +7,7 @@
     <dimen name="activity_registration_button_text_size_min">18dp</dimen>
     <dimen name="activity_registration_button_text_size_max">20dp</dimen>
     <dimen name="avatar_fragment_top_margin">26dp</dimen>
+    <dimen name="view_draw_circle_margin">0.5dp</dimen>
     <integer name="activity_home_page_avatar_animate_image_translation">650</integer>
     <integer name="activity_home_page_avatar_change_update_delay">800</integer>
     <dimen name="activity_home_page_avatar_default_grid_margin">-32dp</dimen>
@@ -15,6 +15,14 @@
     <dimen name="activity_home_page_avatar_default_grid_item_height">95dp</dimen>
     <dimen name="activity_home_page_avatar_size">130dp</dimen>
 
-    <integer name="activity_home_page_default_avatar_draw_circle_animation_duration">300</integer>
+    <integer name="view_default_draw_circle_animation_duration">300</integer>
+    <integer name="activity_home_page_dialog_players_draw_circle_stroke_width">3</integer>
+    <integer name="activity_home_page_close_request_game_button_draw_circle_animation_duration">10000</integer>
+    <integer name="view_default_draw_circle_animation_duration_dialog_players">8000</integer>
+    <integer name="view_special_text_animate_text_duration_letter">110</integer>
+    <integer name="activity_home_page_dialog_players_animate_actions_buttons_duration">1000</integer>
+    <integer name="activity_home_page_dialog_players_animate_msg_box_open_duration">1000</integer>
+    <integer name="activity_home_page_dialog_players_delay_close_screen">1000</integer>
+
 
 </resources>

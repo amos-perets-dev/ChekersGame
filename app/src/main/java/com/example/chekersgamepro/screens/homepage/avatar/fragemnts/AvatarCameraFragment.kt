@@ -7,7 +7,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
-import com.example.chekersgamepro.screens.homepage.avatar.ViewPagerManager
 import com.example.chekersgamepro.util.PermissionUtil
 import com.example.chekersgamepro.util.camera.CameraPreview
 import com.jakewharton.rxbinding2.view.RxView
@@ -15,7 +14,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.personal_avatar_camera_item.view.*
+import kotlinx.android.synthetic.main.personal_avatar_camera_fragment.view.*
 
 class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : AvatarFragmentBase(avatarViewModel), CheckersFragment.FragmentLifecycle {
 
@@ -29,7 +28,7 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
         }
     }
 
-    override fun getLayoutResId(): Int = R.layout.personal_avatar_camera_item
+    override fun getLayoutResId(): Int = R.layout.personal_avatar_camera_fragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

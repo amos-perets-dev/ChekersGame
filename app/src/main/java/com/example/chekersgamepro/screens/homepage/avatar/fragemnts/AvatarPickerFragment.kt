@@ -126,8 +126,8 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                                     , this.image_profile_hp.bottom + this.recyclerButtons!!.measuredHeight
                                     , this.childFragmentManager
                             )
-                            .observeOn(Schedulers.io())
-                            .subscribeOn(AndroidSchedulers.mainThread())
+//                            .observeOn(Schedulers.io())
+//                            .subscribeOn(AndroidSchedulers.mainThread())
                             .doOnEvent { viewPagerManager, t2 -> addListener(viewPagerManager) }
                             .map(ViewPagerManager::getInfoScrollPageData)
                             .flatMap(this.avatarViewModel::getButtonsAvatarSelectedAdapter)

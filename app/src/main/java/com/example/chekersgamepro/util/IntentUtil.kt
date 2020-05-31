@@ -2,13 +2,13 @@ package com.example.chekersgamepro.util
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.example.chekersgamepro.checkers.CheckersConfiguration
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.data.data_game.DataGame
-import com.example.chekersgamepro.models.player.IPlayer
+import com.example.chekersgamepro.models.player.data.IPlayer
 import com.example.chekersgamepro.models.player.game.PlayerGame
 import com.example.chekersgamepro.screens.game.CheckersGameActivity
+import io.reactivex.Observable
 import io.reactivex.Single
 
 class IntentUtil {
@@ -28,7 +28,7 @@ class IntentUtil {
 //            return intent
         }
 
-        fun createPlayersGameIntent(playerAsync: Single<IPlayer?>, gameMode: Int, imageUtil: CheckersImageUtil, context: Context) : Single<Intent>{
+        fun createPlayersGameIntent(playerAsync: Observable<IPlayer>, gameMode: Int, imageUtil: CheckersImageUtil, context: Context) : Single<Intent>{
             return playerAsync
                     .map { player ->
                         val byteArrayPlayerTwoOwner = imageUtil.createByteArrayFromEncodeBase(getAvatarImageEncodeOwnerPlayer(gameMode, player))
@@ -49,27 +49,28 @@ class IntentUtil {
                         return@map intent
 
                     }
+                    .firstOrError()
         }
 
         private fun getPlayerNameGuestOrComputer(gameMode: Int, player: IPlayer): String =
                 if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-                    if (player.isOwner()) player.getRemotePlayer() else player.getPlayerName()
+                    if (player.isOwner()) player.getRemotePlayerActive().remotePlayerName else player.getPlayerName()
                 } else "COMPUTER"
 
         private fun getPlayerNameTwoOwner(gameMode: Int, player: IPlayer): String =
                 if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-                    if (player.isOwner()) player.getPlayerName() else player.getRemotePlayer()
+                    if (player.isOwner()) player.getPlayerName() else player.getRemotePlayerActive().remotePlayerName
                 } else player.getPlayerName()
 
         private fun getAvatarImageEncodeGuestOrComputerPlayer(gameMode: Int, player: IPlayer): String =
                 if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-                    if (player.isOwner()) player.getAvatarRemotePlayer() else player.getEncodeImage()
+                    if (player.isOwner()) player.getRemotePlayerActive().remotePlayerAvatar else player.getAvatarEncode()
                 } else checkersConfiguration.getComputerIconEncode()
 
         private fun getAvatarImageEncodeOwnerPlayer(gameMode: Int, player: IPlayer): String =
                 if (gameMode == DataGame.Mode.ONLINE_GAME_MODE) {
-                    if (player.isOwner()) player.getEncodeImage() else player.getAvatarRemotePlayer()
-                } else player.getEncodeImage()
+                    if (player.isOwner()) player.getAvatarEncode() else player.getRemotePlayerActive().remotePlayerAvatar
+                } else player.getAvatarEncode()
 
     }
 

@@ -4,11 +4,7 @@ import android.util.Log
 import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
 import com.example.chekersgamepro.models.user.UserProfileImpl
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.*
 import io.reactivex.subjects.PublishSubject
 import io.realm.RealmObject
 
@@ -30,11 +26,11 @@ class UserProfileManager(private val realmManager: RealmManager, private val rem
 
     fun getImageProfile(): Flowable<String> =
             realmManager.getUserProfileDataChanges()
-                    .map { it.getEncodeImage() }
+                    .map { it.getAvatarEncode() }
 
     fun getEncodeImageProfile(): Flowable<String> =
             realmManager.getUserProfileDataChanges()
-                    .map { it.getEncodeImage() }
+                    .map { it.getAvatarEncode() }
 
     fun getUserProfileMoneyChanges(): Observable<Int> =
             moneyChanges
@@ -108,7 +104,7 @@ class UserProfileManager(private val realmManager: RealmManager, private val rem
             realmManager.getDefaultRealm().executeTransaction {realm ->
 
                 val userProfileImpl = realm.where(UserProfileImpl::class.java).findFirst()
-                userProfileImpl?.setEncodeImage(encode!!)
+                userProfileImpl?.setAvatarEncode(encode!!)
 
                 emitter.onComplete()
 
@@ -117,4 +113,5 @@ class UserProfileManager(private val realmManager: RealmManager, private val rem
     }
 
     override fun <E : RealmObject> insertAsync(`object`: E): Completable  = realmManager.insertAsync(`object` as UserProfileImpl)
+
 }

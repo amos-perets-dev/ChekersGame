@@ -1,4 +1,4 @@
-package com.example.chekersgamepro.models.player
+package com.example.chekersgamepro.models.player.data
 
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
@@ -18,13 +18,13 @@ interface IPlayer {
     fun setIsOwner(owner : Boolean)
 
     fun isCanPlay() : Boolean
-    fun setIsCanPlayer(canPlay : Boolean)
+    fun setIsCanPlay(canPlay : Boolean)
 
-    fun getRemotePlayer() : String
-    fun setRemotePlayer(remotePlayer : String)
+//    fun getRemotePlayerName() : String
+//    fun setRemotePlayerName(remotePlayer : String)
 
-    fun getAvatarRemotePlayer() : String
-    fun setAvatarRemotePlayer(avatarRemotePlayer : String)
+//    fun getAvatarRemotePlayer() : String
+//    fun setAvatarRemotePlayer(avatarRemotePlayer : String)
 
     fun setRequestOnlineGameStatus(requestOnlineGameStatus : RequestOnlineGameStatus)
     fun getRequestOnlineGameStatus() : RequestOnlineGameStatus
@@ -41,7 +41,20 @@ interface IPlayer {
     fun setIsTechnicalLoss(technicalLoss : Boolean)
     fun isTechnicalLoss(): Boolean
 
-    fun getEncodeImage() : String
-    fun setEncodeImage(encodeImage : String)
+    fun getAvatarEncode() : String
+    fun setAvatarEncode(encodeImage : String)
+
+    fun setTotalWin(totalWin: Int)
+    fun getTotalWin(): Int
+
+
+    fun setTotalLoss(totalLoss: Int)
+    fun getTotalLoss(): Int
+
+//    fun addRemotePlayerQueue(remotePlayerQueue: RemotePlayerData)
+//    fun getRemotePlayerQueue(): List<RemotePlayerData>
+
+    fun setRemotePlayerActive(remotePlayerActive: RemotePlayerData)
+    fun getRemotePlayerActive(): RemotePlayerData
 
 }

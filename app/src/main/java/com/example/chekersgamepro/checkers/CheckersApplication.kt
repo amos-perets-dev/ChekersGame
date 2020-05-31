@@ -29,9 +29,9 @@ class CheckersApplication : MultiDexApplication() {
         FirebaseApp.initializeApp(this)
 
         val realmConfiguration = RealmConfiguration.Builder()
-                .name("aa.realm")
+                .name("bb.realm")
                 .encryptionKey(ByteArray(64))
-                .schemaVersion(15)
+                .schemaVersion(16)
                 .build()
 
         Realm.setDefaultConfiguration(realmConfiguration)
@@ -63,6 +63,8 @@ class CheckersApplication : MultiDexApplication() {
     }
 
     fun getInteger(resId : Int) = applicationContext!!.resources.getInteger(resId)
+
+    fun getColorRes(resId : Int) = applicationContext!!.resources.getColor(resId)
 
 
     companion object Factory {

@@ -1,35 +1,31 @@
 package com.example.chekersgamepro.screens.homepage
 
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersActivity
-import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarPickerFragment
-import com.example.chekersgamepro.screens.homepage.dialog.RequestGameDialog
-import com.example.chekersgamepro.screens.homepage.online.OnlinePlayersAdapter
-import com.example.chekersgamepro.util.SwipeUtil
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogPlayersFragment
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.online.players.OnlinePlayersFragment
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_home_page.*
-import java.util.*
 
 
 open class HomePageActivity : CheckersActivity() {
-
-    private val LOAD_IMG_REQUEST = 100
-    private val CAMERA_REQUEST = 200
 
     companion object {
         @JvmField
@@ -42,18 +38,35 @@ open class HomePageActivity : CheckersActivity() {
 
     private val compositeDisposable = CompositeDisposable()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_page)
         Log.d("TEST_GAME", "HomePageActivity onCreate")
 
-        initRequestGameDialog()
+//        initRequestGameDialog()
 
-        val onlinePlayersAdapter = OnlinePlayersAdapter()
-        initRecyclerView(onlinePlayersAdapter)
+//        val onlinePlayersAdapter = OnlinePlayersAdapter()
+//        initRecyclerView(onlinePlayersAdapter)
 
-        homePageViewModel
-                .isHideGameButtons()
+        RxView.globalLayouts(image_profile_hp)
+                .firstOrError()
+                .subscribe { t1, t2 ->
+                    val layoutParams = image_profile_hp.layoutParams
+                    val ratio = resources.displayMetrics.widthPixels * 0.35
+                    layoutParams.width = ratio.toInt()
+                    layoutParams.height = ratio.toInt()
+                    image_profile_hp.layoutParams = layoutParams
+                    image_profile_hp.requestLayout()
+                }
+
+        compositeDisposable.add(
+                homePageViewModel
+                        .isOpenOnlinePlayers(this)
+                        .subscribe {
+                            startOnlinePlayersFragment()
+                        }
+        )
 
         compositeDisposable.add(
                 homePageViewModel.isDefaultImage()
@@ -64,21 +77,27 @@ open class HomePageActivity : CheckersActivity() {
         )
 
         compositeDisposable.add(
-                homePageViewModel.getOnlinePlayers()
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext(onlinePlayersAdapter::updateList)
-                        .concatMap { Observable.fromIterable(it) }
-                        .flatMap(IOnlinePlayerEvent::getClick)
-                        .map(IOnlinePlayerEvent::getPlayerId)
-                        .subscribe(homePageViewModel::sendRequestOnlineGame)
+                homePageViewModel
+                        .getMsgState(this)
+                        .doOnNext {
+                            val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE))
+                            } else { //deprecated in API 26
+                                v.vibrate(1000)
+                            }
+                        }
+                        .doOnNext(this::startActivity)
+                        .subscribe { overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out) }
         )
 
         compositeDisposable.add(
                 RxView.clicks(online_game_button)
                         .observeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnNext { players_list_container.animate().setDuration(500).withLayer().translationY(0F).start() }
-                        .subscribe()
+                        .subscribe {
+                            homePageViewModel.clickOnOnlineGame()
+                        }
         )
 
         compositeDisposable.add(
@@ -93,11 +112,9 @@ open class HomePageActivity : CheckersActivity() {
                         .subscribe { startActivityForResult(it, 50) }
         )
 
-        close_player_list.setOnTouchListener(SwipeUtil(this, this::closePlayersList))
-
         compositeDisposable.add(
                 RxView.clicks(computer_game_button)
-                        .subscribe(Functions.actionConsumer(homePageViewModel::initComputerGame))
+                        .subscribe(Functions.actionConsumer(homePageViewModel::clickOnComputerGame))
         )
 
         compositeDisposable.add(
@@ -164,13 +181,37 @@ open class HomePageActivity : CheckersActivity() {
         }
     }
 
+
+    private fun startOnlinePlayersFragment() {
+        val onlinePlayersFragment: Fragment? = getOnlinePlayersFragment()
+        if (onlinePlayersFragment != null) {
+            (onlinePlayersFragment as DialogFragment).show(supportFragmentManager, "online_players")
+        }
+    }
+
+    private fun startDialogPlayersFragment(dialogStateCreator: DialogStateCreator) {
+        val dialogPlayersFragment: Fragment? = getDialogPlayersFragment(dialogStateCreator)
+        if (dialogPlayersFragment != null) {
+            (dialogPlayersFragment as DialogFragment).show(supportFragmentManager, "dialog_players")
+        }
+    }
+
+    private fun getDialogPlayersFragment(dialogStateCreator: DialogStateCreator): Fragment? {
+        return DialogPlayersFragment.newInstance(image_profile_hp, dialogStateCreator)
+    }
+
     private fun getAvatarPickerFragment(): Fragment? {
         return AvatarPickerFragment.newInstance(image_profile_hp)
     }
 
-    private fun closePlayersList() {
-        players_list_container.animate().withLayer().translationY((players_list_container.measuredHeight).toFloat()).start()
+    private fun getOnlinePlayersFragment(): Fragment? {
+        return OnlinePlayersFragment.newInstance(image_profile_hp)
     }
+
+
+//    private fun closePlayersList() {
+//        players_list_container.animate().withLayer().translationY((players_list_container.measuredHeight).toFloat()).start()
+//    }
 
     override fun onResume() {
         super.onResume()
@@ -189,29 +230,29 @@ open class HomePageActivity : CheckersActivity() {
 
 
     private fun initRequestGameDialog() {
-        RequestGameDialog(this
-                , homePageViewModel::acceptOnlineGame
-                , homePageViewModel::declineOnlineGame
-                , compositeDisposable
-                , homePageViewModel.getMsgState(this))
+//        RequestGameDialog(this
+//                , homePageViewModel::acceptOnlineGame
+//                , homePageViewModel::declineOnlineGame
+//                , compositeDisposable
+//                , homePageViewModel.getMsgState(this))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == FINISH_GAME) {
-            compositeDisposable.add(homePageViewModel.setFinishGame(data!!).subscribe())
+            compositeDisposable.add(homePageViewModel.finishGame(data!!).subscribe())
         }
 
     }
 
-    private fun initRecyclerView(onlinePlayersAdapter: OnlinePlayersAdapter) {
-        recycler_view_players.adapter = onlinePlayersAdapter
-        val linearLayoutManager = LinearLayoutManager(this)
-        linearLayoutManager.isAutoMeasureEnabled = false
-
-        recycler_view_players.layoutManager = linearLayoutManager
-    }
+//    private fun initRecyclerView(onlinePlayersAdapter: OnlinePlayersAdapter) {
+//        recycler_view_players.adapter = onlinePlayersAdapter
+//        val linearLayoutManager = LinearLayoutManager(this)
+//        linearLayoutManager.isAutoMeasureEnabled = false
+//
+//        recycler_view_players.layoutManager = linearLayoutManager
+//    }
 
     override fun onPause() {
         Log.d("TEST_GAME", "HomePageActivity -> onPause")

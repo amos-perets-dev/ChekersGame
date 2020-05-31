@@ -101,7 +101,6 @@ public class CellView extends ImageView{
 
     public Observable<CellView> getCellClick(){
         return RxView.clicks(this)
-//                .filter(motionEvent -> motionEvent.getAction() == MotionEvent.ACTION_DOWN)
                 .switchMap(ignored -> Observable.just(this));
     }
 

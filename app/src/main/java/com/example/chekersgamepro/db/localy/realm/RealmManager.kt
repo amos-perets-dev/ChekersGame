@@ -1,16 +1,10 @@
 package com.example.chekersgamepro.db.localy.realm
 
 import android.util.Log
-import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.models.player.IPlayer
-import com.example.chekersgamepro.models.player.PlayerImpl
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import io.reactivex.*
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmObject
-import io.realm.RealmResults
 import java.io.Serializable
 
 class RealmManager : Serializable {

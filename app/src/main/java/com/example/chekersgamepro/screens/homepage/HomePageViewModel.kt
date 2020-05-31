@@ -1,18 +1,20 @@
 package com.example.chekersgamepro.screens.homepage
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.db.repository.RepositoryManager
-import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
-import com.example.chekersgamepro.screens.homepage.dialog.DialogStateCreator
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarScreenState
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogOnlinePlayersActivity
+import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
 import com.example.chekersgamepro.util.PermissionUtil
 import com.google.common.base.Optional
 import io.reactivex.*
@@ -34,18 +36,21 @@ class HomePageViewModel : ViewModel() {
 
     private val avatarScreenState = MutableLiveData<AvatarScreenState>()
 
+    private val homePageState = MutableLiveData<HomePageState>()
+
     private val compositeDisposable = CompositeDisposable()
 
     private val context = CheckersApplication.create()
 
     init {
-        compositeDisposable.add(repositoryManager.finishRequestOnlineGame().subscribe())
+//        compositeDisposable.add(repositoryManager.finishRequestOnlineGame().subscribe())
 
         compositeDisposable.add(
                 repositoryManager
                         .startOnlineGame()
                         .map { DataGame.Mode.ONLINE_GAME_MODE }
                         .flatMapCompletable { gameMode ->
+                            Log.d("TEST_GAME", "HomePageViewModel -> startOnlineGame -> flatMapCompletable")
                             createCheckersGameIntent(gameMode)
                                     .map { Optional.of(it) }
                                     .flatMapCompletable { intent ->
@@ -55,45 +60,28 @@ class HomePageViewModel : ViewModel() {
                         }
                         .subscribe()
         )
-
-        compositeDisposable.add(
-                repositoryManager
-                        .getMsgIfNeeded()
-                        .subscribe(msgState::postValue))
+//
+//        compositeDisposable.add(
+//                repositoryManager
+//                        .getMsgIfNeeded()
+//                        .subscribe(msgState::postValue))
 
         repositoryManager.startGetDataPlayerChanges()
 
     }
 
+    fun getMsgState(activity: Activity): Observable<Intent> {
+        return repositoryManager
+                .getDialogState()
+                .filter { it.msgByState.isNotEmpty() && !DialogOnlinePlayersActivity.isDialogPlayersAlreadyOpen }
+                .debounce(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .doOnNext {
+                    Log.d("TEST_GAME", "************* ${it.msgByState}")
+                }
+                .map { Intent(activity, DialogOnlinePlayersActivity::class.java) }
+    }
+
     private fun createCheckersGameIntent(gameMode: Int): Single<Intent> = repositoryManager.createPlayersGame(gameMode)
-
-    fun getOnlinePlayers(): Observable<List<IOnlinePlayerEvent>> = repositoryManager.getOnlinePlayersByLevel()
-
-    fun declineOnlineGame() {
-        compositeDisposable.add(repositoryManager
-                .declineOnlineGame()
-                .subscribe())
-    }
-
-    fun acceptOnlineGame() {
-        compositeDisposable.add(repositoryManager
-                .acceptOnlineGame()
-                .subscribe())
-    }
-
-    /**
-     * Call when the player(owner) sent request game to another player(guest)
-     *
-     * @param remotePlayer the player that the owner want to play with him
-     */
-    fun sendRequestOnlineGame(remotePlayerId: Long) {
-        compositeDisposable.add(repositoryManager
-                .sendRequestOnlineGame(remotePlayerId)
-                .subscribe())
-    }
-
-    fun getMsgState(lifecycleOwner: LifecycleOwner): Observable<DialogStateCreator> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, msgState))
 
     fun openAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, avatarScreenState))
@@ -104,16 +92,24 @@ class HomePageViewModel : ViewModel() {
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onlineGame))
                     .filter { it.isPresent }
                     .map { it.get() }
+//                    .flatMap {intent ->
+//                        repositoryManager.getRequestGameStatus()
+//                                .map { it.ordinal == RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal }
+//                                .filter(Functions.equalsWith(true))
+//                                .map { intent }
+//                    }
 
 
-    fun isHideGameButtons() {
-
-    }
+    fun isOpenOnlinePlayers(lifecycleOwner: LifecycleOwner) : Observable<Boolean> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
+                    .subscribeOn(Schedulers.io())
+                    .map { it.ordinal == HomePageState.OPEN_ONLINE_PLAYERS.ordinal }
+                    .filter(Functions.equalsWith(true))
 
     fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerGame))
 
-    fun initComputerGame() {
+    fun clickOnComputerGame() {
         compositeDisposable.add(
                 repositoryManager.setIsCanPlay(false)
                         .andThen(createCheckersGameIntent(DataGame.Mode.COMPUTER_GAME_MODE))
@@ -128,7 +124,7 @@ class HomePageViewModel : ViewModel() {
 
     fun getUserProfileLevelChanges() = repositoryManager.getUserProfileLevelChanges()
 
-    fun setFinishGame(data: Intent): Completable = repositoryManager
+    fun finishGame(data: Intent): Completable = repositoryManager
             .resetPlayer()
             .andThen(isNeedUpdate(data))
 
@@ -166,6 +162,10 @@ class HomePageViewModel : ViewModel() {
                             avatarScreenState.postValue(AvatarScreenState.OPEN_SCREEN)
                         }
         )
+    }
+
+    fun clickOnOnlineGame() {
+        homePageState.postValue(HomePageState.OPEN_ONLINE_PLAYERS)
     }
 
 }

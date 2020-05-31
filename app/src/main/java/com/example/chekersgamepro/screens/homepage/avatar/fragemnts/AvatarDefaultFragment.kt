@@ -1,9 +1,7 @@
 package com.example.chekersgamepro.screens.homepage.avatar.fragemnts
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chekersgamepro.R
@@ -12,12 +10,10 @@ import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
 import com.example.chekersgamepro.screens.homepage.avatar.adapters.DefaultAvatarAdapter
 import com.example.chekersgamepro.screens.homepage.avatar.model.defaultt.avatar.DefaultAvatarsImpl
 import com.example.chekersgamepro.views.custom.CustomViewPager
-import com.jakewharton.rxbinding2.view.RxView
 import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_home_page.*
-import kotlinx.android.synthetic.main.grid_default_avatars_item.view.*
+import kotlinx.android.synthetic.main.grid_default_avatars_fragment.view.*
 
 
 class AvatarDefaultFragment(private val avatarViewModel: AvatarViewModel
@@ -34,7 +30,7 @@ class AvatarDefaultFragment(private val avatarViewModel: AvatarViewModel
         }
     }
 
-    override fun getLayoutResId(): Int = R.layout.grid_default_avatars_item
+    override fun getLayoutResId(): Int = R.layout.grid_default_avatars_fragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

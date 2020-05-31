@@ -11,14 +11,12 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarViewModel
-import com.example.chekersgamepro.util.IntentUtil
-import com.example.chekersgamepro.util.PermissionUtil
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.personal_avatar_gallery_item.view.*
+import kotlinx.android.synthetic.main.personal_avatar_gallery_fragment.view.*
 
 class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
         AvatarFragmentBase(avatarViewModel), CheckersFragment.FragmentLifecycle {
@@ -83,11 +81,11 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
     }
 
     private fun animateButtonGallery(translationX: Float, translationY: Float, scale: Float, duration: Long = ANIMATE_GALLERY_BUTTON_DURATION) {
-        AnimationUtil.translateWithScale(textButtonGallery, duration, translationX, translationY, scale)
+        AnimationUtil.translateWithScale(textButtonGallery, duration, translationX, translationY, scale, Consumer {  })
     }
 
     override fun getLayoutResId(): Int {
-        return R.layout.personal_avatar_gallery_item
+        return R.layout.personal_avatar_gallery_fragment
     }
 
     private fun clearBackground() {

@@ -1,6 +1,8 @@
 package com.example.chekersgamepro.models.player.online
 
 import android.graphics.Bitmap
+import androidx.core.app.ActivityOptionsCompat
+import com.example.chekersgamepro.models.player.card.CardPlayerState
 import io.reactivex.Observable
 
 interface IOnlinePlayerEvent {
@@ -11,9 +13,13 @@ interface IOnlinePlayerEvent {
 
     fun getLevelPlayer() : Observable<String>
 
-    fun onClickItem(onlinePlayerEvent : IOnlinePlayerEvent)
+    fun onClickPlay(options: ActivityOptionsCompat): CardPlayerState
 
-    fun getClick(): Observable<IOnlinePlayerEvent>
+    fun getCardPlayerState(): Observable<CardPlayerState>
 
-    fun getEncodeImageProfile(): Observable<Bitmap>
+    fun getImageProfile(): Observable<Bitmap>
+
+    fun getTotalWin() : String
+
+    fun getTotalLoss() : String
 }

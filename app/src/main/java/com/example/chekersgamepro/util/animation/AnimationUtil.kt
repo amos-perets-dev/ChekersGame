@@ -19,29 +19,35 @@ import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class AnimationUtil {
 
     companion object {
-        private var isCloseButtons: Boolean = false
-        private lateinit var imageProfile: AppCompatImageView
-        private lateinit var changeImageButtonCamera: FloatingActionButton
-        private lateinit var changeImageButtonGallery: FloatingActionButton
 
         @SuppressLint("ObjectAnimatorBinding")
-        fun animatePulse(view: View) {
+        fun animatePulse(view: View, scale : Float = 1.2f) {
             view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
+            if (view.tag is ObjectAnimator){
+                Log.d("TEST_GAME", "AnimationUtil if (view.tag is ObjectAnimator) cancel")
+
+                (view.tag as ObjectAnimator).cancel()
+            }
+
             val animatePulse = ObjectAnimator.ofPropertyValuesHolder(view,
-                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-                    PropertyValuesHolder.ofFloat("scaleY", 1.2f))
+                    PropertyValuesHolder.ofFloat("scaleX", scale),
+                    PropertyValuesHolder.ofFloat("scaleY", scale))
             animatePulse.duration = 300
 
             animatePulse.repeatCount = 3
             animatePulse.repeatMode = ObjectAnimator.REVERSE
 
             animatePulse.start()
+
+            view.tag = animatePulse
         }
 
         fun animateViews(
@@ -70,7 +76,12 @@ class AnimationUtil {
 
         }
 
-        public fun translateWithScale(target: View, duration: Long, translationX: Float, translationY: Float, scale: Float) {
+        public fun translateWithScale(target: View
+                                      , duration: Long
+                                      , translationX: Float = -1f
+                                      , translationY: Float
+                                      , scale: Float
+                                      , finishAnimate: Consumer<Boolean>) {
 
             // cancel animator
             if (target.tag is Animator) {
@@ -99,6 +110,7 @@ class AnimationUtil {
                 }
 
                 override fun onAnimationEnd(p0: Animator?) {
+                    finishAnimate.accept(true)
                     Log.d("TEST_GAME", "translateWithScale -> onAnimationEnd")
                 }
 
@@ -128,12 +140,6 @@ class AnimationUtil {
             target.tag = set
 
         }
-
-        private fun convertDpToPixel(dp: Float): Float {
-            val metrics = Resources.getSystem().displayMetrics
-            return dp * (metrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
-        }
-
 
         fun translateWithAlpha(rightView: View, leftView: View, target: AppCompatImageView, durationToIncreaseMoneyGame: Long): Observable<Boolean> {
 
@@ -303,6 +309,22 @@ class AnimationUtil {
             }
         }
 
+        fun scaleXY(scale: Float = 0f, duration: Long, vararg views: View): Completable {
+            return Completable.create { emitter ->
+                for ((index, view) in views.withIndex()) {
+                    view.animate()
+                            .withLayer()
+                            .scaleX(scale)
+                            .scaleY(scale)
+                            .setDuration(duration)
+                            .withEndAction {
+                                if (index == views.size - 1) emitter.onComplete()
+                            }
+                            .start()
+                }
+            }
+        }
+
         //        fun translateY(view : View, translate : Float = 0f, duration : Long) {
 //          view.animate().withLayer().translationY(translate).setDuration(duration).start()
 //        }
@@ -440,8 +462,9 @@ class AnimationUtil {
 
         fun animateTranslateX(view: View, from: Float, to: Float) {
 
-            val alphaAnimator: ObjectAnimator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, from, to)
+            val alphaAnimator : ObjectAnimator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, to)
             alphaAnimator.setDuration(800)
+            alphaAnimator.startDelay = 400
             alphaAnimator.start()
         }
 
