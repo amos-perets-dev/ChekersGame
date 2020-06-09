@@ -44,10 +44,8 @@ open class HomePageActivity : CheckersActivity() {
         setContentView(R.layout.activity_home_page)
         Log.d("TEST_GAME", "HomePageActivity onCreate")
 
-//        initRequestGameDialog()
-
-//        val onlinePlayersAdapter = OnlinePlayersAdapter()
-//        initRecyclerView(onlinePlayersAdapter)
+        lifecycle.addObserver(homePageViewModel)
+//        lifecycle.removeObserver(homePageViewModel)
 
         RxView.globalLayouts(image_profile_hp)
                 .firstOrError()
@@ -215,6 +213,7 @@ open class HomePageActivity : CheckersActivity() {
 
     override fun onResume() {
         super.onResume()
+
 //        Log.d("TEST_GAME", "HomePageActivity -> onResume -> measuredHeight: ${recycler_view_players.measuredHeight.toFloat()}")
         Log.d("TEST_GAME", "HomePageActivity -> onResume")
 

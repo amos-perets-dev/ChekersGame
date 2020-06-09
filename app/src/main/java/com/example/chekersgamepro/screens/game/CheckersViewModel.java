@@ -279,12 +279,7 @@ public class CheckersViewModel extends ViewModel {
         }
         return Completable.complete()
                 .delay(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                .doOnEvent(new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        startOrStopTimer.postValue(true);
-                    }
-                });
+                .doOnEvent(throwable -> startOrStopTimer.postValue(true));
     }
 
     public Completable notifyStopTimer() {

@@ -8,7 +8,7 @@ import com.example.chekersgamepro.models.player.data.IPlayer
 import com.example.chekersgamepro.models.player.data.PlayerImpl
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.util.NetworkUtil
+import com.example.chekersgamepro.util.network.NetworkUtil
 import com.google.common.base.Optional
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
@@ -116,6 +116,9 @@ class FirebaseManager {
     fun sendRequestOnlineGame(fieldsMap: HashMap<String, Any>, level: String) =
             setData(databasePlayers.child(level), fieldsMap, "ERROR SEND REQUEST GAME")
 
+    fun ignoredRequestGameStatusItself(fieldsMap: java.util.HashMap<String, Any>, level: String) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR IGNORED REQUEST GAME STATUS ITSELF")
+
     fun acceptOnlineGame(level: String, fieldsMap: HashMap<String, Any>) =
             setData(databasePlayers.child(level), fieldsMap, "ERROR ACCEPT GAME")
 
@@ -131,8 +134,12 @@ class FirebaseManager {
     fun pingFinishGameTechnicalLoss(level: String, fieldsMap: HashMap<String, Any>) =
             setData(databasePlayers.child(level), fieldsMap, "TECHNICAL LOSS ERROR")
 
-    fun resetPlayer(level: String, fieldsMap: HashMap<String, Any>) =
-            setData(databasePlayers.child(level), fieldsMap, "ERROR RESET PLAYER")
+    fun resetPlayer(level: String, fieldsMap: HashMap<String, Any>): Completable {
+        Log.d("TEST_GAME", "FirebaseManager ->  resetPlayer")
+
+        return  setData(databasePlayers.child(level), fieldsMap, "ERROR RESET PLAYER")
+    }
+
 
     fun setMoney(fieldsMap: HashMap<String, Any>) =
             setData(databaseUsers, fieldsMap, "ERROR SET MONEY")
@@ -143,9 +150,13 @@ class FirebaseManager {
                     .updateChildren(fieldsMap)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            Log.d("TEST_GAME", "NOT $exception")
                             emitter.onComplete()
                             //Do what you need to do
                         } else {
+
+                            Log.d("TEST_GAME", "ERROR $exception")
+                            Log.d("TEST_GAME", "EXCEPTION: ${task.exception}")
                             emitter.onError(Throwable(exception))
                         }
                     }
@@ -292,4 +303,18 @@ class FirebaseManager {
                 .subscribeOn(Schedulers.io())
                 .map { it.children }
     }
+
+    fun getRemotePlayerActiveByRemotePlayer(remotePlayerName: String, level: String): Single<String> {
+        val query =
+                databasePlayers
+                        .child(level)
+                        .child(remotePlayerName)
+                        .child("remotePlayerActive")
+                        .child("remotePlayerName")
+
+        return RxFirebaseDatabase
+                .data(query)
+                .map { it.value as String }
+    }
+
 }

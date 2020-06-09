@@ -1,21 +1,20 @@
 package com.example.chekersgamepro.screens.homepage
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveDataReactiveStreams
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.db.repository.RepositoryManager
-import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarScreenState
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogOnlinePlayersActivity
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
 import com.example.chekersgamepro.util.PermissionUtil
+import com.example.chekersgamepro.util.network.NetworkConnectivityHelper
 import com.google.common.base.Optional
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -24,7 +23,8 @@ import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
-class HomePageViewModel : ViewModel() {
+
+class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     private val repositoryManager = RepositoryManager.create()
 
@@ -42,8 +42,24 @@ class HomePageViewModel : ViewModel() {
 
     private val context = CheckersApplication.create()
 
+    private var isActiveViewModel = false
+
     init {
 //        compositeDisposable.add(repositoryManager.finishRequestOnlineGame().subscribe())
+        val networkConnectivityHelper = NetworkConnectivityHelper(context.applicationContext as Application)
+
+//        compositeDisposable.add(
+//                networkConnectivityHelper
+//                        .asObservable()
+//                        .doOnDispose { networkConnectivityHelper.dispose() }
+//                        .flatMapCompletable { isConnected ->
+//                            Observable.fromCallable { isActiveViewModel }
+//                                    .filter(Functions.equalsWith(true))
+//                                    .filter { isConnected }
+//                                    .flatMapCompletable { repositoryManager.resetPlayer() }
+//                        }
+//                        .subscribe()
+//        )
 
         compositeDisposable.add(
                 repositoryManager
@@ -60,14 +76,25 @@ class HomePageViewModel : ViewModel() {
                         }
                         .subscribe()
         )
-//
-//        compositeDisposable.add(
-//                repositoryManager
-//                        .getMsgIfNeeded()
-//                        .subscribe(msgState::postValue))
 
         repositoryManager.startGetDataPlayerChanges()
 
+    }
+
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    protected fun onLifeCycleResume() {
+//        repositoryManager
+//                .resetPlayer()
+//                .subscribe()
+        isActiveViewModel = true
+        Log.d("TEST_GAME", "HomePageViewModel -> onLifeCycleResume")
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    protected fun onLifeCyclePause() {
+        isActiveViewModel = false
+        Log.d("TEST_GAME", "HomePageViewModel -> onLifeCyclePause")
     }
 
     fun getMsgState(activity: Activity): Observable<Intent> {
@@ -85,22 +112,16 @@ class HomePageViewModel : ViewModel() {
 
     fun openAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, avatarScreenState))
-                    .map{it.ordinal == AvatarScreenState.OPEN_SCREEN.ordinal}
+                    .map { it.ordinal == AvatarScreenState.OPEN_SCREEN.ordinal }
                     .filter(Functions.equalsWith(true))
 
     fun startOnlineGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onlineGame))
                     .filter { it.isPresent }
                     .map { it.get() }
-//                    .flatMap {intent ->
-//                        repositoryManager.getRequestGameStatus()
-//                                .map { it.ordinal == RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal }
-//                                .filter(Functions.equalsWith(true))
-//                                .map { intent }
-//                    }
 
 
-    fun isOpenOnlinePlayers(lifecycleOwner: LifecycleOwner) : Observable<Boolean> =
+    fun isOpenOnlinePlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
                     .subscribeOn(Schedulers.io())
                     .map { it.ordinal == HomePageState.OPEN_ONLINE_PLAYERS.ordinal }
@@ -116,7 +137,6 @@ class HomePageViewModel : ViewModel() {
                         .subscribe { t1, t2 -> computerGame.postValue(t1) }
         )
     }
-
 
     fun getUserProfileMoneyChanges() = repositoryManager.getUserProfileMoneyChanges()
 

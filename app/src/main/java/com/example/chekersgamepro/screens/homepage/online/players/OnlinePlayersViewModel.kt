@@ -12,6 +12,7 @@ import com.example.chekersgamepro.models.player.card.CardPlayerState
 import com.example.chekersgamepro.models.player.data.IPlayer
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.player.online.OnlinePlayerEventImpl
+import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogOnlinePlayersActivity
 import com.example.chekersgamepro.screens.homepage.online.OnlineBaseViewModel
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
@@ -64,9 +65,9 @@ class OnlinePlayersViewModel : OnlineBaseViewModel() {
                 , remotePlayer.getTotalWin()
                 , remotePlayer.getTotalLoss())
 
-        val dialogStateCreator = DialogStateCreator(onlinePlayer, isNeedShowMessage = false, isNeedShowActionMessage = false, msgByState = "")
+        val dialogStateCreator = DialogStateCreator(onlinePlayer, msgByState = "", status = RequestOnlineGameStatus.SEND_REQUEST, isOwner = true)
         intent.putExtra("DIALOG_STATE_CREATOR", remotePlayer.getLevelPlayer())
-        repositoryManager.setDialogCreator(dialogStateCreator)
+        repositoryManager.setDialogCreatorByOwner(dialogStateCreator)
         return intent
 
     }
@@ -82,6 +83,7 @@ class OnlinePlayersViewModel : OnlineBaseViewModel() {
     }
 
     fun clickOnPlayerCard(cardPlayer: CardPlayerState) {
+
         val intent = createIntentDialogOnlinePlayers(repositoryManager.getRemotePlayerById(cardPlayer.playerId))
 
         openPlayerDetailsScreen.postValue(Pair.create(intent, cardPlayer.options))

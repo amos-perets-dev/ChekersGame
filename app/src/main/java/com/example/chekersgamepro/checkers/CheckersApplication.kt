@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
 import androidx.multidex.MultiDex
@@ -27,7 +28,9 @@ class CheckersApplication : MultiDexApplication() {
 
         Realm.init(this)
         FirebaseApp.initializeApp(this)
-
+//       val mediaPlayer = MediaPlayer.create(applicationContext, R.raw.music)
+//
+//        mediaPlayer.start()
         val realmConfiguration = RealmConfiguration.Builder()
                 .name("bb.realm")
                 .encryptionKey(ByteArray(64))
@@ -47,6 +50,8 @@ class CheckersApplication : MultiDexApplication() {
         is ContextWrapper -> ContextUtils.getActivity(context.baseContext)
         else -> null
     }
+
+
 
     fun closeAppNow(msgLog: String = "") {
         val homeIntent = Intent(Intent.ACTION_MAIN)

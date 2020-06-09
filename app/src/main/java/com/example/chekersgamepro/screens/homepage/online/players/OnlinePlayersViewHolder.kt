@@ -53,6 +53,7 @@ class OnlinePlayersViewHolder(parent: ViewGroup
     override fun onClick(view: View) {
 
         val imageProfile = itemView.image_profile
+
         val imagePair = Pair.create(imageProfile as View, ViewCompat.getTransitionName(imageProfile)!!)
 
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation((itemView.context as Activity), imagePair)

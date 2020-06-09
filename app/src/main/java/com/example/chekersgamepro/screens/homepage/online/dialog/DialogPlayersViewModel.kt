@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.screens.homepage.online.dialog
 
+import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
@@ -13,12 +14,12 @@ import com.example.chekersgamepro.models.player.card.CardPlayerState
 import com.example.chekersgamepro.models.player.card.PlayerCardStateEvent
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.online.OnlineBaseViewModel
+import com.example.chekersgamepro.util.network.NetworkConnectivityHelper
 import io.reactivex.Observable
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 
 class DialogPlayersViewModel(private val msgByState: Observable<String>
-                             , private val remotePlayer: Observable<IOnlinePlayerEvent>
                              , private val dialogState: Observable<DialogState>
                              , private val remotePlayerAvatar: Observable<Bitmap>
                              , private val remotePlayerName: Observable<String>
@@ -33,7 +34,29 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
 
     private lateinit var currDialogState: DialogState
 
-    private var isShowCloseRequestIcon = true
+    private var isTimerFinishToCloseRequestGame = false
+
+    init {
+
+        val networkConnectivityHelper = NetworkConnectivityHelper(context.applicationContext as Application)
+
+        this.compositeDisposable.add(
+                networkConnectivityHelper
+                        .asObservable()
+                        .distinctUntilChanged()
+                        .filter(Functions.equalsWith(false))
+                        .doOnDispose { networkConnectivityHelper.dispose() }
+                        .doOnNext { simulateOnClickActionsButtons() }
+                        .flatMapCompletable { repositoryManager.resetPlayer() }
+                        .subscribe()
+        )
+
+        this.compositeDisposable.add(
+                repositoryManager
+                        .isStillRelevantRequestGame()
+                        .subscribe()
+        )
+    }
 
     fun onClickAccept() {
         Log.d("TEST_GAME", "DialogPlayersViewModel onClickAccept")
@@ -47,7 +70,7 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
 
         if (isRequestGameMsg()) {
             playerCardState(CardPlayerState(PlayerCardStateEvent.DECLINE_CLICK))
-        } else if (isDeclineRequestGameMsg()) {
+        } else if (isMsgOnly()) {
             playerCardState(CardPlayerState(PlayerCardStateEvent.SHOW_DECLINE_MSG))
         }
     }
@@ -57,8 +80,9 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
         playerCardState(CardPlayerState(PlayerCardStateEvent.CANCEL_REQUEST_GAME_CLICK))
     }
 
-    fun acceptOnlineGame() =
+    fun acceptOnlineGame(): Observable<Boolean> =
             requestGameStatus
+                    .doOnNext { Log.d("TEST_GAME", "DialogPlayersViewModel requestGameStatus state: ${it.name}") }
                     .map { it.ordinal == RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal }
                     .filter(Functions.equalsWith(true))
 
@@ -68,11 +92,21 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
                     .doOnNext { this.currDialogState = it }
 
     private fun onClickActionsButtons() {
+        notifyOnClickActionsButtons()
+    }
+
+    private fun simulateOnClickActionsButtons(){
+        notifyOnClickActionsButtons()
+    }
+
+    private fun notifyOnClickActionsButtons(){
         this.clickOnActionsButtons.postValue(true)
     }
 
     fun getMsgText(): Observable<String> =
-            this.msgByState.filter { it.isNotEmpty() }
+            this.msgByState
+                    .doOnNext {  }
+                    .filter { it.isNotEmpty() }
                     .subscribeOn(Schedulers.io())
 
     fun getRemotePlayerAvatar(): Observable<Bitmap> =
@@ -92,9 +126,7 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
 
     fun getWaitingText(): Observable<String> =
             getRemotePlayerName()
-                    .map { playerName ->
-                        this.context.getString(R.string.activity_home_page_online_players_dialog_waiting_text, playerName)
-                    }
+                    .map { playerName -> this.context.getString(R.string.activity_home_page_online_players_dialog_waiting_text, playerName) }
 
     fun getMsgDuration(animateActionsButtonsDuration: Int): Observable<Long> =
             getRemotePlayerName()
@@ -115,8 +147,7 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
 
     private fun isRequestGameMsg() = this.currDialogState.ordinal == DialogState.MSG_WITH_BUTTONS.ordinal
 
-    private fun isDeclineRequestGameMsg() =
-            this.currDialogState.ordinal == DialogState.MSG_ONLY.ordinal
+    private fun isMsgOnly() = this.currDialogState.ordinal == DialogState.MSG_ONLY.ordinal
 
     fun isClickOnActionsButtons(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, this.clickOnActionsButtons))
@@ -128,15 +159,25 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
                     .subscribeOn(Schedulers.io())
                     .filter(Functions.equalsWith(true))
 
-    fun hideCloseRequestIcon() {
-        this.isShowCloseRequestIcon = false
+    fun timerFinishToCloseRequestGame() {
+        this.isTimerFinishToCloseRequestGame = true
     }
 
     fun onBackPress() {
-        if (this.isShowCloseRequestIcon) {
-            onClickCancelRequestGame()
-        } else {
-            this.clickOnBackPressInvalid.postValue(true)
+
+        if (isMsgOnly()){
+            onClickCancel()
+        }else if (isRequestGameMsg()){
+            if (this.isTimerFinishToCloseRequestGame) {
+                onClickCancel()
+            }
+        } else{
+            if (this.isTimerFinishToCloseRequestGame) {
+                this.clickOnBackPressInvalid.postValue(true)
+            } else {
+                onClickCancelRequestGame()
+            }
         }
+
     }
 }

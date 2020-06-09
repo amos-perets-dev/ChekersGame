@@ -239,7 +239,7 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
                 currentModel = model
 
                 if (model != null) {
-                    bindData(model) ///
+                    bindData(model)
                     if (!modelsIsEquals) {
                         bindDifferentData(model)
                     }

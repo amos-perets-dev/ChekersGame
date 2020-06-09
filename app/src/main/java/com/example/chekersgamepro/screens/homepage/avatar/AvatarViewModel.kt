@@ -196,7 +196,6 @@ class AvatarViewModel : ViewModel() {
 
     fun getButtonsAvatarSelectedAdapter(infoScrollPageData: Observable<ScrollPageData>) =
             buttonsAvatar.createButtonAvatarSelectedList(infoScrollPageData)
-//                    .subscribeOn(Schedulers.io())
                     .map { ButtonsAvatarSelectedAdapter(it) }
 
     override fun onCleared() {
@@ -241,10 +240,6 @@ class AvatarViewModel : ViewModel() {
         )
     }
 
-    fun permissionDenied() {
-        notifyCloseScreen()
-    }
-
     fun clickOnGallery(context: Context) {
 
         compositeDisposable.add(
@@ -252,11 +247,5 @@ class AvatarViewModel : ViewModel() {
                 .subscribe { isOpenGallery.postValue(it) }
         )
     }
-
-    fun defaultAvatarsClick(): Boolean {
-
-        return true
-    }
-
 
 }

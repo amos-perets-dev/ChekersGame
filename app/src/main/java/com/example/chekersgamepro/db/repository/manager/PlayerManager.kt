@@ -45,7 +45,7 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
 
     fun getPlayer(): Single<IPlayer?> = Single.just(player)
 
-    fun isOwnerPlayerAsync(): Observable<Boolean>? = getPlayerAsync().map(IPlayer::isOwner).distinctUntilChanged()
+    fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync().map(IPlayer::isOwner).distinctUntilChanged()
 
     fun getPlayerAsync() : Observable<IPlayer> = playerAsync.hide()
 
@@ -64,8 +64,5 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun getRemoteMove(): Observable<RemoteMove> = remoteDb.getRemoteMove()
 
     fun resetPlayer(): Completable = remoteDb.resetPlayer()
-
-    fun isRequestGameStatusEmpty(): Observable<Boolean> = remoteDb.isRequestGameStatusEmpty()
-
 
 }

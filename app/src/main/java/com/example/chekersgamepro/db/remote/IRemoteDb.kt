@@ -57,16 +57,18 @@ interface IRemoteDb {
 
     fun startOnlineGame() : Observable<Boolean>
 
-    fun isRequestGameStatusEmpty() : Observable<Boolean>
-
-    fun isWaitingPlayer(): Observable<Boolean>
-
-    fun isCanPlay() : Single<Boolean>
+    fun isStillSendRequest(): Observable<Boolean>
 
     fun getRemotePlayerById(playerId: Long): IPlayer
+
+    fun getRemotePlayer() : IPlayer
 
     fun setDialogCreator(dialogStateCreator: DialogStateCreator)
 
     fun getRequestGameStatus() : Observable<RequestOnlineGameStatus>
+
+    fun isRelevantRequestGame() : Single<Boolean>
+
+    fun setDeclineRequestGameStatus(): Completable
 
 }

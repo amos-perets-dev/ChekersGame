@@ -1,6 +1,5 @@
 package com.example.chekersgamepro.screens.homepage.online.dialog
 
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Paint
@@ -74,7 +73,7 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("TEST_GAME", "DialogOnlinePlayersActivity onCreate")
-
+        supportPostponeEnterTransition()
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
         window.setGravity(Gravity.TOP)
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -104,16 +103,17 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
 
         compositeDisposable.add(isClickOnActionsButtonsAsync())
 
-        dialogPlayersViewModel
+        compositeDisposable.add(dialogPlayersViewModel
                 .acceptOnlineGame()
                 .subscribe { finish() }
+        )
 
-        dialogPlayersViewModel
-                .isClickOnBackPressInvalid(this)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    AnimationUtil.animatePulse(this.waitingPlayerMsg, 1.1f)
-                }
+        compositeDisposable.add(
+                dialogPlayersViewModel
+                        .isClickOnBackPressInvalid(this)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { AnimationUtil.animatePulse(this.waitingPlayerMsg, 1.1f) }
+        )
     }
 
     private fun isClickOnActionsButtonsAsync() =
@@ -179,15 +179,15 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
     private fun timerHideCloseRequestIcon(duration: Long): Observable<Long> {
         return Observable.timer(duration, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .doOnNext { waiting_player_msg_dialog.isEnabled = false }
-                .doOnNext { this.dialogPlayersViewModel.hideCloseRequestIcon() }
-                .doOnNext (this::setCancelRequestGameIcon)
+                .doOnNext { this.dialogPlayersViewModel.timerFinishToCloseRequestGame() }
+                .doOnNext(this::setCancelRequestGameIcon)
     }
 
-    private fun setCancelRequestGameIcon(ignored: Long){
+    private fun setCancelRequestGameIcon(ignored: Long) {
         val drawable = getDrawable(R.drawable.ic_cancel_request_game_unavailable)
-        if ( this.isLeftToRight){
+        if (this.isLeftToRight) {
             waiting_player_msg_dialog.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null)
-        } else{
+        } else {
             waiting_player_msg_dialog.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
         }
     }
@@ -213,7 +213,7 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
     private fun changeViewsByDialogState(it: DialogState) {
         when (it.ordinal) {
             DialogState.WAITING.ordinal -> {
-                Log.d("TEST_GAME", "WAITING")
+                Log.d("TEST_GAME", "DialogOnlinePlayersActivity -> changeViewsByDialogState->  WAITING")
 
                 declineRequestGameButton.visibility = View.GONE
                 acceptRequestGameButton.visibility = View.GONE
@@ -221,19 +221,15 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
 
             }
             DialogState.MSG_ONLY.ordinal -> {
-                Log.d("TEST_GAME", "MSG_ONLY")
+                Log.d("TEST_GAME", "DialogOnlinePlayersActivity -> changeViewsByDialogState->  MSG_ONLY")
                 imageAnimation.clearAnimate()
                 declineRequestGameButton.visibility = View.VISIBLE
                 acceptRequestGameButton.visibility = View.GONE
                 waitingPlayerMsg.visibility = View.GONE
 
             }
-            DialogState.HIDE_MSG.ordinal -> {
-                Log.d("TEST_GAME", "HIDE_MSG")
-
-            }
             DialogState.MSG_WITH_BUTTONS.ordinal -> {
-                Log.d("TEST_GAME", "MSG_WITH_BUTTONS")
+                Log.d("TEST_GAME", "DialogOnlinePlayersActivity -> changeViewsByDialogState->  MSG_WITH_BUTTONS")
                 declineRequestGameButton.visibility = View.GONE
                 acceptRequestGameButton.visibility = View.GONE
                 waitingPlayerMsg.visibility = View.GONE
@@ -265,7 +261,9 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
 
                 this.dialogPlayersViewModel.getRemotePlayerAvatar()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(image_profile_dialog::setImageBitmap),
+                        .doOnNext(image_profile_dialog::setImageBitmap)
+                        .doOnNext { supportStartPostponedEnterTransition() }
+                        .subscribe(),
 
                 this.dialogPlayersViewModel.getRemotePlayerLevel()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -414,6 +412,7 @@ class DialogOnlinePlayersActivity : CheckersActivity() {
     }
 
     override fun onDestroy() {
+        cancelDeclineButton()
         compositeDisposable.dispose()
         super.onDestroy()
     }

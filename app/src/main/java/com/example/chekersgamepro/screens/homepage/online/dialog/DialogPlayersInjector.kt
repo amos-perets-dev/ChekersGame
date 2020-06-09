@@ -44,11 +44,10 @@ class DialogPlayersInjector {
                 requestGameStatus: Observable<RequestOnlineGameStatus>): DialogPlayersViewModel{
 
             val msgByState = dialogStateCreator.map { it.msgByState }
-            val remotePlayer = dialogStateCreator.map { it.remotePlayerMsg }
             val dialogState = dialogStateCreator.map { it.dialogState }
+
             return DialogPlayersViewModel(
                     msgByState
-                    , remotePlayer
                     , dialogState
                     , remotePlayerAvatar
                     , remotePlayerName

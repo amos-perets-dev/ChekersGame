@@ -21,6 +21,7 @@ import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.StringUtil
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import java.util.concurrent.TimeUnit
@@ -115,10 +116,48 @@ class RepositoryManager : Repository {
                         }
                     }
 
-
     fun setIsCanPlay(isCanPlay: Boolean): Completable = playerManager.setIsCanPlay(isCanPlay)
 
     fun getOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> = availableOnlinePlayersList.hide()
+
+    private fun isStillSendRequestStatus(): Observable<Boolean> {
+        return Observable.timer(15000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .flatMap { isStillSendRequest() }
+    }
+
+    private fun isRelevantRequestGame(): Observable<Boolean> {
+
+        return playerManager.isOwnerPlayerAsync()
+                .filter(Functions.equalsWith(true))
+                .doOnNext { isOwnerPlayerAsync ->
+                    Log.d("TEST_GAME", "!@#$%^&*(*&^%$#@ isOwnerPlayerAsync: $isOwnerPlayerAsync")
+                }
+                .delay(3000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .doOnNext { Log.d("TEST_GAME", "3333 RepositoryManager -> isRelevantRequestGame") }
+                .flatMapSingle {
+                    Log.d("TEST_GAME", "4444 RepositoryManager -> isRelevantRequestGame")
+                    return@flatMapSingle remoteDb.isRelevantRequestGame()
+                            .doOnEvent { t1, t2 ->
+                                Log.d("TEST_GAME", "3 RepositoryManager -> doOnNext checkRequestGame RESULT: $t1")
+                            }
+                }
+    }
+
+    fun isStillRelevantRequestGame(): Completable {
+        Log.d("TEST_GAME", "1111 RepositoryManager -> isStillRelevantRequestGame")
+        return isRelevantRequestGame()
+                .flatMapCompletable { isRelevantRequestGame ->
+                    if (isRelevantRequestGame) {
+                        Log.d("TEST_GAME", "RepositoryManager -> flatMapCompletable -> isStillRelevantRequestGame  if (isRelevantRequestGame)")
+                        return@flatMapCompletable isStillSendRequestStatus()
+                                .filter(Functions.equalsWith(true))
+                                .flatMapCompletable { remoteDb.setDeclineRequestGameStatus() }
+                    } else {
+                        Log.d("TEST_GAME", "RepositoryManager -> flatMapCompletable -> isStillRelevantRequestGame  } else {")
+                        return@flatMapCompletable remoteDb.setDeclineRequestGameStatus()
+                    }
+                }
+    }
 
     fun sendRequestOnlineGame(remotePlayerId: Long): Completable =
             Observable.timer(200, TimeUnit.MILLISECONDS)
@@ -130,13 +169,11 @@ class RepositoryManager : Repository {
 
     fun getDialogState(): Observable<DialogStateCreator> = remoteDb.getDialogState()
 
-    fun setDialogCreator(dialogStateCreator: DialogStateCreator) {
+    fun setDialogCreatorByOwner(dialogStateCreator: DialogStateCreator) {
         remoteDb.setDialogCreator(dialogStateCreator)
     }
 
-    fun isWaitingPlayer(): Observable<Boolean> = remoteDb.isWaitingPlayer()
-
-    fun isCanPlay() = remoteDb.isCanPlay()
+    fun isStillSendRequest(): Observable<Boolean> = remoteDb.isStillSendRequest()
 
     override fun getRemotePlayerById(playerId: Long) = remoteDb.getRemotePlayerById(playerId)
 
