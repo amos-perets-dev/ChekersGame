@@ -8,7 +8,6 @@ import java.io.Serializable
 open class PlayerImpl(private var id: Long = -1
                       , private var playerName: String = ""
                       , private var avatarEncodeImage: String = ""
-//                      , private var remotePlayersQueueList: HashMap<String, RemotePlayerData> = HashMap()
                       , private var remotePlayerActive : RemotePlayerData = RemotePlayerData()
                       , private var owner: Boolean = false
                       , private var canPlay: Boolean = false
@@ -22,16 +21,8 @@ open class PlayerImpl(private var id: Long = -1
                       , private var playerCode: Int = PlayersCode.EMPTY.ordinal
 
                       , private var remoteMove: RemoteMove = RemoteMove()
-                      , private var totalWin : Int = 20
-                      , private var totalLoss : Int = 10) : IPlayer, Serializable {
-
-//    override fun addRemotePlayerQueue(remotePlayerQueue: RemotePlayerData) {
-////        this.remotePlayersQueueList.add(remotePlayerQueue)
-//        this.remotePlayersQueueList[remotePlayerQueue.remotePlayerName] = remotePlayerQueue
-//    }
-//
-//    override fun getRemotePlayerQueue(): List<RemotePlayerData> = this.remotePlayersQueueList.values.toList()
-
+                      , private var totalWin : Int = 0
+                      , private var totalLoss : Int = 0) : IPlayer, Serializable {
 
     override fun setRemotePlayerActive(remotePlayerActive: RemotePlayerData) {
         this.remotePlayerActive = remotePlayerActive
@@ -57,12 +48,6 @@ open class PlayerImpl(private var id: Long = -1
     override fun setAvatarEncode(encodeImage: String) {
         this.avatarEncodeImage = encodeImage
     }
-
-//    override fun getAvatarRemotePlayer(): String = this.remotePlayerActive.remotePlayerAvatar
-//
-//    override fun setAvatarRemotePlayer(avatarRemotePlayer: String) {
-//        this.remotePlayerActive.remotePlayerAvatar = avatarRemotePlayer
-//    }
 
     override fun setIsTechnicalLoss(technicalLoss: Boolean) {
         this.technicalLoss = technicalLoss
@@ -102,8 +87,6 @@ open class PlayerImpl(private var id: Long = -1
 
     override fun getPlayerName(): String = playerName
 
-//    override fun getRemotePlayerName(): String = this.remotePlayerActive.remotePlayerName
-
     override fun getLevelPlayer(): Int = userLevel
 
     override fun isOwner(): Boolean = owner
@@ -117,10 +100,6 @@ open class PlayerImpl(private var id: Long = -1
     override fun setIsCanPlay(canPlay: Boolean) {
         this.canPlay = canPlay
     }
-
-//    override fun setRemotePlayerName(remotePlayerName: String) {
-//        this.remotePlayerActive.remotePlayerName = remotePlayerName
-//    }
 
     override fun setPlayerName(playerName: String) {
         this.playerName = playerName

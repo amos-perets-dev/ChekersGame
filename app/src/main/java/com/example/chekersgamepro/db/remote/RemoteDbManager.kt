@@ -5,6 +5,7 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.data.move.RemoteMove
+import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.firebase.FirebaseManager
 import com.example.chekersgamepro.enumber.PlayersCode
 import com.example.chekersgamepro.models.player.data.IPlayer
@@ -16,8 +17,11 @@ import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
+import com.example.chekersgamepro.screens.homepage.topplayers.model.TopPlayerImpl
 import com.example.chekersgamepro.util.network.NetworkUtil
 import com.google.common.base.Optional
+import com.google.common.collect.Lists
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -26,6 +30,7 @@ import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
@@ -38,9 +43,9 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     private var player: IPlayer = PlayerImpl()
 
-    private var remotePlayerCacheTmpGuest: IPlayer = PlayerImpl()
+    private lateinit var topPlayer: ITopPlayer
 
-    private var isYourTurn = false
+    private var remotePlayerCacheTmpGuest: IPlayer = PlayerImpl()
 
     private val imageUtil = CheckersImageUtil.create()
 
@@ -50,6 +55,10 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
 //    private var isShowPlayersChanges = true
 
+    companion object{
+        const val TOP_PLAYERS_LIMIT = 5
+    }
+
     init {
         if (userProfile != null) {
             this.userProfile = userProfile
@@ -58,6 +67,15 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
             this.player.setIsCanPlay(true)
             this.player.setPlayerId(userProfile.getUserId())
             this.player.setAvatarEncode(userProfile.getAvatarEncode())
+            this.player.setTotalWin(userProfile.getTotalWin())
+            this.player.setTotalLoss(userProfile.getTotalLoss())
+
+            this.topPlayer = TopPlayerImpl(
+                    userProfile.getUserName(),
+                    userProfile.getTotalWin(),
+                    userProfile.getTotalLoss(),
+                    userProfile.getMoney(),
+                    userProfile.getAvatarEncode())
 
             createDialogStateCreator()
 
@@ -85,7 +103,12 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         this.player.setAvatarEncode(encodeImageDefaultPreUpdate)
 
         return createPlayer()
+    }
 
+    override fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable {
+
+        this.topPlayer = TopPlayerImpl(userName, 0, 0, 200, encodeImageDefaultPreUpdate)
+        return firebaseManager.addNewTopPlayer(this.topPlayer).ignoreElement()
     }
 
     override fun createPlayer(): Single<Optional<IPlayer>> {
@@ -112,10 +135,53 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     override fun getDataPlayerChanges(): Observable<IPlayer> =
             firebaseManager.getPlayerChanges(this.player.getPlayerName(), this.player.getLevelPlayer().toString())
                     .doOnNext { this.player = it }
-                    .doOnNext {
-                        it.getRequestOnlineGameStatus().ordinal
 
+
+    private var minValueStopCheck = -1
+
+    override fun getTopPlayersListByMoney(): Observable<List<ITopPlayer>> {
+        val topPlayersList = ArrayList<ITopPlayer>()
+        var topPlayersMap = HashMap<Int, ArrayList<ITopPlayer>>()
+
+        return firebaseManager.getTopPlayersListChanges()
+                .subscribeOn(Schedulers.io())
+                .doOnNext { topPlayersMap.clear() }
+                .doOnNext { topPlayersList.clear() }
+                .flatMap { list ->
+
+                    for(value in list){
+
+                        val player = value.getValue(TopPlayerImpl::class.java)!!
+                        val money = player.getMoney()
+
+                        val listFromMap = topPlayersMap[money]
+                        if (listFromMap == null && topPlayersMap.size < TOP_PLAYERS_LIMIT) {
+                            topPlayersMap[money] = Lists.newArrayList(player as ITopPlayer)
+                            player.position = topPlayersMap.size
+                            player.isNumber = true
+
+                            if (topPlayersMap.size == TOP_PLAYERS_LIMIT){
+                                this.minValueStopCheck = money
+                            }
+                        } else if (listFromMap != null){
+                            player.isNumber = false
+                            listFromMap.add(player)
+                        }
+
+                        if (money != this.minValueStopCheck && topPlayersMap.size == TOP_PLAYERS_LIMIT){
+                            break
+                        }
                     }
+
+                    val sortedMap = topPlayersMap.toSortedMap(reverseOrder())
+
+                    sortedMap.values.forEach {
+                            topPlayersList.addAll(it)
+                    }
+
+                    Observable.just(topPlayersList)
+                }
+    }
 
     override fun getAllAvailableOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> {
         val list = ArrayList<IOnlinePlayerEvent>()
@@ -306,6 +372,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     }
 
     override fun setDialogCreator(dialogStateCreator: DialogStateCreator) {
+        Log.d("TEST_GAME", "RemoteDbManager -> setDialogCreator-> dialogStateCreator.onNext(dialogStateCreator)")
         this.dialogStateCreator.onNext(dialogStateCreator)
     }
 
@@ -349,7 +416,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         fieldsMap["/${this.player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_GUEST
         fieldsMap["/${this.player.getRemotePlayerActive().remotePlayerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_OWNER
 
-       return firebaseManager
+        return firebaseManager
                 .ignoredRequestGameStatusItself(fieldsMap, this.player.getLevelPlayer().toString())
     }
 
@@ -450,6 +517,26 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         fieldsMap["/${this.userProfile.getUserName()}/money"] = money
 
         return firebaseManager.setMoney(fieldsMap)
+    }
+
+    override fun setTotalGames(totalLoss: Int, totalWin: Int): Completable {
+
+        val fieldsMap = HashMap<String, Any>()
+
+        fieldsMap["/${this.userProfile.getUserName()}/totalLoss"] = totalLoss
+        fieldsMap["/${this.userProfile.getUserName()}/totalWin"] = totalWin
+
+        return firebaseManager.setTotalGames(fieldsMap, this.userProfile.getLevelUser().toString())
+    }
+
+    override fun setTopPlayer(totalWin: Int, totalLoss: Int, money: Int): Completable {
+        val fieldsMap = HashMap<String, Any>()
+
+        fieldsMap["/${this.userProfile.getUserName()}/totalLoss"] = totalLoss
+        fieldsMap["/${this.userProfile.getUserName()}/totalWin"] = totalWin
+        fieldsMap["/${this.userProfile.getUserName()}/money"] = money
+
+        return firebaseManager.setTopPlayer(fieldsMap, this.userProfile.getUserName())
     }
 
     override fun resetPlayer(): Completable {

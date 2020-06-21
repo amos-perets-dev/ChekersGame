@@ -20,6 +20,9 @@ public class ImageViewShadow extends AppCompatImageView {
 
     private Bitmap bitmap;
 
+    private int shadowColor = Color.DKGRAY;
+    private int iconColor = Color.WHITE;
+
     public ImageViewShadow(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -52,8 +55,17 @@ public class ImageViewShadow extends AppCompatImageView {
                         , (int) (sourceBitmap.getHeight() * 1.08)
                         , false);
 
-        canvas.drawBitmap(resultBitmap, 1.5f, 1.5f, getPaint(Color.DKGRAY));
-        canvas.drawBitmap(resultBitmap, 0f, 0f, getPaint(Color.WHITE));
+        canvas.drawBitmap(resultBitmap, 1.5f, 1.5f, getPaint(this.shadowColor));
+        canvas.drawBitmap(resultBitmap, 0f, 0f, getPaint(this.iconColor));
+    }
+
+    public void setShadowColor(int color){
+        this.shadowColor = color;
+    }
+
+    public void setIconColor(int color){
+        this.iconColor = color;
+        invalidate();
     }
 
     private Paint getPaint(int color){

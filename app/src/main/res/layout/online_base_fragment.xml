@@ -18,12 +18,11 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
         android:singleLine="true"
-        android:text="@string/activity_home_page_online_players_title_text"
-        android:textColor="@color/dark_gray"
+        android:textColor="@color/color_white"
         app:autoSizeMaxTextSize="24dp"
         app:autoSizeMinTextSize="20dp"
         app:autoSizeTextType="uniform"
-        app:fontFamily="@font/english_first"
+        app:fontFamily="serif"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.1"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,11 +42,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/close_player_list">
-
-        <!--        <FrameLayout-->
-        <!--            android:id="@+id/general_fragment_container"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="match_parent"/>-->
 
     </androidx.cardview.widget.CardView>
 

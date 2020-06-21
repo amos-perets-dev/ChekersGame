@@ -103,16 +103,24 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
                 val model = getItemByPos(position) ?: getItem(position)
 
                 holder.setDataModel(model)
-
-                if (isNeedChangeItemSize()) changeItemSize(holder)
+                if(position == 0){
+                    if (isFirstItemNeedChangeItemSize()){
+                        changeItemSize(holder)
+                    }
+                } else if (isNeedChangeItemSize()){
+                     changeItemSize(holder)
+                }
             }
 
             protected open fun isNeedChangeItemSize() =  false
 
+            protected open fun isFirstItemNeedChangeItemSize() =  true
 
             protected open fun getScreenWidth() = 0
 
             protected open fun getScreenHeight() = 0
+
+            protected open fun getFactorHeight() =  1.8f
 
             private fun changeItemSize(holder: ViewHolder<Model>){
                 val screenWidth = (holder.itemView.context).resources.displayMetrics.widthPixels
@@ -122,7 +130,7 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
 //                lp.width = itemWidth
                 val screenHeight = getScreenHeight()
 
-                lp.height = ((screenHeight / 1.8f).toInt())
+                lp.height = ((screenHeight / getFactorHeight()).toInt())
                 holder.itemView.layoutParams = lp
             }
 

@@ -6,6 +6,7 @@ import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
 import com.example.chekersgamepro.models.player.data.IPlayer
 import io.reactivex.Completable
+import io.reactivex.CompletableSource
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.subjects.BehaviorSubject
@@ -43,6 +44,9 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
                         Completable.complete()
                     }
 
+    fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
+        remoteDb.createTopPlayer(id, userName, encodeImageDefaultPreUpdate)
+
     fun getPlayer(): Single<IPlayer?> = Single.just(player)
 
     fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync().map(IPlayer::isOwner).distinctUntilChanged()
@@ -64,5 +68,6 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun getRemoteMove(): Observable<RemoteMove> = remoteDb.getRemoteMove()
 
     fun resetPlayer(): Completable = remoteDb.resetPlayer()
+
 
 }

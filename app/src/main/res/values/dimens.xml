@@ -23,5 +23,11 @@
     <integer name="activity_home_page_dialog_players_animate_msg_box_open_duration">1000</integer>
     <integer name="activity_home_page_dialog_players_delay_close_screen">500</integer>
 
+    <dimen name="activity_home_page_menu_buttons_title_text_size_min">18dp</dimen>
+    <dimen name="activity_home_page_menu_buttons_title_text_size_max">25dp</dimen>
+
+    <dimen name="activity_home_page_menu_buttons_button_name_text_size_min">12dp</dimen>
+    <dimen name="activity_home_page_menu_buttons_button_name_text_size_max">14dp</dimen>
+
 
 </resources>

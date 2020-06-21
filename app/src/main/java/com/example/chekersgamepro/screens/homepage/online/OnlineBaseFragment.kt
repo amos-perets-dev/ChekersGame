@@ -26,10 +26,12 @@ open class OnlineBaseFragment(private val imageProfileHp: CircleImageView) : Che
         view.viewTreeObserver.addOnGlobalLayoutListener(this)
 
         this.closeTab = view.close_player_list
-
+        this.closeTab.text = getTitle()
         closeFragmentBySwipe(this.closeTab)
 
     }
+
+    protected open fun getTitle() = ""
 
     override fun onGlobalLayout() {
         view?.viewTreeObserver?.removeOnGlobalLayoutListener(this)

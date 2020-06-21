@@ -13,7 +13,6 @@ import io.reactivex.Observable
 
 class DialogPlayersInjector {
 
-
     companion object {
         fun createViewModelActivity(activity: FragmentActivity): DialogPlayersViewModel {
             val repositoryManager = RepositoryManager.create()

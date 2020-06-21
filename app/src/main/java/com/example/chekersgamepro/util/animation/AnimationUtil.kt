@@ -51,26 +51,26 @@ class AnimationUtil {
         }
 
         fun animateViews(
-                moneyIcon: AppCompatImageView
-                , textViewPlayerName: AppCompatTextView
-                , textViewMoneyChanges: AppCompatTextView
-                , textViewLevelChanges: AppCompatTextView
-                , imageTestContainer: CircleImageView
-                , computerGameButton: AppCompatButton
-                , onlineGameButton: AppCompatButton): Completable {
+                totalGames: AppCompatTextView,
+                moneyIcon: AppCompatImageView,
+                textViewPlayerName: AppCompatTextView,
+                textViewMoneyChanges: AppCompatTextView,
+                textViewLevelChanges: AppCompatTextView,
+                imageProfile: CircleImageView): Completable {
 
 
             return Completable.create { emitter ->
 
-                val listOfTextViewsTranslation = CollectionUtils.listOf<View>(textViewPlayerName, textViewMoneyChanges, textViewLevelChanges, moneyIcon)
+                val listOfTextViewsTranslation =
+                        CollectionUtils.listOf<View>(textViewPlayerName, textViewMoneyChanges, textViewLevelChanges, moneyIcon, totalGames)
                 for (textView in listOfTextViewsTranslation) {
                     textView.animate().withLayer().setStartDelay(100).translationX(0f).setDuration(700).start()
                 }
 
-                computerGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
-                onlineGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
+//                computerGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
+//                onlineGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
 
-                imageTestContainer.animate().withLayer().alpha(1f).withEndAction { emitter.onComplete() }.setStartDelay(250).setDuration(800).start()
+                imageProfile.animate().withLayer().alpha(1f).withEndAction { emitter.onComplete() }.setStartDelay(250).setDuration(800).start()
 
             }
 

@@ -6,5 +6,5 @@ enum class RegistrationStatus {
     ERROR,
     NOT_AVAILABLE,
     EMPTY,
-    REGISTED
+    REGISTERED
 }

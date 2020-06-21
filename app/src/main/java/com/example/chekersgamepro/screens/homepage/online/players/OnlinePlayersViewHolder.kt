@@ -22,6 +22,7 @@ class OnlinePlayersViewHolder(parent: ViewGroup
 
     init {
         itemView.send_request_game_button.setOnClickListener(this)
+        itemView.setOnClickListener(this)
     }
 
     override fun bindData(model: IOnlinePlayerEvent) {

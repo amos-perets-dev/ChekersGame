@@ -46,6 +46,8 @@ class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : Onlin
         }
     }
 
+    override fun getTitle() = getString(R.string.activity_home_page_online_players_title_text)
+
     override fun getLayoutResId(): Int = R.layout.online_players_fragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

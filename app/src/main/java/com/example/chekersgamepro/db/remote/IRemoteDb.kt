@@ -6,6 +6,7 @@ import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 import com.google.common.base.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -16,6 +17,8 @@ interface IRemoteDb {
     fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<IUserProfile>
 
     fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<IPlayer>>
+
+    fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable
 
     fun createPlayer(): Single<Optional<IPlayer>>
 
@@ -47,6 +50,8 @@ interface IRemoteDb {
 
     fun setMoney(money : Int) : Completable
 
+    fun setTotalGames(totalLoss: Int, totalWin : Int): Completable
+
     fun resetPlayer() : Completable
 
     fun setImageProfileAndPlayer(encodeImage: String, playerName: String): Completable
@@ -70,5 +75,8 @@ interface IRemoteDb {
     fun isRelevantRequestGame() : Single<Boolean>
 
     fun setDeclineRequestGameStatus(): Completable
+
+    fun setTopPlayer(totalWin: Int, totalLoss: Int, moneyByGameResult: Int): Completable
+    fun getTopPlayersListByMoney(): Observable<List<ITopPlayer>>
 
 }

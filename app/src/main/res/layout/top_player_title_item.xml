@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_position"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/border_start_top_player_title_item"
+        android:gravity="center"
+        android:text="#"
+        android:paddingStart="3dp"
+        android:textColor="@color/color_white"
+        app:autoSizeMaxTextSize="21dp"
+        app:autoSizeMinTextSize="15dp"
+        app:autoSizeTextType="uniform"
+        app:fontFamily="serif"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.08" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_name_avatar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1.5dp"
+        android:background="@drawable/border_center_top_player_title_item"
+        android:gravity="center"
+        android:text="NAME"
+        android:textColor="@color/color_white"
+        app:autoSizeMaxTextSize="22dp"
+        app:autoSizeMinTextSize="15dp"
+        app:autoSizeTextType="uniform"
+        app:fontFamily="serif"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/text_view_position"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.415" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_total_win"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1.5dp"
+        android:background="@drawable/border_center_top_player_title_win_item"
+        android:gravity="center"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/text_view_name_avatar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.15" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_total_loss"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1.5dp"
+        android:background="@drawable/border_center_top_player_title_loss_item"
+        android:gravity="center"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_view_total_win"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.15" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_money"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1.5dp"
+        android:background="@drawable/border_end_top_player_title_item"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_view_total_loss"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.18" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

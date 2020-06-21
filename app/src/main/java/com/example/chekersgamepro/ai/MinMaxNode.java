@@ -1,4 +1,4 @@
-package com.example.chekersgamepro;
+package com.example.chekersgamepro.ai;
 
 import java.util.ArrayList;
 import java.util.List;

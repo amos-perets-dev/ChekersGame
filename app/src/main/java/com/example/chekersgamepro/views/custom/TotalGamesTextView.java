@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,17 +70,17 @@ public class TotalGamesTextView extends AppCompatTextView {
         int marginTextLeft = (int) (clipBounds.width() * 0.05);
 
         //Draw total regular pawns
-        int rightTextTotalWin = rightIconDown + marginTextLeft;
-        drawTotalGames(canvas, rightTextTotalWin, textTotalWin);
+        int rightTextTotalLoss = rightIconDown + marginTextLeft;
+        drawTotalGames(canvas, rightTextTotalLoss, textTotalLoss);
 
         //Draw queen icon
         float leftTextTotalWin = (width * 0.7f);
         float rightIconUp = leftTextTotalWin + height;
         drawIcon(canvas, iconUp, new RectF(leftTextTotalWin, top, rightIconUp, bottom));
 
-        float rightTextTotalLoss = rightIconUp + marginTextLeft;
+        float rightTextTotalWin = rightIconUp + marginTextLeft;
         //Draw total queen pawns
-        drawTotalGames(canvas, rightTextTotalLoss, textTotalLoss);
+        drawTotalGames(canvas, rightTextTotalWin, textTotalWin);
 
     }
 
@@ -94,6 +95,12 @@ public class TotalGamesTextView extends AppCompatTextView {
 
         Rect bounds = new Rect();
         paintText.getTextBounds(textTotalLoss, 0, textTotalLoss.length(), bounds);
+
+//        float v = (float) (getMeasuredHeight() * 0.65);
+//        float textSize = (float) ((getMeasuredHeight() * getMeasuredWidth()) / 1300);
+//        Log.d("TEST_GAME", "TEXT SIZE:" + textSize +", tmp size: " + v);
+//        paintText.setTextSize(textSize);
+
         paintText.setTextSize((float) (getMeasuredHeight() * 0.65));
 
         int y = (int) ((canvas.getHeight() / 2) - ((paintText.descent() + paintText.ascent()) / 2)) ;
@@ -128,6 +135,16 @@ public class TotalGamesTextView extends AppCompatTextView {
     public void setTextTotalGames(String textTotalWin, String textTotalLoss) {
         this.textTotalWin = textTotalWin;
         this.textTotalLoss = textTotalLoss;
+        invalidate();
+    }
+
+    public void setTextTotalLoss(String textTotalLoss) {
+        this.textTotalLoss = textTotalLoss;
+        invalidate();
+    }
+
+    public void setTextTotalWin(String textTotalWin) {
+        this.textTotalWin = textTotalWin;
         invalidate();
     }
 }

@@ -72,10 +72,10 @@ class RegistrationViewModel/*(private val repositoryManager : Repository, privat
     private fun addNewUser(userName: String): Disposable {
         return repositoryManager
                 .addNewUser(userName)
-                .doOnError { Log.d("TEST_GAME", "2 doOnError") }
+                .doOnError { Log.d("TEST_GAME", "2 doOnError: ${it.message}") }
                 .doOnEvent { status, t2 ->
                     when(status.ordinal){
-                        RegistrationStatus.REGISTED.ordinal -> isUserAdded.postValue(Intent(CheckersApplication.create().applicationContext, HomePageActivity::class.java))
+                        RegistrationStatus.REGISTERED.ordinal -> isUserAdded.postValue(Intent(CheckersApplication.create().applicationContext, HomePageActivity::class.java))
                         RegistrationStatus.ERROR.ordinal -> currentState.postValue(RegistrationStatus.ERROR)
                         else -> currentState.postValue(RegistrationStatus.NOT_AVAILABLE)
                     }

@@ -8,7 +8,7 @@ import io.reactivex.Single
 
 class SharedPreferencesManager(private val context: CheckersApplication) {
 
-    private val prefs = this.context.getSharedPreferences("com.example.chekersgamepro2", AppCompatActivity.MODE_PRIVATE)
+    private val prefs = this.context.getSharedPreferences("com.example.chekersgamepro17", AppCompatActivity.MODE_PRIVATE)
 
     fun isFirstTimeRun(): Boolean = prefs.getBoolean("first_run", true)
 

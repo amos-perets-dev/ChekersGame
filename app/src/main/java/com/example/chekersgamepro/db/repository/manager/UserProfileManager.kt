@@ -3,105 +3,106 @@ package com.example.chekersgamepro.db.repository.manager
 import android.util.Log
 import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
+import com.example.chekersgamepro.models.data.UserDataTmp
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import io.reactivex.*
 import io.reactivex.subjects.PublishSubject
 import io.realm.RealmObject
 
-class UserProfileManager(private val realmManager: RealmManager, private val remoteDb: IRemoteDb) : BaseManager() {
+class UserProfileManager(private val realmManager: RealmManager,
+                         private val remoteDb: IRemoteDb,
+                         private val userProfileDataChanges: Flowable<UserProfileImpl>) : BaseManager() {
 
-     companion object{
-         val FACTOR_MONEY = 50
-     }
+    companion object {
+        val FACTOR_MONEY = 50
+        val MONEY_CHANGE = 555
+        val TOTAL_GAMES_CHANGE = 123
+    }
 
-    private val moneyChanges = PublishSubject.create<Pair<Int,Int>>()
+    private val realm = realmManager.getDefaultRealm()
 
-    fun getUserProfileDataChanges(): Flowable<UserProfileImpl> =
-            realmManager.getUserProfileDataChanges()
+    fun getUserProfileLevelChanges() : Flowable<String> =
+            this.userProfileDataChanges
+                    .map { it.getLevelUser().toString() }
 
-    fun getUserProfileMoney() : Single<Int> =
-            realmManager.getUserProfileDataChanges()
-                    .map { it.getMoney() }
+    fun getUserProfileMoney(): Single<String> =
+            this.userProfileDataChanges
+                    .map { it.getMoney().toString() }
                     .firstOrError()
 
-    fun getImageProfile(): Flowable<String> =
-            realmManager.getUserProfileDataChanges()
-                    .map { it.getAvatarEncode() }
+    fun getUserProfileTotalGames(): Single<UserDataTmp> =
+            this.userProfileDataChanges
+                    .map { UserDataTmp(it.getTotalLoss(), it.getTotalWin(), 0, 0) }
+                    .firstOrError()
 
     fun getEncodeImageProfile(): Flowable<String> =
-            realmManager.getUserProfileDataChanges()
+            this.userProfileDataChanges
                     .map { it.getAvatarEncode() }
 
-    fun getUserProfileMoneyChanges(): Observable<Int> =
-            moneyChanges
-                    .hide()
-                    .distinctUntilChanged()
-                    // Check if need to notify the change
-                    .filter { money -> money.first != money.second }
-                    .flatMap {money ->
-                        val oldMoney = money.first
-                        val newMoney = money.second
+    fun getUserProfileMoneyChanges(): Flowable<String> =
+            this.userProfileDataChanges
+                    .map { it.getMoney().toString() }
 
-                        val isNeedToAddMoney = newMoney > oldMoney
-                        if (isNeedToAddMoney){
-                            newMoney - (FACTOR_MONEY * 2)
-                        }
+    fun getUserProfileTotalWinChanges(): Flowable<String> =
+            realmManager.getUserProfileDataChanges()
+                    .map { it.getTotalWin().toString() }
 
-                        Observable.just(newMoney)
-                    }
-                    .doOnNext { t1 -> Log.d("TEST_GAME", "   fun getUserProfileMoneyChanges(): Observable<Int> = -> doOnNext: $t1") }
-                    .doOnError { Log.d("TEST_GAME", "  fun getUserProfileMoneyChanges(): Observable<Int> =  -> doOnError: ${it.message}")}
-
-
+    fun getUserProfileTotalLossChanges(): Flowable<String> =
+            realmManager.getUserProfileDataChanges()
+                    .map { it.getTotalLoss().toString() }
 
     fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
             remoteDb.createUser(id, userName, encodeImageDefaultPreUpdate)
                     .cast(UserProfileImpl::class.java)
-                    .flatMapCompletable (this::insertAsync)
+                    .flatMapCompletable(this::insertAsync)
 
 
+    fun setUserDataTmp(isWinAndNeedUpdate: Boolean?): Completable {
+        Log.d("TEST_GAME", "3 isInTransaction: ${this.realm.isInTransaction}")
 
-    fun setMoney(isYourWin: Boolean?): Completable {
+        return Single.create<UserDataTmp> { emitter ->
 
-        return Single.create<Pair<Int, Int>> {emitter ->
-
-            realmManager.getDefaultRealm().executeTransaction {realm ->
-
+            realm.executeTransaction { realm ->
                 val userProfile = realm.where(UserProfileImpl::class.java).findFirst()
 
+                Log.d("TEST_GAME", "4 isInTransaction: ${this.realm.isInTransaction}")
+
                 val oldMoney = userProfile!!.getMoney()
-                val moneyByGameResult = getMoneyByGameStatus(isYourWin, userProfile.getLevelUser(), oldMoney)
-                emitter.onSuccess(Pair(oldMoney, moneyByGameResult))
-            }
-        }
-                .flatMapCompletable {money ->
-                    remoteDb.setMoney(money.second)
-                            .doOnEvent { t1 -> Log.d("TEST_GAME", "remoteDb.setMoney(moneyByGameResult)) -> doOnEvent: ") }
-                            .doOnError { Log.d("TEST_GAME", "remoteDb.setMoney(moneyByGameResult) -> doOnError: ${it.message}")}
-                            .andThen(realmManager.setMoney(money.second))
-                            .doOnEvent { t1 -> Log.d("TEST_GAME", "  .andThen(setMoney(moneyByGameResult)) -> doOnEvent: ") }
-                            .doOnError { Log.d("TEST_GAME", "  .andThen(setMoney(moneyByGameResult)) -> doOnError: ${it.message}")}
-                            .doOnEvent { moneyChanges.onNext(money) }
+                var totalLoss = userProfile.getTotalLoss()
+                var totalWin = userProfile.getTotalWin()
+
+                if (isWinAndNeedUpdate == null) {
+                    totalLoss += 1
+                } else if (isWinAndNeedUpdate) {
+                    totalWin += 1
+                    totalLoss -= 1
                 }
 
-
-
-
+                val moneyByGameResult = getMoneyByGameStatus(isWinAndNeedUpdate, userProfile.getLevelUser(), oldMoney)
+                emitter.onSuccess(UserDataTmp(totalLoss, totalWin, oldMoney, moneyByGameResult))
+            }
+        }
+                .flatMapCompletable { userDataTmp ->
+                    remoteDb.setMoney(userDataTmp.moneyByGameResult)
+                            .andThen(remoteDb.setTotalGames(userDataTmp.totalLoss, userDataTmp.totalWin))
+                            .andThen(remoteDb.setTopPlayer(userDataTmp.totalWin, userDataTmp.totalLoss, userDataTmp.moneyByGameResult))
+                            .andThen(realmManager.setUserDataTmp(userDataTmp))
+                }
     }
 
-    private fun getMoneyByGameStatus(isYourWin: Boolean?, levelUser: Int, userMoney: Int) : Int {
+    private fun getMoneyByGameStatus(isWinAndNeedUpdate: Boolean?, levelUser: Int, userMoney: Int): Int {
         val moneyStep = (levelUser * FACTOR_MONEY)
 
         // This is for the state before the game start
-        if (isYourWin == null) return (userMoney -moneyStep)
+        if (isWinAndNeedUpdate == null) return (userMoney - moneyStep)
 
-        return if (isYourWin) (userMoney + (moneyStep * 2)) else userMoney
+        return if (isWinAndNeedUpdate) (userMoney + (moneyStep * 2)) else userMoney
     }
 
     fun setEncodeImageProfile(encode: String?): Completable {
-        return Completable.create {emitter ->
+        return Completable.create { emitter ->
 
-            realmManager.getDefaultRealm().executeTransaction {realm ->
+            realmManager.getDefaultRealm().executeTransaction { realm ->
 
                 val userProfileImpl = realm.where(UserProfileImpl::class.java).findFirst()
                 userProfileImpl?.setAvatarEncode(encode!!)
@@ -112,6 +113,7 @@ class UserProfileManager(private val realmManager: RealmManager, private val rem
         }
     }
 
-    override fun <E : RealmObject> insertAsync(`object`: E): Completable  = realmManager.insertAsync(`object` as UserProfileImpl)
+    override fun <E : RealmObject> insertAsync(`object`: E): Completable = realmManager.insertAsync(`object` as UserProfileImpl)
+
 
 }

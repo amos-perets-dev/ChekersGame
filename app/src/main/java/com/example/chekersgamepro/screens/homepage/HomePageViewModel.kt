@@ -32,8 +32,6 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     private val computerGame = MutableLiveData<Intent>()
 
-    private val msgState = MutableLiveData<DialogStateCreator>()
-
     private val avatarScreenState = MutableLiveData<AvatarScreenState>()
 
     private val homePageState = MutableLiveData<HomePageState>()
@@ -42,25 +40,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     private val context = CheckersApplication.create()
 
-    private var isActiveViewModel = false
-
     init {
-//        compositeDisposable.add(repositoryManager.finishRequestOnlineGame().subscribe())
-        val networkConnectivityHelper = NetworkConnectivityHelper(context.applicationContext as Application)
-
-//        compositeDisposable.add(
-//                networkConnectivityHelper
-//                        .asObservable()
-//                        .doOnDispose { networkConnectivityHelper.dispose() }
-//                        .flatMapCompletable { isConnected ->
-//                            Observable.fromCallable { isActiveViewModel }
-//                                    .filter(Functions.equalsWith(true))
-//                                    .filter { isConnected }
-//                                    .flatMapCompletable { repositoryManager.resetPlayer() }
-//                        }
-//                        .subscribe()
-//        )
-
         compositeDisposable.add(
                 repositoryManager
                         .startOnlineGame()
@@ -71,6 +51,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
                                     .map { Optional.of(it) }
                                     .flatMapCompletable { intent ->
                                         repositoryManager.setMoney()
+//                                                .andThen(repositoryManager.setTotalGames())
                                                 .doOnEvent { onlineGame.postValue(intent) }
                                     }
                         }
@@ -79,22 +60,6 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
         repositoryManager.startGetDataPlayerChanges()
 
-    }
-
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    protected fun onLifeCycleResume() {
-//        repositoryManager
-//                .resetPlayer()
-//                .subscribe()
-        isActiveViewModel = true
-        Log.d("TEST_GAME", "HomePageViewModel -> onLifeCycleResume")
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    protected fun onLifeCyclePause() {
-        isActiveViewModel = false
-        Log.d("TEST_GAME", "HomePageViewModel -> onLifeCyclePause")
     }
 
     fun getMsgState(activity: Activity): Observable<Intent> {
@@ -112,6 +77,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     fun openAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, avatarScreenState))
+                    .subscribeOn(Schedulers.io())
                     .map { it.ordinal == AvatarScreenState.OPEN_SCREEN.ordinal }
                     .filter(Functions.equalsWith(true))
 
@@ -127,10 +93,16 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
                     .map { it.ordinal == HomePageState.OPEN_ONLINE_PLAYERS.ordinal }
                     .filter(Functions.equalsWith(true))
 
+    fun isOpenTopPlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
+            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
+                    .subscribeOn(Schedulers.io())
+                    .map { it.ordinal == HomePageState.OPEN_TOP_PLAYERS.ordinal }
+                    .filter(Functions.equalsWith(true))
+
     fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerGame))
 
-    fun clickOnComputerGame() {
+    fun onClickComputerGame() {
         compositeDisposable.add(
                 repositoryManager.setIsCanPlay(false)
                         .andThen(createCheckersGameIntent(DataGame.Mode.COMPUTER_GAME_MODE))
@@ -140,7 +112,18 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     fun getUserProfileMoneyChanges() = repositoryManager.getUserProfileMoneyChanges()
 
-    fun getUserProfileMoney() = repositoryManager.getUserProfileMoney()
+    fun getUserProfileTotalWinChanges() : Flowable<String> = repositoryManager.getUserProfileTotalWinChanges()
+
+    fun getUserProfileTotalLossChanges() : Flowable<String> = repositoryManager.getUserProfileTotalLossChanges()
+
+
+//    fun getUserProfileTotalGamesChanges() = repositoryManager.getUserProfileTotalGamesChanges()
+
+    fun getUserProfileMoney() :Single<String> = repositoryManager.getUserProfileMoney()
+
+    fun getUserProfileTotalGames() =
+            this.repositoryManager.getUserProfileTotalGames()
+//                    .subscribeOn(Schedulers.io())
 
     fun getUserProfileLevelChanges() = repositoryManager.getUserProfileLevelChanges()
 
@@ -154,7 +137,9 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
         val isNeedUpdate = data.getBooleanExtra("IS_NEED_UPDATE_USER_PROFILE", false)
         val isYourWin = data.getBooleanExtra("IS_YOUR_WIN", false)
 
-        return repositoryManager.setMoney((isNeedUpdate && isYourWin))
+        val isWinAndNeedUpdate = isNeedUpdate && isYourWin
+        return repositoryManager.setMoney(isWinAndNeedUpdate)
+//                .andThen(repositoryManager.setTotalGames(isWinAndNeedUpdate))
     }
 
     fun isDefaultImage(): Maybe<Boolean> =
@@ -174,7 +159,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
         super.onCleared()
     }
 
-    fun clickOnAvatar(context: Context) {
+    fun onClickAvatar(context: Context) {
         compositeDisposable.add(
                 PermissionUtil
                         .isStorageAndCameraPermissionGranted(context)
@@ -184,8 +169,12 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
         )
     }
 
-    fun clickOnOnlineGame() {
+    fun onClickOnlineGame() {
         homePageState.postValue(HomePageState.OPEN_ONLINE_PLAYERS)
+    }
+
+    fun onClickTopPlayers() {
+        homePageState.postValue(HomePageState.OPEN_TOP_PLAYERS)
     }
 
 }

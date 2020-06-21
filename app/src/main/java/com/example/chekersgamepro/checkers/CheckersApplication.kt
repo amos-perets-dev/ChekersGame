@@ -32,9 +32,9 @@ class CheckersApplication : MultiDexApplication() {
 //
 //        mediaPlayer.start()
         val realmConfiguration = RealmConfiguration.Builder()
-                .name("bb.realm")
+                .name("abb.realm")
                 .encryptionKey(ByteArray(64))
-                .schemaVersion(16)
+                .schemaVersion(32)
                 .build()
 
         Realm.setDefaultConfiguration(realmConfiguration)

@@ -30,5 +30,9 @@ interface IUserProfile {
 
     fun setAvatarEncode(encodeImage : String)
 
+    fun setTotalWin(totalWin: Int)
+    fun getTotalWin(): Int
 
+    fun setTotalLoss(totalLoss: Int)
+    fun getTotalLoss(): Int
 }

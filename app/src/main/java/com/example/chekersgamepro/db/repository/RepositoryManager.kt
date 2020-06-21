@@ -17,6 +17,8 @@ import com.example.chekersgamepro.screens.registration.RegistrationStatus
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersConfiguration
 import com.example.chekersgamepro.checkers.CheckersImageUtil
+import com.example.chekersgamepro.models.data.UserDataTmp
+import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.StringUtil
 import io.reactivex.*
@@ -43,15 +45,18 @@ class RepositoryManager : Repository {
 
     private val realmManager = RealmManager()
 
-    private val remoteDb: IRemoteDb = RemoteDbManager(realmManager.getDefaultRealm().where(UserProfileImpl::class.java).findFirst())
+    private val userProfile = realmManager.getDefaultRealm().where(UserProfileImpl::class.java).findFirst()
 
-    private val userProfileManager = UserProfileManager(realmManager, remoteDb)
+    private val remoteDb: IRemoteDb = RemoteDbManager(userProfile)
+
+    private val userProfileManager = UserProfileManager(realmManager, remoteDb, realmManager.getUserProfileDataChanges())
 
     private val playerManager = PlayerManager(realmManager, remoteDb)
 
     private var imageProfileTmpEncodeBase: String? = null
 
     private val availableOnlinePlayersList = BehaviorSubject.create<List<IOnlinePlayerEvent>>()
+    private val topPlayersList = BehaviorSubject.create<List<ITopPlayer>>()
 
     init {
         Log.d("TEST_GAME", "RepositoryManager init: $this")
@@ -63,7 +68,16 @@ class RepositoryManager : Repository {
                     availableOnlinePlayersList.onNext(it)
                 }
 
+        remoteDb.getTopPlayersListByMoney()
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    Log.d("TEST_GAME", "RepositoryManager getTopPlayersListByMoney")
+                    topPlayersList.onNext(it)
+                }
     }
+
+    override fun getTopPlayersList(): Observable<List<ITopPlayer>> =
+            this.topPlayersList.hide().subscribeOn(Schedulers.io())
 
     fun isRegistered(): Boolean = sharedPreferencesManager.isRegistered()
 
@@ -73,23 +87,26 @@ class RepositoryManager : Repository {
 
     private fun getEncodeImageDefaultPreUpdate(): String? = sharedPreferencesManager.getEncodeImageDefaultPreUpdate()
 
-    override fun addNewUser(userName: String): Single<RegistrationStatus> = isUserNameExistServer(userName)
-            .flatMap { isExist ->
-                if (isExist) Single.just(RegistrationStatus.NOT_AVAILABLE)
+    override fun addNewUser(userName: String): Single<RegistrationStatus> =
+            isUserNameExistServer(userName)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap { isExist ->
+                        if (isExist) Single.just(RegistrationStatus.NOT_AVAILABLE)
 
-                val id = StringUtil.convertToAscii(userName) + System.currentTimeMillis()
+                        val id = StringUtil.convertToAscii(userName) + System.currentTimeMillis()
 
-                return@flatMap userProfileManager.createUser(id, userName, getEncodeImageDefaultPreUpdate()!!)
-                        .andThen(playerManager.createPlayer(id, userName, getEncodeImageDefaultPreUpdate()!!))
-                        .doOnError { Log.d("TEST_GAME", "doOnError addNewUser: ${it.message}") }
-                        .toSingleDefault(RegistrationStatus.REGISTED)
-                        .onErrorReturnItem(RegistrationStatus.ERROR)
-                        .doOnEvent { status, throwable ->
-                            if (status.ordinal == RegistrationStatus.REGISTED.ordinal) {
-                                sharedPreferencesManager.setIsRegistered()
-                            }
-                        }
-            }
+                        return@flatMap userProfileManager.createUser(id, userName, getEncodeImageDefaultPreUpdate()!!)
+                                .andThen(playerManager.createPlayer(id, userName, getEncodeImageDefaultPreUpdate()!!)
+                                        .andThen(playerManager.createTopPlayer(id, userName, getEncodeImageDefaultPreUpdate()!!)))
+                                .doOnError { Log.d("TEST_GAME", "22 doOnError addNewUser: ${it.message}") }
+                                .toSingleDefault(RegistrationStatus.REGISTERED)
+                                .onErrorReturnItem(RegistrationStatus.ERROR)
+                                .doOnEvent { status, throwable ->
+                                    if (status.ordinal == RegistrationStatus.REGISTERED.ordinal) {
+                                        sharedPreferencesManager.setIsRegistered()
+                                    }
+                                }
+                    }
 
     fun isUserNameExistLocallyListInvalid(userName: String): Boolean = userNameExistInvalid.contains(userName)
 
@@ -200,7 +217,9 @@ class RepositoryManager : Repository {
 
     fun notifyEndTurn(move: RemoteMove): Completable = remoteDb.notifyEndTurn(move)
 
-    fun setMoney(isYourWin: Boolean? = null): Completable = userProfileManager.setMoney(isYourWin)
+    fun setMoney(isWinAndNeedUpdate: Boolean? = null): Completable = userProfileManager.setUserDataTmp(isWinAndNeedUpdate)
+
+//    fun setTotalGames(isYourWin: Boolean? = null) : Completable = userProfileManager.setTotalGames(isYourWin)
 
     fun setFinishGameTechnicalLoss(): Completable = remoteDb.setFinishGameTechnicalLoss()
 
@@ -225,19 +244,24 @@ class RepositoryManager : Repository {
                             remoteDb.setImageProfileAndPlayer(getImageProfileTmp()!!, playerName)
                         })
     }
+    fun getUserProfileTotalWinChanges() : Flowable<String> = userProfileManager.getUserProfileTotalWinChanges()
 
-    fun getUserProfileMoneyChanges(): Observable<Int> = userProfileManager.getUserProfileMoneyChanges()
+    fun getUserProfileTotalLossChanges() : Flowable<String> = userProfileManager.getUserProfileTotalLossChanges()
 
-    fun getUserProfileLevelChanges(): Flowable<String> =
-            userProfileManager.getUserProfileDataChanges()
-                    .map { it.getLevelUser().toString() }
+    fun getUserProfileMoneyChanges(): Flowable<String> = userProfileManager.getUserProfileMoneyChanges()
+
+    fun getUserProfileLevelChanges(): Flowable<String> = userProfileManager.getUserProfileLevelChanges()
+
+    fun getUserProfileMoney(): Single<String> = userProfileManager.getUserProfileMoney()
+
+    fun getUserProfileTotalGames(): Single<UserDataTmp> =
+            this.userProfileManager.getUserProfileTotalGames()
 
 
-    fun getUserProfileMoney(): Single<Int> = userProfileManager.getUserProfileMoney()
-
-    fun getImageProfile(): Flowable<Bitmap?> = userProfileManager.getEncodeImageProfile()
-            .filter { it.isNotEmpty() }
-            .map { encodeImage -> imageUtil.decodeBase64(encodeImage) }
+    fun getImageProfile(): Flowable<Bitmap?> =
+           this.userProfileManager.getEncodeImageProfile()
+                    .filter { it.isNotEmpty() }
+                    .map { encodeImage -> imageUtil.decodeBase64(encodeImage) }
 
     fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync(), gameMode, imageUtil, context)
 

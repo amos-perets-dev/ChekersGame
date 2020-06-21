@@ -13,7 +13,6 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -71,7 +70,7 @@ public class SpecialTextView extends AppCompatTextView {
 
         // Init background
         int backgroundColor = typedArray.getColor(R.styleable.SpecialTextView_SpecialBorderWidth
-                , getResources().getColor(R.color.dark_gray_50_alpha));
+                , getResources().getColor(R.color.color_dark_gray_50_alpha));
 
         this.paintText.setColor(textColor);
         this.paintText.setStyle(Paint.Style.FILL);

@@ -6,6 +6,7 @@ import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.models.player.data.IPlayer
 import com.example.chekersgamepro.models.player.data.PlayerImpl
+import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.util.network.NetworkUtil
@@ -22,11 +23,13 @@ import java.io.ByteArrayOutputStream
 
 class FirebaseManager {
 
-    private val databaseUsers = FirebaseDatabase.getInstance().getReference("Users")
-    private val databasePlayers = FirebaseDatabase.getInstance().getReference("CenterPlayers")
+    private val databaseUsers = createDbReference("Users")
+    private val databasePlayers = createDbReference("CenterPlayers")
+    private val databaseTopPlayers = createDbReference("TopPlayers")
 
     private val networkUtil = NetworkUtil()
 
+    private fun createDbReference(path : String) = FirebaseDatabase.getInstance().getReference(path)
 
     fun addNewUser(user: IUserProfile): Single<Boolean> {
         if (!networkUtil.isAvailableNetwork()) {
@@ -37,6 +40,13 @@ class FirebaseManager {
             databaseUsers
                     .child(user.getUserName())
                     .setValue(user)
+                    .addOnSuccessListener {
+                        Log.d("TEST_GAME", "addNewUser success")
+                    }
+                    .addOnFailureListener {
+                        Log.d("TEST_GAME", "addNewUser failed: ${it.message}")
+
+                    }
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             it.onSuccess(true)
@@ -65,6 +75,28 @@ class FirebaseManager {
                             //Do what you need to do
                         } else {
                             it.onError(Throwable("ERROR ADD NEW PLAYER"))
+                        }
+                    }
+        }
+
+    }
+
+    fun addNewTopPlayer(topPlayer: ITopPlayer): Single<Boolean> {
+
+        if (!networkUtil.isAvailableNetwork()) {
+            return Single.error(Throwable("NO INTERNET CONNECTION"))
+        }
+
+        return Single.create {
+            databaseTopPlayers
+                    .child(topPlayer.getPlayerName())
+                    .setValue(topPlayer)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            it.onSuccess(true)
+                            //Do what you need to do
+                        } else {
+                            it.onError(Throwable("ERROR ADD NEW TOP PLAYER"))
                         }
                     }
         }
@@ -134,15 +166,19 @@ class FirebaseManager {
     fun pingFinishGameTechnicalLoss(level: String, fieldsMap: HashMap<String, Any>) =
             setData(databasePlayers.child(level), fieldsMap, "TECHNICAL LOSS ERROR")
 
-    fun resetPlayer(level: String, fieldsMap: HashMap<String, Any>): Completable {
-        Log.d("TEST_GAME", "FirebaseManager ->  resetPlayer")
-
-        return  setData(databasePlayers.child(level), fieldsMap, "ERROR RESET PLAYER")
-    }
-
+    fun resetPlayer(level: String, fieldsMap: HashMap<String, Any>) =
+            setData(databasePlayers.child(level), fieldsMap, "ERROR RESET PLAYER")
 
     fun setMoney(fieldsMap: HashMap<String, Any>) =
             setData(databaseUsers, fieldsMap, "ERROR SET MONEY")
+
+    fun setTotalGames(fieldsMap: HashMap<String, Any>, levelUser: String): Completable =
+            setData(databaseUsers, fieldsMap, "ERROR SET TOTAL GAMES USER")
+                    .andThen(setData(databasePlayers.child(levelUser), fieldsMap, "ERROR SET TOTAL GAMES PLAYER"))
+
+    fun setTopPlayer(fieldsMap: java.util.HashMap<String, Any>, name: String): Completable =
+        setData(databaseTopPlayers, fieldsMap, "ERROR SET TOP PLAYER")
+
 
     private fun setData(databaseReference: DatabaseReference, fieldsMap: HashMap<String, Any>, exception: String): Completable {
         return Completable.create { emitter ->
@@ -202,6 +238,16 @@ class FirebaseManager {
                     .child("avatarEncode")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
+                        if (!task.isSuccessful) {
+                            emitter.onError(Throwable("ERROR SET IMAGE PROFILE URL"))
+                        }
+                    }
+
+            databaseTopPlayers
+                    .child(playerName)
+                    .child("avatarEncode")
+                    .setValue(encodeImage)
+                    .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             emitter.onComplete()
                             //Do what you need to do
@@ -227,7 +273,7 @@ class FirebaseManager {
             /*In this case we'll use this kind of reference*/ //Download file in Memory
             val islandRef = storageRef.child("AvatarsPlayersDefault/default_avatar_icon.jpg")
 
-            val ONE_MEGABYTE = 512 * 512.toLong()
+            val ONE_MEGABYTE = 128 * 128.toLong()
             islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener { imageByteArray ->
 
                 emitter.onSuccess(imageByteArray)
@@ -304,6 +350,14 @@ class FirebaseManager {
                 .map { it.children }
     }
 
+    fun getTopPlayersListChanges(): Observable<List<DataSnapshot>> {
+
+        return RxFirebaseDatabase.dataChanges(databaseTopPlayers.orderByChild("money"))
+                .subscribeOn(Schedulers.io())
+                .map { it.children.reversed() }
+
+    }
+
     fun getRemotePlayerActiveByRemotePlayer(remotePlayerName: String, level: String): Single<String> {
         val query =
                 databasePlayers
@@ -316,5 +370,7 @@ class FirebaseManager {
                 .data(query)
                 .map { it.value as String }
     }
+
+
 
 }

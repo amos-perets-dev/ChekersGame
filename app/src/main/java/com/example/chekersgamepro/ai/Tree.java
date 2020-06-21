@@ -2,7 +2,6 @@ package com.example.chekersgamepro.ai;
 
 import androidx.annotation.NonNull;
 
-import com.example.chekersgamepro.MinMaxNode;
 import com.example.chekersgamepro.data.move.Move;
 
 import java.util.ArrayList;

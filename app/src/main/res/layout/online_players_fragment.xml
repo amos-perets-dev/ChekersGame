@@ -17,25 +17,4 @@
         android:background="#FFFFFF"
         android:layoutDirection="ltr"/>
 
-<!--    <androidx.appcompat.widget.AppCompatTextView-->
-<!--        android:id="@+id/waiting_player_msg"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:text="@string/activity_home_page_online_players_active_game_request_msg_text"-->
-<!--        app:layout_constraintHeight_percent="0.1"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:autoSizeTextType="uniform"-->
-<!--        app:autoSizeMinTextSize="12dp"-->
-<!--        app:autoSizeMaxTextSize="16dp"-->
-<!--        app:fontFamily="@font/english_first"-->
-<!--        android:gravity="start|center_vertical"-->
-<!--        android:elevation="10dp"-->
-<!--        android:layout_marginLeft="10dp"-->
-<!--        android:layout_marginRight="10dp"-->
-<!--        android:background="@drawable/border_waiting_player_msg"-->
-<!--        android:textColor="#FFFFFF"-->
-<!--        android:translationY="-0dp"/>-->
-
 </androidx.constraintlayout.widget.ConstraintLayout>

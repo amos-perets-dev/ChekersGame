@@ -9,7 +9,8 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 
-class OnlinePlayersAdapter(private val screenWidth: Int, private val screenHeight: Int) : CheckersRecyclerView.Companion.Adapter<IOnlinePlayerEvent>() {
+class OnlinePlayersAdapter(private val screenWidth: Int, private val screenHeight: Int) :
+        CheckersRecyclerView.Companion.Adapter<IOnlinePlayerEvent>() {
 
     private var listPlayerEvents = ArrayList<IOnlinePlayerEvent>()
 
