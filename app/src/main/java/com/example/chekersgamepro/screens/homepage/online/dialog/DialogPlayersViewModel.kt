@@ -82,7 +82,6 @@ class DialogPlayersViewModel(private val msgByState: Observable<String>
 
     fun acceptOnlineGame(): Observable<Boolean> =
             requestGameStatus
-                    .doOnNext { Log.d("TEST_GAME", "DialogPlayersViewModel requestGameStatus state: ${it.name}") }
                     .map { it.ordinal == RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal }
                     .filter(Functions.equalsWith(true))
 

@@ -38,6 +38,8 @@ class SharedPreferencesManager(private val context: CheckersApplication) {
     }
 
     fun setIsDefaultImage(): Completable{
+        Log.d("TEST_GAME", "SharedPreferencesManager setEncodeImageProfile()")
+
         prefs.edit().putBoolean("is_default_image", false).apply()
         return Completable.complete()
     }

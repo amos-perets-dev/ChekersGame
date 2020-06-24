@@ -4,11 +4,10 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.androidhuman.rxfirebase2.database.RxFirebaseDatabase
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.models.player.data.IPlayer
-import com.example.chekersgamepro.models.player.data.PlayerImpl
-import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
+import com.example.chekersgamepro.models.player.data.PlayerData
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
+import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayerData
 import com.example.chekersgamepro.util.network.NetworkUtil
 import com.google.common.base.Optional
 import com.google.firebase.database.*
@@ -58,7 +57,7 @@ class FirebaseManager {
         }
     }
 
-    fun addNewPlayer(player: IPlayer): Single<Boolean> {
+    fun addNewPlayer(player: PlayerData): Single<Boolean> {
 
         if (!networkUtil.isAvailableNetwork()) {
             return Single.error(Throwable("NO INTERNET CONNECTION"))
@@ -66,8 +65,8 @@ class FirebaseManager {
 
         return Single.create {
             databasePlayers
-                    .child(player.getLevelPlayer().toString())
-                    .child(player.getPlayerName())
+                    .child(player.userLevel.toString())
+                    .child(player.playerName)
                     .setValue(player)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -81,7 +80,7 @@ class FirebaseManager {
 
     }
 
-    fun addNewTopPlayer(topPlayer: ITopPlayer): Single<Boolean> {
+    fun addNewTopPlayer(topPlayer: TopPlayerData): Single<Boolean> {
 
         if (!networkUtil.isAvailableNetwork()) {
             return Single.error(Throwable("NO INTERNET CONNECTION"))
@@ -89,7 +88,7 @@ class FirebaseManager {
 
         return Single.create {
             databaseTopPlayers
-                    .child(topPlayer.getPlayerName())
+                    .child(topPlayer.playerName)
                     .setValue(topPlayer)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -103,13 +102,13 @@ class FirebaseManager {
 
     }
 
-    private fun deletePlayer(player: PlayerImpl, isNeedUpdateLevel: Boolean): Single<Boolean> {
+    private fun deletePlayer(player: PlayerData, isNeedUpdateLevel: Boolean): Single<Boolean> {
 
         // if don't need to update the level player
         // so dont need to delete the player from the current level
         if (!isNeedUpdateLevel) return Single.just(true)
 
-        var databaseReference = databasePlayers.child((player.getLevelPlayer() - 1).toString()).child(player.getPlayerName())
+        var databaseReference = databasePlayers.child((player.userLevel - 1).toString()).child(player.playerName)
         return Single.create { emitter ->
             databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -225,7 +224,7 @@ class FirebaseManager {
             databasePlayers
                     .child(level)
                     .child(playerName)
-                    .child("avatarEncode")
+                    .child("avatarEncodeImage")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
                         if (!task.isSuccessful) {
@@ -235,7 +234,7 @@ class FirebaseManager {
 
             databaseUsers
                     .child(playerName)
-                    .child("avatarEncode")
+                    .child("avatarEncodeImage")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
                         if (!task.isSuccessful) {
@@ -245,7 +244,7 @@ class FirebaseManager {
 
             databaseTopPlayers
                     .child(playerName)
-                    .child("avatarEncode")
+                    .child("avatarEncodeImage")
                     .setValue(encodeImage)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -332,12 +331,11 @@ class FirebaseManager {
 
     }
 
-    fun getPlayerChanges(playerName: String, level: String): Observable<IPlayer> {
+    fun getPlayerChanges(playerName: String, level: String): Observable<PlayerData> {
         val query = databasePlayers.child(level).child(playerName)
 
         return RxFirebaseDatabase.dataChanges(query)
-                .map { it.getValue(PlayerImpl::class.java) }
-                .cast(IPlayer::class.java)
+                .map { it.getValue(PlayerData::class.java) }
 
     }
 

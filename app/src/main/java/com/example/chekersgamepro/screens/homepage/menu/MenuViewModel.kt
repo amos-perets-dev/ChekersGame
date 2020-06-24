@@ -20,16 +20,14 @@ class MenuViewModel(private val buttonsList: ArrayList<IMenuButton>,
         this.compositeDisposable.add(
                 this.onClickButton
                         .subscribeOn(Schedulers.io())
-                        .subscribe{
-                            onClickState.postValue(it)
-                        }
+                        .subscribe(onClickState::postValue)
         )
     }
 
 
-    fun openOnlineGame(lifecycleOwner: LifecycleOwner): Observable<Int> {
+    fun openOnlinePlayers(lifecycleOwner: LifecycleOwner): Observable<Int> {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onClickState))
-                .filter { it ==  MenuButtonsType.ONLINE_GAME.ordinal}
+                .filter { it ==  MenuButtonsType.ONLINE_PLAYERS.ordinal}
     }
 
     fun openComputerGame(lifecycleOwner: LifecycleOwner): Observable<Int> {
@@ -41,7 +39,6 @@ class MenuViewModel(private val buttonsList: ArrayList<IMenuButton>,
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onClickState))
                 .filter { it ==  MenuButtonsType.TOP_PLAYERS.ordinal}
     }
-
 
     fun openUpdatePicture(lifecycleOwner: LifecycleOwner): Observable<Int> {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onClickState))
@@ -57,39 +54,6 @@ class MenuViewModel(private val buttonsList: ArrayList<IMenuButton>,
     fun openSettings(lifecycleOwner: LifecycleOwner): Observable<Int> {
         return Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, onClickState))
                 .filter { it ==  MenuButtonsType.SETTINGS.ordinal}
-    }
-
-
-    private fun notifyByClick(onClick: Int) {
-        val onClickButton = -1
-        when (onClick) {
-            MenuButtonsType.ONLINE_GAME.ordinal -> onlineGame()
-            MenuButtonsType.ONLINE_GAME.ordinal -> computerGame()
-            MenuButtonsType.ONLINE_GAME.ordinal -> topPlayers()
-            MenuButtonsType.ONLINE_GAME.ordinal -> share()
-            MenuButtonsType.ONLINE_GAME.ordinal -> settings()
-        }
-        onClickState.postValue(onClickButton)
-    }
-
-    private fun settings() {
-
-    }
-
-    private fun share() {
-
-    }
-
-    private fun topPlayers() {
-
-    }
-
-    private fun computerGame() {
-
-    }
-
-    private fun onlineGame() {
-
     }
 
     fun getButtonsList() = this.buttonsList

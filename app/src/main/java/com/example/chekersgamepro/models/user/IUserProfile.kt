@@ -26,9 +26,9 @@ interface IUserProfile {
 
     fun setUserId(id : Long)
 
-    fun getAvatarEncode() : String
+    fun getAvatarEncodeImage() : String
 
-    fun setAvatarEncode(encodeImage : String)
+    fun setAvatarEncodeImage(encodeImage : String)
 
     fun setTotalWin(totalWin: Int)
     fun getTotalWin(): Int

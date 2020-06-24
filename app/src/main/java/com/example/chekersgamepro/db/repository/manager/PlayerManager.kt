@@ -4,18 +4,16 @@ import android.util.Log
 import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.IRemoteDb
-import com.example.chekersgamepro.models.player.data.IPlayer
+import com.example.chekersgamepro.models.player.data.PlayerData
 import io.reactivex.Completable
-import io.reactivex.CompletableSource
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.subjects.BehaviorSubject
 
 class PlayerManager(private val realmManager: RealmManager, private val remoteDb: IRemoteDb) {
 
-    private val playerAsync = BehaviorSubject.create<IPlayer>()
+    private val playerAsync = BehaviorSubject.create<PlayerData>()
 
-    private var player : IPlayer? = null
+    private var player : PlayerData? = null
 
     init {
         remoteDb.createPlayer()
@@ -47,15 +45,11 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
         remoteDb.createTopPlayer(id, userName, encodeImageDefaultPreUpdate)
 
-    fun getPlayer(): Single<IPlayer?> = Single.just(player)
+    fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync()!!.map(PlayerData::owner).distinctUntilChanged()
 
-    fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync().map(IPlayer::isOwner).distinctUntilChanged()
+    fun getPlayerAsync() : Observable<PlayerData>? = playerAsync.hide()
 
-    fun getPlayerAsync() : Observable<IPlayer> = playerAsync.hide()
-
-    fun getPlayerNameAsync(): Observable<String> = getPlayerAsync().map(IPlayer::getPlayerName).distinctUntilChanged()
-
-    fun getNowPlayAsync(): Observable<Int> = getPlayerAsync().map(IPlayer::getNowPlay).distinctUntilChanged()
+    fun getNowPlayAsync(): Observable<Int> = getPlayerAsync()!!.map(PlayerData::nowPlay).distinctUntilChanged()
 
     fun sendRequestOnlineGame(remotePlayerId: Long): Completable =  remoteDb.sendRequestOnlineGame(remotePlayerId)
 

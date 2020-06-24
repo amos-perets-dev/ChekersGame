@@ -1,7 +1,6 @@
 package com.example.chekersgamepro.screens.homepage
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -12,9 +11,7 @@ import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarScreenState
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogOnlinePlayersActivity
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
 import com.example.chekersgamepro.util.PermissionUtil
-import com.example.chekersgamepro.util.network.NetworkConnectivityHelper
 import com.google.common.base.Optional
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -34,7 +31,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     private val avatarScreenState = MutableLiveData<AvatarScreenState>()
 
-    private val homePageState = MutableLiveData<HomePageState>()
+    private val homePageState = MutableLiveData<MenuStateOpen>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -51,7 +48,6 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
                                     .map { Optional.of(it) }
                                     .flatMapCompletable { intent ->
                                         repositoryManager.setMoney()
-//                                                .andThen(repositoryManager.setTotalGames())
                                                 .doOnEvent { onlineGame.postValue(intent) }
                                     }
                         }
@@ -60,6 +56,7 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
         repositoryManager.startGetDataPlayerChanges()
 
+        compositeDisposable.add(repositoryManager.createDialogStateCreator())
     }
 
     fun getMsgState(activity: Activity): Observable<Intent> {
@@ -90,13 +87,13 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
     fun isOpenOnlinePlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
                     .subscribeOn(Schedulers.io())
-                    .map { it.ordinal == HomePageState.OPEN_ONLINE_PLAYERS.ordinal }
+                    .map { it.ordinal == MenuStateOpen.OPEN_ONLINE_PLAYERS.ordinal }
                     .filter(Functions.equalsWith(true))
 
     fun isOpenTopPlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
             Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
                     .subscribeOn(Schedulers.io())
-                    .map { it.ordinal == HomePageState.OPEN_TOP_PLAYERS.ordinal }
+                    .map { it.ordinal == MenuStateOpen.OPEN_TOP_PLAYERS.ordinal }
                     .filter(Functions.equalsWith(true))
 
     fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
@@ -110,22 +107,18 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
         )
     }
 
-    fun getUserProfileMoneyChanges() = repositoryManager.getUserProfileMoneyChanges()
+    fun getUserProfileMoneyChanges() : Flowable<String> = repositoryManager.getUserProfileMoneyChanges()
 
     fun getUserProfileTotalWinChanges() : Flowable<String> = repositoryManager.getUserProfileTotalWinChanges()
 
     fun getUserProfileTotalLossChanges() : Flowable<String> = repositoryManager.getUserProfileTotalLossChanges()
 
+    fun getUserProfileLevelChanges() : Flowable<String> = repositoryManager.getUserProfileLevelChanges()
+    fun getUserProfileName(): Flowable<String> = repositoryManager.getUserProfileName()
 
-//    fun getUserProfileTotalGamesChanges() = repositoryManager.getUserProfileTotalGamesChanges()
+    fun getImageProfileAsync(): Flowable<Bitmap?> = repositoryManager.getImageProfileChanges()
+            .doOnNext { Log.d("TEST_GAME", "repositoryManager.getImageProfileAsync()") }
 
-    fun getUserProfileMoney() :Single<String> = repositoryManager.getUserProfileMoney()
-
-    fun getUserProfileTotalGames() =
-            this.repositoryManager.getUserProfileTotalGames()
-//                    .subscribeOn(Schedulers.io())
-
-    fun getUserProfileLevelChanges() = repositoryManager.getUserProfileLevelChanges()
 
     fun finishGame(data: Intent): Completable = repositoryManager
             .resetPlayer()
@@ -139,20 +132,14 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
         val isWinAndNeedUpdate = isNeedUpdate && isYourWin
         return repositoryManager.setMoney(isWinAndNeedUpdate)
-//                .andThen(repositoryManager.setTotalGames(isWinAndNeedUpdate))
     }
 
     fun isDefaultImage(): Maybe<Boolean> =
-            Single.just(repositoryManager.isDefaultImage())
+            Single.fromCallable{repositoryManager.isDefaultImage()}
                     .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                     .filter(Functions.equalsWith(true))
                     .subscribeOn(Schedulers.io())
 
-    fun getPlayerName(): Observable<String> = repositoryManager.getPlayerNameAsync()
-
-    fun getImageProfileAsync(): Flowable<Bitmap?> = repositoryManager.getImageProfile()
-
-    fun getImageProfile(): Single<Bitmap?> = repositoryManager.getImageProfile().firstOrError()
 
     override fun onCleared() {
         compositeDisposable.clear()
@@ -170,11 +157,11 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
     }
 
     fun onClickOnlineGame() {
-        homePageState.postValue(HomePageState.OPEN_ONLINE_PLAYERS)
+        homePageState.postValue(MenuStateOpen.OPEN_ONLINE_PLAYERS)
     }
 
-    fun onClickTopPlayers() {
-        homePageState.postValue(HomePageState.OPEN_TOP_PLAYERS)
-    }
+//    fun onClickTopPlayers() {
+//        homePageState.postValue(MenuStateOpen.OPEN_TOP_PLAYERS)
+//    }
 
 }

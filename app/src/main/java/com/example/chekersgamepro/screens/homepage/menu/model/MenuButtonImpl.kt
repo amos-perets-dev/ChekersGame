@@ -13,8 +13,7 @@ class MenuButtonImpl(private val menuButtonsType: MenuButtonsType,
     override fun getButtonName() = this.buttonName
 
     override fun onClick() {
-        Log.d("TEST_GAME", "onClick: STATE: ${this.menuButtonsType.name}")
-        onClickButton.onNext(this.menuButtonsType.ordinal)
+        this.onClickButton.onNext(this.menuButtonsType.ordinal)
     }
 
 }

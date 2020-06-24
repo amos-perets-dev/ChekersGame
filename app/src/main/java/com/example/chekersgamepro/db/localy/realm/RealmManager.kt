@@ -26,18 +26,17 @@ class RealmManager : Serializable {
         return if (objectFromRealm == null) Completable.error(Throwable()) else Completable.complete()
     }
 
-    fun getUserProfileDataChanges(): Flowable<UserProfileImpl> {
-        return getUserProfileObject()
-                .asFlowable<UserProfileImpl>()
-                .filter { it.isLoaded }
-                .filter { it.isValid }
-    }
+    fun getUserProfileDataChanges(): Flowable<UserProfileImpl> =
+            realm.where(UserProfileImpl::class.java)
+                    .findAllAsync()
+                    .asFlowable()
+                    .filter { it.isNotEmpty() }
+                    .map { it.first()!! }
 
     fun setUserDataTmp(userDataTmp: UserDataTmp): Completable {
         return Completable.create { emitter ->
-
             this.realm.executeTransaction { realm: Realm ->
-                val user = getUserProfileObject(realm)
+                val user = getObjectAsync(realm, UserProfileImpl::class.java)
                 user.setMoney(userDataTmp.moneyByGameResult)
                 user.setTotalWin(userDataTmp.totalWin)
                 user.setTotalLoss(userDataTmp.totalLoss)
@@ -46,8 +45,17 @@ class RealmManager : Serializable {
         }
     }
 
-    private fun getUserProfileObject(realm: Realm = this.realm) = getObjectByClass(UserProfileImpl::class.java, realm)
 
-    private fun <E : RealmObject> getObjectByClass(type: Class<E>, realm: Realm = this.realm) = realm.where(type).findFirstAsync()
+    fun setUserEncodeImageProfile(encodeImage: String): Completable {
+        return Completable.create { emitter ->
+            emitter.onComplete()
+
+            this.realm.executeTransaction { realm: Realm ->
+                getObjectAsync(realm, UserProfileImpl::class.java).setAvatarEncodeImage(encodeImage)
+            }
+        }
+    }
+
+    private fun <E : RealmObject> getObjectAsync(realm: Realm, type: Class<E>) = realm.where(type).findFirstAsync()
 
 }

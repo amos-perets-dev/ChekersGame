@@ -12,7 +12,7 @@ class MenuButtonsData(private val resources: Resources,
     val buttonsList = ArrayList<IMenuButton>()
 
     init {
-        addButton(MenuButtonsType.ONLINE_GAME, R.string.activity_home_page_menu_buttons_online_game_text)
+        addButton(MenuButtonsType.ONLINE_PLAYERS, R.string.activity_home_page_menu_buttons_online_game_text)
         addButton(MenuButtonsType.COMPUTER_GAME, R.string.activity_home_page_menu_buttons_computer_game_text)
         addButton(MenuButtonsType.TOP_PLAYERS, R.string.activity_home_page_menu_buttons_top_players_game_text)
         addButton(MenuButtonsType.UPDATE_PICTURE, R.string.activity_home_page_menu_buttons_update_picture_game_text)

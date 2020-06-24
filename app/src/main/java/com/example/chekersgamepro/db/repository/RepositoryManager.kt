@@ -17,7 +17,7 @@ import com.example.chekersgamepro.screens.registration.RegistrationStatus
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersConfiguration
 import com.example.chekersgamepro.checkers.CheckersImageUtil
-import com.example.chekersgamepro.models.data.UserDataTmp
+import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.StringUtil
@@ -75,6 +75,8 @@ class RepositoryManager : Repository {
                     topPlayersList.onNext(it)
                 }
     }
+
+    fun createDialogStateCreator() = remoteDb.createDialogStateCreator()
 
     override fun getTopPlayersList(): Observable<List<ITopPlayer>> =
             this.topPlayersList.hide().subscribeOn(Schedulers.io())
@@ -194,7 +196,7 @@ class RepositoryManager : Repository {
 
     override fun getRemotePlayerById(playerId: Long) = remoteDb.getRemotePlayerById(playerId)
 
-    fun getRequestGameStatus() = remoteDb.getRequestGameStatus()
+    fun getRequestGameStatus() : Observable<RequestOnlineGameStatus> = remoteDb.getRequestGameStatus()
 
     override fun technicalFinishGamePlayer() = resetPlayer()
 
@@ -211,15 +213,11 @@ class RepositoryManager : Repository {
 
     fun getRemoteMove(): Observable<RemoteMove> = playerManager.getRemoteMove()
 
-    fun getPlayerNameAsync(): Observable<String> = playerManager.getPlayerNameAsync()
-
     fun getNowPlayAsync(): Observable<Int> = playerManager.getNowPlayAsync()
 
     fun notifyEndTurn(move: RemoteMove): Completable = remoteDb.notifyEndTurn(move)
 
     fun setMoney(isWinAndNeedUpdate: Boolean? = null): Completable = userProfileManager.setUserDataTmp(isWinAndNeedUpdate)
-
-//    fun setTotalGames(isYourWin: Boolean? = null) : Completable = userProfileManager.setTotalGames(isYourWin)
 
     fun setFinishGameTechnicalLoss(): Completable = remoteDb.setFinishGameTechnicalLoss()
 
@@ -237,33 +235,26 @@ class RepositoryManager : Repository {
         return userProfileManager.setEncodeImageProfile(getImageProfileTmp())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .andThen(sharedPreferencesManager.setIsDefaultImage())
-                .observeOn(Schedulers.io())
-                .andThen(getPlayerNameAsync()
-                        .subscribeOn(Schedulers.io())
-                        .flatMapCompletable { playerName ->
-                            remoteDb.setImageProfileAndPlayer(getImageProfileTmp()!!, playerName)
-                        })
     }
-    fun getUserProfileTotalWinChanges() : Flowable<String> = userProfileManager.getUserProfileTotalWinChanges()
 
-    fun getUserProfileTotalLossChanges() : Flowable<String> = userProfileManager.getUserProfileTotalLossChanges()
+    fun getUserProfileTotalWinChanges(): Flowable<String> = userProfileManager.getUserProfileTotalWinChanges()
+
+    fun getUserProfileTotalLossChanges(): Flowable<String> = userProfileManager.getUserProfileTotalLossChanges()
 
     fun getUserProfileMoneyChanges(): Flowable<String> = userProfileManager.getUserProfileMoneyChanges()
 
     fun getUserProfileLevelChanges(): Flowable<String> = userProfileManager.getUserProfileLevelChanges()
-
-    fun getUserProfileMoney(): Single<String> = userProfileManager.getUserProfileMoney()
-
-    fun getUserProfileTotalGames(): Single<UserDataTmp> =
-            this.userProfileManager.getUserProfileTotalGames()
+    fun getUserProfileName(): Flowable<String> = userProfileManager.getUserProfileName()
 
 
-    fun getImageProfile(): Flowable<Bitmap?> =
-           this.userProfileManager.getEncodeImageProfile()
+    fun getImageProfileChanges(): Flowable<Bitmap?> =
+            this.userProfileManager.getEncodeImageProfileChanges()
+                    .doOnNext { Log.d("TEST_GAME", "1212 userProfileManager.getImageProfileAsync()") }
                     .filter { it.isNotEmpty() }
                     .map { encodeImage -> imageUtil.decodeBase64(encodeImage) }
+                    .doOnNext { Log.d("TEST_GAME", "5555 userProfileManager.getImageProfileAsync()") }
 
-    fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync(), gameMode, imageUtil, context)
+    fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync()!!, gameMode, imageUtil, context)
 
     fun setImageDefaultPreUpdate(): Single<Boolean> = remoteDb.setImageDefaultPreUpdate()
             .flatMap { arrayFromBitmap ->

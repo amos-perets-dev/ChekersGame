@@ -1,6 +1,5 @@
 package com.example.chekersgamepro.screens.homepage.online
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -9,17 +8,11 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.util.DisplayUtil
-import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.online_base_fragment.view.*
 
-open class OnlineBaseFragment(private val imageProfileHp: CircleImageView) : CheckersFragment(), ViewTreeObserver.OnGlobalLayoutListener {
+open class OnlineBaseFragment : CheckersFragment(), ViewTreeObserver.OnGlobalLayoutListener {
     protected lateinit var closeTab: AppCompatTextView
-
-//    companion object {
-//        fun newInstance(): OnlineBaseFragment {
-//            return OnlineBaseFragment()
-//        }
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,12 +38,14 @@ open class OnlineBaseFragment(private val imageProfileHp: CircleImageView) : Che
     }
 
     override fun changeWindowSize() {
+
         if (dialog != null) {
             val window = dialog!!.window
             if (window != null) { // height  - to prohibit screen resizing when keyboard is open
                 val displayMatrix = DisplayUtil.getDisplayMatrix(activity!!)
-                val height = displayMatrix.heightPixels - (imageProfileHp.bottom * 1.12)
-//                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, (height.toInt() / 2))
+                val imageProfile = activity!!.image_profile_hp
+
+                val height = displayMatrix.heightPixels - (imageProfile.bottom * 1.13)
 
                 window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, height.toInt())
 

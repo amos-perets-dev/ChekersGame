@@ -5,11 +5,9 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.db.localy.realm.RealmManager
 import com.example.chekersgamepro.db.remote.firebase.FirebaseManager
 import com.example.chekersgamepro.enumber.PlayersCode
-import com.example.chekersgamepro.models.player.data.IPlayer
-import com.example.chekersgamepro.models.player.data.PlayerImpl
+import com.example.chekersgamepro.models.player.data.PlayerData
 import com.example.chekersgamepro.models.player.data.RemotePlayerData
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.player.online.OnlinePlayerEventImpl
@@ -17,6 +15,7 @@ import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
 import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayerData
 import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 import com.example.chekersgamepro.screens.homepage.topplayers.model.TopPlayerImpl
 import com.example.chekersgamepro.util.network.NetworkUtil
@@ -26,26 +25,24 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     private val firebaseManager = FirebaseManager()
 
-    private val remotePlayersCache = HashMap<Long, IPlayer>()
+    private val remotePlayersCache = HashMap<Long, PlayerData>()
 
     private var userProfile: IUserProfile = UserProfileImpl()
 
-    private var player: IPlayer = PlayerImpl()
+    private var player = PlayerData()
 
-    private lateinit var topPlayer: ITopPlayer
+    private lateinit var topPlayer: TopPlayerData
 
-    private var remotePlayerCacheTmpGuest: IPlayer = PlayerImpl()
+    private var remotePlayerCacheTmpGuest = PlayerData()
 
     private val imageUtil = CheckersImageUtil.create()
 
@@ -55,7 +52,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
 //    private var isShowPlayersChanges = true
 
-    companion object{
+    companion object {
         const val TOP_PLAYERS_LIMIT = 5
     }
 
@@ -63,22 +60,19 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         if (userProfile != null) {
             this.userProfile = userProfile
 
-            this.player.setPlayerName(userProfile.getUserName())
-            this.player.setIsCanPlay(true)
-            this.player.setPlayerId(userProfile.getUserId())
-            this.player.setAvatarEncode(userProfile.getAvatarEncode())
-            this.player.setTotalWin(userProfile.getTotalWin())
-            this.player.setTotalLoss(userProfile.getTotalLoss())
+            this.player.playerName = userProfile.getUserName()
+            this.player.canPlay = true
+            this.player.id = userProfile.getUserId()
+            this.player.avatarEncodeImage = userProfile.getAvatarEncodeImage()
+            this.player.totalWin = userProfile.getTotalWin()
+            this.player.totalLoss = userProfile.getTotalLoss()
 
-            this.topPlayer = TopPlayerImpl(
+            this.topPlayer = TopPlayerData(
                     userProfile.getUserName(),
                     userProfile.getTotalWin(),
                     userProfile.getTotalLoss(),
                     userProfile.getMoney(),
-                    userProfile.getAvatarEncode())
-
-            createDialogStateCreator()
-
+                    userProfile.getAvatarEncodeImage())
         }
     }
 
@@ -90,30 +84,33 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         this.userProfile.setUserName(userName)
         this.userProfile.setUserId(id)
         this.userProfile.setMoney(200)
-        this.userProfile.setAvatarEncode(encodeImageDefaultPreUpdate)
+        this.userProfile.setAvatarEncodeImage(encodeImageDefaultPreUpdate)
+        this.userProfile.setTotalLoss(0)
+        this.userProfile.setTotalWin(0)
+        this.userProfile.setLevelUser(1)
 
         return firebaseManager.addNewUser(userProfile)
                 .map { userProfile }
     }
 
-    override fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<IPlayer>> {
-        this.player.setPlayerName(userName)
-        this.player.setPlayerId(id)
-        this.player.setIsCanPlay(true)
-        this.player.setAvatarEncode(encodeImageDefaultPreUpdate)
+    override fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<PlayerData>> {
+        this.player.playerName = userName
+        this.player.id = id
+        this.player.canPlay = true
+        this.player.avatarEncodeImage = encodeImageDefaultPreUpdate
 
         return createPlayer()
     }
 
     override fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable {
 
-        this.topPlayer = TopPlayerImpl(userName, 0, 0, 200, encodeImageDefaultPreUpdate)
+        this.topPlayer = TopPlayerData(userName, 0, 0, 200, encodeImageDefaultPreUpdate)
         return firebaseManager.addNewTopPlayer(this.topPlayer).ignoreElement()
     }
 
-    override fun createPlayer(): Single<Optional<IPlayer>> {
-        return if (player.getPlayerName().isEmpty()) Single.just(Optional.absent())
-        else firebaseManager.addNewPlayer(player)
+    override fun createPlayer(): Single<Optional<PlayerData>> {
+        return if (this.player.playerName.isEmpty()) Single.just(Optional.absent())
+        else firebaseManager.addNewPlayer(this.player)
                 .doOnError {
                     Log.d("TEST_GAME", "RemoteDbManager -> createPlayer  doOnError")
                 }
@@ -124,16 +121,16 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     override fun setIsCanPlay(isCanPlay: Boolean): Completable {
         val fieldsMap = HashMap<String, Any>()
 
-        fieldsMap["/${this.player.getPlayerName()}/canPlay"] = false
+        fieldsMap["/${this.player.playerName}/canPlay"] = false
 
-        return firebaseManager.setIsCanPlay(this.player.getLevelPlayer().toString(), fieldsMap)
+        return firebaseManager.setIsCanPlay(this.player.userLevel.toString(), fieldsMap)
                 .doOnError {
                     Log.d("TEST_GAME", "RemoteDbManager -> after firebaseManager.setIsCanPlay( doOnError:  ${it.message} ")
                 }
     }
 
-    override fun getDataPlayerChanges(): Observable<IPlayer> =
-            firebaseManager.getPlayerChanges(this.player.getPlayerName(), this.player.getLevelPlayer().toString())
+    override fun getDataPlayerChanges(): Observable<PlayerData> =
+            firebaseManager.getPlayerChanges(this.player.playerName, this.player.userLevel.toString())
                     .doOnNext { this.player = it }
 
 
@@ -141,7 +138,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     override fun getTopPlayersListByMoney(): Observable<List<ITopPlayer>> {
         val topPlayersList = ArrayList<ITopPlayer>()
-        var topPlayersMap = HashMap<Int, ArrayList<ITopPlayer>>()
+        val topPlayersMap = HashMap<Int, ArrayList<ITopPlayer>>()
 
         return firebaseManager.getTopPlayersListChanges()
                 .subscribeOn(Schedulers.io())
@@ -149,26 +146,25 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                 .doOnNext { topPlayersList.clear() }
                 .flatMap { list ->
 
-                    for(value in list){
+                    for (value in list) {
 
-                        val player = value.getValue(TopPlayerImpl::class.java)!!
-                        val money = player.getMoney()
+                        val player = value.getValue(TopPlayerData::class.java)!!
+                        val money = player.money
 
                         val listFromMap = topPlayersMap[money]
                         if (listFromMap == null && topPlayersMap.size < TOP_PLAYERS_LIMIT) {
-                            topPlayersMap[money] = Lists.newArrayList(player as ITopPlayer)
-                            player.position = topPlayersMap.size
-                            player.isNumber = true
 
-                            if (topPlayersMap.size == TOP_PLAYERS_LIMIT){
+                            topPlayersMap[money] = Lists.newArrayList(createTopPlayerModel(topPlayersMap.size + 1, true, player))
+
+                            if (topPlayersMap.size == TOP_PLAYERS_LIMIT) {
                                 this.minValueStopCheck = money
                             }
-                        } else if (listFromMap != null){
-                            player.isNumber = false
-                            listFromMap.add(player)
+                        } else if (listFromMap != null) {
+
+                            listFromMap.add(createTopPlayerModel(-1, false, player))
                         }
 
-                        if (money != this.minValueStopCheck && topPlayersMap.size == TOP_PLAYERS_LIMIT){
+                        if (money != this.minValueStopCheck && topPlayersMap.size == TOP_PLAYERS_LIMIT) {
                             break
                         }
                     }
@@ -176,57 +172,64 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                     val sortedMap = topPlayersMap.toSortedMap(reverseOrder())
 
                     sortedMap.values.forEach {
-                            topPlayersList.addAll(it)
+                        topPlayersList.addAll(it)
                     }
 
                     Observable.just(topPlayersList)
                 }
     }
 
+    private fun createTopPlayerModel(position: Int, isNumber: Boolean, player: TopPlayerData): ITopPlayer {
+        return TopPlayerImpl(
+                player.playerName,
+                player.totalWin,
+                player.totalLoss,
+                player.money,
+                imageUtil.decodeBase64Async(player.avatarEncodeImage),
+                isNumber,
+                position)
+    }
+
     override fun getAllAvailableOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>> {
         val list = ArrayList<IOnlinePlayerEvent>()
 
-        return firebaseManager.getAllPlayersByLevel(this.player.getLevelPlayer())
+        return this.firebaseManager.getAllPlayersByLevel(this.player.userLevel)
 //                .filter { isShowPlayersChanges }
 //                .debounce(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .doOnNext { list.clear() }
                 .flatMap {
                     Observable.fromIterable(it)
-                            .map { dataSnapshot -> dataSnapshot.getValue(PlayerImpl::class.java) }
-                            .cast(IPlayer::class.java)
+                            .map { dataSnapshot -> dataSnapshot.getValue(PlayerData::class.java)!! }
                             .filter(this::filterRemotePlayer)
-                            .cast(IPlayer::class.java)
-                            .doOnNext { remotePlayer -> remotePlayersCache[remotePlayer.getPlayerId()] = remotePlayer }
+                            .doOnNext { remotePlayer -> this.remotePlayersCache[remotePlayer.id] = remotePlayer }
                             .doOnNext { remotePlayer -> list.add(createOnlinePlayerEvent(remotePlayer)) }
                             .map { list }
                 }
                 .map { list }
     }
 
-    private fun filterRemotePlayer(remotePlayer: IPlayer): Boolean {
-        if (this.player.getPlayerName() == remotePlayer.getPlayerName()) return false
-        return remotePlayer.isCanPlay() /*|| (!remotePlayer.isCanPlay() && remotePlayer.getRemotePlayer() == this.player.getPlayerName())*/
+    private fun filterRemotePlayer(remotePlayer: PlayerData): Boolean {
+        if (this.player.playerName == remotePlayer.playerName) return false
+        return remotePlayer.canPlay /*|| (!remotePlayer.isCanPlay() && remotePlayer.getRemotePlayer() == this.player.getPlayerName())*/
     }
 
-    private fun createOnlinePlayerEvent(remotePlayer: IPlayer): IOnlinePlayerEvent =
+    private fun createOnlinePlayerEvent(remotePlayer: PlayerData): IOnlinePlayerEvent =
             OnlinePlayerEventImpl(
-                    remotePlayer.getPlayerName()
-                    , remotePlayer.getLevelPlayer()
-                    , remotePlayer.getPlayerId()
-                    , imageUtil.decodeBase64Async(remotePlayer.getAvatarEncode())
-                    , remotePlayer.getTotalWin()
-                    , remotePlayer.getTotalLoss())
+                    remotePlayer.playerName
+                    , remotePlayer.userLevel
+                    , remotePlayer.id
+                    , imageUtil.decodeBase64Async(remotePlayer.avatarEncodeImage)
+                    , remotePlayer.totalWin
+                    , remotePlayer.totalLoss)
 
-    override fun getRemotePlayerById(playerId: Long): IPlayer {
+    override fun getRemotePlayerById(playerId: Long): PlayerData {
         return remotePlayersCache[playerId]!!
     }
 
-    override fun getRemotePlayer() = this.remotePlayerCacheTmpGuest
-
     override fun sendRequestOnlineGame(idRemotePlayer: Long): Completable {
 
-        if (!this.player.isCanPlay()) {
+        if (!this.player.canPlay) {
             return Completable.complete()
         }
 
@@ -243,7 +246,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                 , PlayersCode.PLAYER_ONE.ordinal
                 , PlayersCode.PLAYER_ONE.ordinal
                 , false
-                , remotePlayerCacheTmpGuest.getPlayerName())
+                , remotePlayerCacheTmpGuest.playerName)
 
         // Set the owner player fields
         setSendRequestByPlayer(
@@ -253,17 +256,17 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                 , PlayersCode.PLAYER_ONE.ordinal
                 , PlayersCode.PLAYER_TWO.ordinal
                 , true
-                , this.player.getPlayerName())
+                , this.player.playerName)
 
         return firebaseManager
-                .sendRequestOnlineGame(fieldsMap, this.player.getLevelPlayer().toString())
+                .sendRequestOnlineGame(fieldsMap, this.player.userLevel.toString())
     }
 
-    private fun createRemotePlayerDataByPlayer(player: IPlayer): RemotePlayerData {
+    private fun createRemotePlayerDataByPlayer(player: PlayerData): RemotePlayerData {
         return RemotePlayerData(
-                player.getPlayerId()
-                , player.getAvatarEncode()
-                , player.getPlayerName())
+                player.id
+                , player.avatarEncodeImage
+                , player.playerName)
     }
 
     private fun setSendRequestByPlayer(fieldsMap: HashMap<String, Any>
@@ -284,13 +287,13 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     }
 
     private fun getPlayerIdByState(status: RequestOnlineGameStatus, remotePlayerId: Long): Long {
-        return if ((status.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !player.isOwner())
-                || (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_OWNER.ordinal && !player.isOwner())) {
+        return if ((status.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !player.owner)
+                || (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_OWNER.ordinal && !player.owner)) {
             // The remote player this is the owner
             remotePlayerId
-        } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && player.isOwner()) {
+        } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && player.owner) {
             // The remote player this is the guest
-            return this.remotePlayerCacheTmpGuest.getPlayerId()
+            return this.remotePlayerCacheTmpGuest.id
         } else {
             -1L
         }
@@ -298,14 +301,14 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     private fun getRemotePlayerByState(status: RequestOnlineGameStatus, playerId: Long): IOnlinePlayerEvent {
 //        Log.d("TEST_GAME", "1 RemoteDbManager getRemotePlayerByState")
-        return if ((status.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !player.isOwner())
-                || (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_OWNER.ordinal && !player.isOwner())) {
+        return if ((status.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !player.owner)
+                || (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_OWNER.ordinal && !player.owner)) {
             // The remote player this is the owner
             val remotePlayer = remotePlayersCache[playerId]
             val remotePlayerEvent = createOnlinePlayerEvent(remotePlayer!!)
             remotePlayerEvent
 
-        } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && player.isOwner()) {
+        } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && player.owner) {
             // The remote player this is the guest
             val remotePlayer = remotePlayersCache[playerId]
             val remotePlayerEvent = createOnlinePlayerEvent(remotePlayer!!)
@@ -316,23 +319,12 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     }
 
-//    private fun isNeedShowActionMessage(requestGame: RequestOnlineGameStatus): Boolean {
-//        return requestGame.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !this.player.isOwner()
-//    }
-//
-//    private fun isNeedShowMessage(requestGame: RequestOnlineGameStatus): Boolean {
-//        val isOwner = this.player.isOwner()
-//        return requestGame.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !isOwner
-//                || requestGame.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && isOwner
-//                || requestGame.ordinal == RequestOnlineGameStatus.DECLINE_BY_OWNER.ordinal && !isOwner
-//    }
-
     private fun getMsgByState(status: RequestOnlineGameStatus): String {
-        val isOwner = this.player.isOwner()
+        val isOwner = this.player.owner
 
         return if (status.ordinal == RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal && !isOwner) {
             // The remote player this is the owner
-            context.getString(R.string.activity_home_page_online_players_dialog_request_game_text, player.getPlayerName())
+            context.getString(R.string.activity_home_page_online_players_dialog_request_game_text, player.playerName)
 
         } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && isOwner) {
             // The remote player this is the guest
@@ -345,28 +337,34 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         }
     }
 
-    private var dialogStateCreator = BehaviorSubject.createDefault(DialogStateCreator())
+    private var dialogStateCreator = BehaviorSubject.create<DialogStateCreator>()
 
-    private fun createDialogStateCreator() {
-        getDataPlayerChanges()
+    override fun createDialogStateCreator(): Disposable {
+        return getDataPlayerChanges()
+                .doOnNext {
+                    Log.d("TEST_GAME", "1 RemoteDbManager -> createDialogStateCreator -> doOnNext")
+                }
                 .filter {
-                    Log.d("TEST_GAME", "RemoteDbManager -> createDialogStateCreator-> filter-> STATE: ${it.getRequestOnlineGameStatus().name}")
-                    it.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.EMPTY.ordinal
-                            && it.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.SEND_REQUEST.ordinal
-                            && it.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal
+                    Log.d("TEST_GAME", "2 RemoteDbManager -> createDialogStateCreator -> filter")
+                    it.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.EMPTY.ordinal
+                            && it.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.SEND_REQUEST.ordinal
+                            && it.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.ACCEPT_BY_GUEST.ordinal
+                }
+                .doOnNext {
+                    Log.d("TEST_GAME", "1 RemoteDbManager -> createDialogStateCreator -> after doOnNext")
                 }
                 .map { player ->
-                    Log.d("TEST_GAME", "RemoteDbManager -> createDialogStateCreator-> PASS filter-> STATE: ${player.getRequestOnlineGameStatus().name}")
+                    Log.d("TEST_GAME", "RemoteDbManager -> createDialogStateCreator-> PASS filter-> STATE: ${player.requestOnlineGameStatus}")
 
-                    val status = player.getRequestOnlineGameStatus()
-                    val remotePlayerActive = player.getRemotePlayerActive()
+                    val status = player.requestOnlineGameStatus
+                    val remotePlayerActive = player.remotePlayerActive
 
                     val remotePlayerId = remotePlayerActive.remotePlayerId
 
                     val remotePlayerIdByState = getPlayerIdByState(status, remotePlayerId)
                     val remotePlayer = getRemotePlayerByState(status, remotePlayerIdByState)
                     val msgByState = getMsgByState(status)
-                    return@map DialogStateCreator(remotePlayer, msgByState, status, this.player.isOwner())
+                    return@map DialogStateCreator(remotePlayer, msgByState, status, this.player.owner)
                 }
                 .subscribe(this::setDialogCreator)
     }
@@ -379,7 +377,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
     override fun getDialogState(): Observable<DialogStateCreator> = dialogStateCreator.hide()
 
     override fun getRequestGameStatus(): Observable<RequestOnlineGameStatus> =
-            firebaseManager.getRequestStatusChanges(this.player.getPlayerName(), this.player.getLevelPlayer().toString())
+            firebaseManager.getRequestStatusChanges(this.player.playerName, this.player.userLevel.toString())
 
     override fun startOnlineGame(): Observable<Boolean> {
         return getRequestGameStatus()
@@ -395,12 +393,12 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
         val fieldsMap = HashMap<String, Any>()
 
-        fieldsMap["/${this.player.getPlayerName()}/canPlay"] = true
-        fieldsMap["/${this.player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
-        fieldsMap["/${this.player.getPlayerName()}/remotePlayerActive"] = RemotePlayerData()
-        fieldsMap["/${this.player.getPlayerName()}/owner"] = false
+        fieldsMap["/${this.player.playerName}/canPlay"] = true
+        fieldsMap["/${this.player.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
+        fieldsMap["/${this.player.playerName}/remotePlayerActive"] = RemotePlayerData()
+        fieldsMap["/${this.player.playerName}/owner"] = false
 
-        return firebaseManager.finishRequestOnlineGame(fieldsMap, this.player.getLevelPlayer().toString())
+        return firebaseManager.finishRequestOnlineGame(fieldsMap, this.player.userLevel.toString())
     }
 
     override fun isStillSendRequest(): Observable<Boolean> =
@@ -413,11 +411,11 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         val fieldsMap = HashMap<String, Any>()
 
         // The player is the owner(itself)
-        fieldsMap["/${this.player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_GUEST
-        fieldsMap["/${this.player.getRemotePlayerActive().remotePlayerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_OWNER
+        fieldsMap["/${this.player.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_GUEST
+        fieldsMap["/${this.player.remotePlayerActive.remotePlayerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_OWNER
 
         return firebaseManager
-                .ignoredRequestGameStatusItself(fieldsMap, this.player.getLevelPlayer().toString())
+                .ignoredRequestGameStatusItself(fieldsMap, this.player.userLevel.toString())
     }
 
     override fun isRelevantRequestGame(): Single<Boolean> {
@@ -425,9 +423,9 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
         val player = this.player
         return firebaseManager
-                .getRemotePlayerActiveByRemotePlayer(player.getRemotePlayerActive().remotePlayerName, player.getLevelPlayer().toString())
+                .getRemotePlayerActiveByRemotePlayer(player.remotePlayerActive.remotePlayerName, player.userLevel.toString())
                 .map { remotePlayerActiveByRemotePlayer ->
-                    val result = this.player.getPlayerName() == remotePlayerActiveByRemotePlayer
+                    val result = this.player.playerName == remotePlayerActiveByRemotePlayer
                     Log.d("TEST_GAME", "111 RemoteDbManager isRelevantRequestGame RESULT: $result")
                     result
                 }
@@ -435,11 +433,11 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
     override fun declineOnlineGame(): Completable {
         Log.d("TEST_GAME", "RemoteDbManager declineOnlineGame")
-        if (this.player.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal) return Completable.complete()
+        if (this.player.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal) return Completable.complete()
 
         // The remote player is the owner
         // that need to notify on the decline game
-        val remotePlayerNameOwner = this.player.getRemotePlayerActive().remotePlayerName
+        val remotePlayerNameOwner = this.player.remotePlayerActive.remotePlayerName
 
         val fieldsMap = HashMap<String, Any>()
 
@@ -447,53 +445,53 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         // that need to notify on the decline game
         fieldsMap["/$remotePlayerNameOwner/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_GUEST
 
-        fieldsMap["/${this.player.getPlayerName()}/canPlay"] = true
-        fieldsMap["/${this.player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
-        fieldsMap["/${this.player.getPlayerName()}/remotePlayerActive"] = RemotePlayerData()
+        fieldsMap["/${this.player.playerName}/canPlay"] = true
+        fieldsMap["/${this.player.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
+        fieldsMap["/${this.player.playerName}/remotePlayerActive"] = RemotePlayerData()
 
-        return firebaseManager.declineOnlineGame(fieldsMap, this.player.getLevelPlayer().toString())
+        return firebaseManager.declineOnlineGame(fieldsMap, this.player.userLevel.toString())
     }
 
     override fun cancelRequestGame(): Completable {
         Log.d("TEST_GAME", "RemoteDbManager cancelRequestGame")
 
-        if (this.player.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.SEND_REQUEST.ordinal) return Completable.complete()
+        if (this.player.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.SEND_REQUEST.ordinal) return Completable.complete()
         val fieldsMap = HashMap<String, Any>()
-        fieldsMap["/${this.remotePlayerCacheTmpGuest.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_OWNER
+        fieldsMap["/${this.remotePlayerCacheTmpGuest.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.DECLINE_BY_OWNER
 
-        return firebaseManager.cancelRequestGame(fieldsMap, player.getLevelPlayer().toString())
+        return firebaseManager.cancelRequestGame(fieldsMap, player.userLevel.toString())
                 .andThen(finishRequestOnlineGame())
 
     }
 
     override fun acceptOnlineGame(): Completable {
 
-        if (this.player.getRequestOnlineGameStatus().ordinal != RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal) return Completable.complete()
+        if (this.player.requestOnlineGameStatus.ordinal != RequestOnlineGameStatus.RECEIVE_REQUEST.ordinal) return Completable.complete()
 
         // The remote player is the owner
         // that need to notify on the decline game
-        val remotePlayerNameOwnerFirst = this.player.getRemotePlayerActive().remotePlayerName
+        val remotePlayerNameOwnerFirst = this.player.remotePlayerActive.remotePlayerName
 
         val fieldsMap = HashMap<String, Any>()
 
         fieldsMap["/$remotePlayerNameOwnerFirst/requestOnlineGameStatus"] = RequestOnlineGameStatus.ACCEPT_BY_GUEST
 
-        fieldsMap["/${player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.ACCEPT_BY_GUEST
+        fieldsMap["/${player.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.ACCEPT_BY_GUEST
 
-        return firebaseManager.acceptOnlineGame(player.getLevelPlayer().toString(), fieldsMap)
+        return firebaseManager.acceptOnlineGame(player.userLevel.toString(), fieldsMap)
     }
 
     override fun notifyEndTurn(move: RemoteMove): Completable {
 
         val fieldsMap = HashMap<String, Any>()
 
-        fieldsMap["/${this.player.getRemotePlayerActive().remotePlayerName}/remoteMove"] = move
+        fieldsMap["/${this.player.remotePlayerActive.remotePlayerName}/remoteMove"] = move
 
-        return firebaseManager.notifyMove(player.getLevelPlayer().toString(), fieldsMap)
+        return firebaseManager.notifyMove(player.userLevel.toString(), fieldsMap)
     }
 
     override fun getRemoteMove(): Observable<RemoteMove> =
-            firebaseManager.getRemoteMove(player.getPlayerName(), player.getLevelPlayer().toString())
+            firebaseManager.getRemoteMove(player.playerName, player.userLevel.toString())
                     .filter { it.idEndCell != -1 && it.idStartCell != -1 }
 
 
@@ -501,14 +499,14 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
         val fieldsMap = HashMap<String, Any>()
 
-        fieldsMap["/${this.player.getPlayerName()}/technicalLoss"] = true
+        fieldsMap["/${this.player.playerName}/technicalLoss"] = true
 
         return firebaseManager
-                .pingFinishGameTechnicalLoss(player.getLevelPlayer().toString(), fieldsMap)
+                .pingFinishGameTechnicalLoss(player.userLevel.toString(), fieldsMap)
     }
 
     override fun isTechnicalWin(): Observable<Boolean> =
-            firebaseManager.isTechnicalWin(this.player.getRemotePlayerActive().remotePlayerName, player.getLevelPlayer().toString())
+            firebaseManager.isTechnicalWin(this.player.remotePlayerActive.remotePlayerName, player.userLevel.toString())
 
     override fun setMoney(money: Int): Completable {
 
@@ -519,7 +517,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         return firebaseManager.setMoney(fieldsMap)
     }
 
-    override fun setTotalGames(totalLoss: Int, totalWin: Int): Completable {
+    override fun setTotalGamesUserAndPlayer(totalLoss: Int, totalWin: Int): Completable {
 
         val fieldsMap = HashMap<String, Any>()
 
@@ -544,20 +542,20 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
         val fieldsMap = HashMap<String, Any>()
 
-        fieldsMap["/${this.player.getPlayerName()}/owner"] = false
-        fieldsMap["/${this.player.getPlayerName()}/canPlay"] = true
-        fieldsMap["/${this.player.getPlayerName()}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
-        fieldsMap["/${this.player.getPlayerName()}/nowPlay"] = PlayersCode.EMPTY.ordinal
-        fieldsMap["/${this.player.getPlayerName()}/playerCode"] = PlayersCode.EMPTY.ordinal
-        fieldsMap["/${this.player.getPlayerName()}/technicalLoss"] = false
-        fieldsMap["/${this.player.getPlayerName()}/remoteMove"] = RemoteMove()
-        fieldsMap["/${this.player.getPlayerName()}/remotePlayerActive"] = RemotePlayerData()
+        fieldsMap["/${this.player.playerName}/owner"] = false
+        fieldsMap["/${this.player.playerName}/canPlay"] = true
+        fieldsMap["/${this.player.playerName}/requestOnlineGameStatus"] = RequestOnlineGameStatus.EMPTY
+        fieldsMap["/${this.player.playerName}/nowPlay"] = PlayersCode.EMPTY.ordinal
+        fieldsMap["/${this.player.playerName}/playerCode"] = PlayersCode.EMPTY.ordinal
+        fieldsMap["/${this.player.playerName}/technicalLoss"] = false
+        fieldsMap["/${this.player.playerName}/remoteMove"] = RemoteMove()
+        fieldsMap["/${this.player.playerName}/remotePlayerActive"] = RemotePlayerData()
 
-        return firebaseManager.resetPlayer(this.player.getLevelPlayer().toString(), fieldsMap)
+        return firebaseManager.resetPlayer(this.player.userLevel.toString(), fieldsMap)
     }
 
-    override fun setImageProfileAndPlayer(encodeImage: String, playerName: String): Completable =
-            firebaseManager.setImageProfileAndPlayer(this.player.getPlayerName(), this.player.getLevelPlayer().toString(), encodeImage)
+    override fun setImageProfileAndPlayer(encodeImage: String): Completable =
+            firebaseManager.setImageProfileAndPlayer(this.player.playerName, this.player.userLevel.toString(), encodeImage)
 
     override fun setImageDefaultPreUpdate(): Single<ByteArray?> {
         if (!NetworkUtil().isAvailableNetwork()) {

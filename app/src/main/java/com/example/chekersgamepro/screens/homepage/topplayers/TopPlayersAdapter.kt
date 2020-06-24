@@ -5,14 +5,13 @@ import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
 
-class TopPlayersAdapter :
-        CheckersRecyclerView.Companion.Adapter<ITopPlayer>(){
+class TopPlayersAdapter : CheckersRecyclerView.Companion.Adapter<ITopPlayer>(){
 
     private var listTopPlayers = ArrayList<ITopPlayer>()
 
     private var height : Int = 0
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = super.addViewHolder(TopPlayerViewHolder(parent, CheckersImageUtil.create()))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = super.addViewHolder(TopPlayerViewHolder(parent))
 
     override fun getFactorHeight() = 8f
 

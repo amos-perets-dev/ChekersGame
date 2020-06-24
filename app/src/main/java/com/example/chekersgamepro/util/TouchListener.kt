@@ -4,7 +4,7 @@ import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.graphics.Rect
-import android.os.Handler
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -22,8 +22,7 @@ class TouchListener(private val click: View.OnClickListener, private val decreas
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean =
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> actionDown(view)
-                MotionEvent.ACTION_UP -> actionUp(view, motionEvent)
-                MotionEvent.ACTION_CANCEL -> actionCancel()
+                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> actionUp(view, motionEvent)
                 else -> false
             }
 
@@ -35,7 +34,7 @@ class TouchListener(private val click: View.OnClickListener, private val decreas
         animator.interpolator = FastOutSlowInInterpolator()
         animator.setValues(scaleX, scaleY)
 
-        animator.setDuration(150).start()
+        animator.setDuration(100).start()
         return true
 
     }
@@ -45,45 +44,18 @@ class TouchListener(private val click: View.OnClickListener, private val decreas
         val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f)
         val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f)
         animator.setValues(scaleX, scaleY)
-        animator.addListener(object : Animator.AnimatorListener{
-            override fun onAnimationRepeat(animation: Animator?) {
+        if (motionEvent.action != MotionEvent.ACTION_CANCEL
+                && rect.contains(view.left + motionEvent.x.toInt(), view.top + motionEvent.y.toInt())) {
 
-
-            }
-
-            override fun onAnimationEnd(animation: Animator?) {
-                if (motionEvent.action != MotionEvent.ACTION_CANCEL
-                        && rect.contains(view.left + motionEvent.x.toInt(), view.top + motionEvent.y.toInt())) {
-
-                    click.onClick(view)
-                }
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-
-            }
-
-        })
-        animator.setDuration(150).start()
-
+            click.onClick(view)
+        }
+        animator.setDuration(100).start()
 
         return false
 
     }
 
-    private fun actionCancel() : Boolean{
-        val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f)
-        val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f)
-        animator.setValues(scaleX, scaleY)
-        animator.setDuration(150).start()
-
-
-        return false
-    }
+    private fun actionCancel(): Boolean = false
 
 
 }

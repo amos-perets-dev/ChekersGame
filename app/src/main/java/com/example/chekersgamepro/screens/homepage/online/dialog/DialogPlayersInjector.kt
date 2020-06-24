@@ -22,16 +22,18 @@ class DialogPlayersInjector {
             val player = dialogStateCreator
                     .map { it.remotePlayerMsg }
 
-            val viewModel = createViewModelObject(
-                    dialogStateCreator
-                    , player.flatMap { it.getImageProfile() }
-                    , player.flatMap { it.getPlayerName() }
-                    , player.map {Pair.create(it.getTotalWin(), it.getTotalLoss())}
-                    , player.flatMap { it.getLevelPlayer() }
-                    , repositoryManager.getRequestGameStatus())
+            val viewModel =
+                    createViewModelObject(
+                            dialogStateCreator
+                            , player.flatMap { it.getImageProfile() }
+                            , player.flatMap { it.getPlayerName() }
+                            , player.map { Pair.create(it.getTotalWin(), it.getTotalLoss()) }
+                            , player.flatMap { it.getLevelPlayer() }
+                            , repositoryManager.getRequestGameStatus()
+                    )
 
             val viewModelFactory = createViewModelFactory(viewModel)
-            return ViewModelProviders.of(activity , viewModelFactory).get(DialogPlayersViewModel::class.java)
+            return ViewModelProviders.of(activity, viewModelFactory).get(DialogPlayersViewModel::class.java)
         }
 
         private fun createViewModelObject(
@@ -40,7 +42,7 @@ class DialogPlayersInjector {
                 remotePlayerName: Observable<String>,
                 remotePlayerTotalGames: Observable<Pair<String, String>>,
                 remotePlayerLevel: Observable<String>,
-                requestGameStatus: Observable<RequestOnlineGameStatus>): DialogPlayersViewModel{
+                requestGameStatus: Observable<RequestOnlineGameStatus>): DialogPlayersViewModel {
 
             val msgByState = dialogStateCreator.map { it.msgByState }
             val dialogState = dialogStateCreator.map { it.dialogState }
@@ -57,7 +59,7 @@ class DialogPlayersInjector {
 
         }
 
-        private fun  createViewModelFactory(viewModel: Any): ViewModelProvider.Factory {
+        private fun createViewModelFactory(viewModel: Any): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                     return viewModel as T

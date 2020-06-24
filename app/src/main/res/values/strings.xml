@@ -32,9 +32,10 @@
 
     <string name="activity_home_page_top_players_title_text">Top Players</string>
 
-    <string name="activity_home_page_menu_buttons_online_game_text">ONLINE GAME</string>
-    <string name="activity_home_page_menu_buttons_computer_game_text">COMPUTER GAME</string>
+    <string name="activity_home_page_menu_buttons_online_game_text">TWO PLAYERS</string>
+    <string name="activity_home_page_menu_buttons_computer_game_text">ONE PLAYER</string>
     <string name="activity_home_page_menu_buttons_top_players_game_text">TOP PLAYERS</string>
+    <string name="activity_home_page_menu_buttons_get_money_text">MONEY</string>
     <string name="activity_home_page_menu_buttons_update_picture_game_text">UPDATE PICTURE</string>
     <string name="activity_home_page_menu_buttons_share_game_text">SHARE</string>
     <string name="activity_home_page_menu_buttons_settings_game_text">SETTINGS</string>

@@ -8,17 +8,12 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersActivity
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarPickerFragment
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogPlayersFragment
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
-import com.example.chekersgamepro.screens.homepage.online.players.OnlinePlayersFragment
-import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayersFragment
 import com.example.chekersgamepro.util.TouchListener
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
@@ -63,31 +58,6 @@ open class HomePageActivity : CheckersActivity() {
 
         compositeDisposable.add(
                 homePageViewModel
-                        .isOpenOnlinePlayers(this)
-                        .subscribe {
-                            startOnlinePlayersFragment()
-                        }
-        )
-
-        compositeDisposable.add(
-                homePageViewModel
-                        .isOpenTopPlayers(this)
-                        .subscribe {
-                            startTopPlayersFragment()
-                        }
-        )
-
-
-        compositeDisposable.add(
-                homePageViewModel.isDefaultImage()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe {
-                            AnimationUtil.animatePulse(image_profile_hp)
-                        }
-        )
-
-        compositeDisposable.add(
-                homePageViewModel
                         .getMsgState(this)
                         .doOnNext {
                             val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -114,9 +84,28 @@ open class HomePageActivity : CheckersActivity() {
                         .subscribe { startActivityForResult(it, 50) }
         )
 
+        image_profile_hp
+                .setOnTouchListener(TouchListener(View.OnClickListener { onClickAvatar() }, 0.8f))
+
         compositeDisposable.add(
-                homePageViewModel.getPlayerName()
-                        .subscribe(text_view_player_name::setText)
+                homePageViewModel.openAvatarScreen(this)
+                        .subscribe(Functions.actionConsumer(this::startAvatarPickerFragment))
+        )
+
+        compositeDisposable.add(
+                homePageViewModel.getUserProfileName()
+                        .subscribe(text_view_player_name::setText, Throwable::printStackTrace)
+        )
+        compositeDisposable.add(
+                homePageViewModel
+                        .getUserProfileLevelChanges()
+                        .subscribe(text_view_level_changes::setText)
+        )
+
+        compositeDisposable.add(
+                homePageViewModel.getImageProfileAsync()
+                        .doOnNext { Log.d("TEST_GAME", "homePageViewModel.getImageProfileAsync()") }
+                        .subscribe(image_profile_hp::setImageBitmap)
         )
 
         compositeDisposable.add(
@@ -136,31 +125,6 @@ open class HomePageActivity : CheckersActivity() {
                         .subscribe(text_view_total_games::setTextTotalWin)
         )
 
-        // For the first time
-        compositeDisposable.add(
-                homePageViewModel.getImageProfile()
-                        .subscribe { imageProfile, t2 -> image_profile_hp.setImageBitmap(imageProfile) }
-        )
-
-        compositeDisposable.add(
-                homePageViewModel.getImageProfileAsync()
-                        .subscribe(image_profile_hp::setImageBitmap)
-        )
-
-        image_profile_hp
-                .setOnTouchListener(TouchListener(View.OnClickListener { onClickAvatar() }, 0.8f))
-
-        compositeDisposable.add(
-                homePageViewModel.openAvatarScreen(this)
-                        .subscribe(Functions.actionConsumer(this::startAvatarPickerFragment))
-        )
-
-        compositeDisposable.add(
-                homePageViewModel
-                        .getUserProfileLevelChanges()
-                        .subscribe(text_view_level_changes::setText)
-        )
-
         compositeDisposable.add(AnimationUtil.animateViews(
                 text_view_total_games,
                 money_icon,
@@ -170,6 +134,13 @@ open class HomePageActivity : CheckersActivity() {
                 image_profile_hp)
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
+                .andThen(homePageViewModel.isDefaultImage()
+                        .doOnEvent { isDefaultImage, t2 ->
+                            Log.d("TEST_GAME", "isDefaultImage: $isDefaultImage")
+                            if (isDefaultImage!= null && isDefaultImage){
+                                AnimationUtil.animatePulse(image_profile_hp, 0.8f)
+                            }
+                        })
                 .subscribe())
 
     }
@@ -178,16 +149,8 @@ open class HomePageActivity : CheckersActivity() {
         this.homePageViewModel.onClickAvatar(this)
     }
 
-    fun onClickOnlineGame() {
-        this.homePageViewModel.onClickOnlineGame()
-    }
-
     fun onClickComputerGame() {
         this.homePageViewModel.onClickComputerGame()
-    }
-
-    fun onClickTopPlayers() {
-        this.homePageViewModel.onClickTopPlayers()
     }
 
     private fun startAvatarPickerFragment() {
@@ -197,73 +160,8 @@ open class HomePageActivity : CheckersActivity() {
         }
     }
 
-
-    private fun startOnlinePlayersFragment() {
-        val onlinePlayersFragment: Fragment? = getOnlinePlayersFragment()
-        if (onlinePlayersFragment != null) {
-            (onlinePlayersFragment as DialogFragment).show(supportFragmentManager, "online_players")
-        }
-    }
-
-    private fun startTopPlayersFragment() {
-        val topPlayersFragment: Fragment? = getTopPlayersFragment()
-        if (topPlayersFragment != null) {
-            (topPlayersFragment as DialogFragment).show(supportFragmentManager, "top_players")
-        }
-    }
-
-
-    private fun startDialogPlayersFragment(dialogStateCreator: DialogStateCreator) {
-        val dialogPlayersFragment: Fragment? = getDialogPlayersFragment(dialogStateCreator)
-        if (dialogPlayersFragment != null) {
-            (dialogPlayersFragment as DialogFragment).show(supportFragmentManager, "dialog_players")
-        }
-    }
-
-    private fun getDialogPlayersFragment(dialogStateCreator: DialogStateCreator): Fragment? {
-        return DialogPlayersFragment.newInstance(image_profile_hp, dialogStateCreator)
-    }
-
     private fun getAvatarPickerFragment(): Fragment? {
         return AvatarPickerFragment.newInstance(image_profile_hp)
-    }
-
-    private fun getOnlinePlayersFragment(): Fragment? {
-        return OnlinePlayersFragment.newInstance(image_profile_hp)
-    }
-
-    private fun getTopPlayersFragment(): Fragment? {
-        return TopPlayersFragment.newInstance(image_profile_hp)
-    }
-
-
-//    private fun closePlayersList() {
-//        players_list_container.animate().withLayer().translationY((players_list_container.measuredHeight).toFloat()).start()
-//    }
-
-    override fun onResume() {
-        super.onResume()
-
-//        Log.d("TEST_GAME", "HomePageActivity -> onResume -> measuredHeight: ${recycler_view_players.measuredHeight.toFloat()}")
-        Log.d("TEST_GAME", "HomePageActivity -> onResume")
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d("TEST_GAME", "HomePageActivity -> onStart")
-
-//        Log.d("TEST_GAME", "HomePageActivity -> onStart -> measuredHeight: ${recycler_view_players.measuredHeight.toFloat()}")
-
-    }
-
-
-    private fun initRequestGameDialog() {
-//        RequestGameDialog(this
-//                , homePageViewModel::acceptOnlineGame
-//                , homePageViewModel::declineOnlineGame
-//                , compositeDisposable
-//                , homePageViewModel.getMsgState(this))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -274,34 +172,6 @@ open class HomePageActivity : CheckersActivity() {
         }
 
     }
-
-//    private fun initRecyclerView(onlinePlayersAdapter: OnlinePlayersAdapter) {
-//        recycler_view_players.adapter = onlinePlayersAdapter
-//        val linearLayoutManager = LinearLayoutManager(this)
-//        linearLayoutManager.isAutoMeasureEnabled = false
-//
-//        recycler_view_players.layoutManager = linearLayoutManager
-//    }
-
-    override fun onPause() {
-        Log.d("TEST_GAME", "HomePageActivity -> onPause")
-
-
-        super.onPause()
-    }
-
-
-    override fun onStop() {
-//        Log.d("TEST_GAME", "HomePageActivity -> onStop")
-//
-//        val fragment = (supportFragmentManager.findFragmentByTag("avatar_picker") as AvatarPickerFragment?)
-//        if (fragment != null && fragment.isVisible) {
-//            fragment.dismissAllowingStateLoss()
-//            supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
-//        }
-        super.onStop()
-    }
-
 
     override fun onDestroy() {
         Log.d("TEST_GAME", "HomePageActivity -> onDestroy")

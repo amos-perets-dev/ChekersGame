@@ -1,7 +1,7 @@
 package com.example.chekersgamepro.db.remote
 
 import com.example.chekersgamepro.data.move.RemoteMove
-import com.example.chekersgamepro.models.player.data.IPlayer
+import com.example.chekersgamepro.models.player.data.PlayerData
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
@@ -11,22 +11,23 @@ import com.google.common.base.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.disposables.Disposable
 
 interface IRemoteDb {
 
     fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<IUserProfile>
 
-    fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<IPlayer>>
+    fun createPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Single<Optional<PlayerData>>
 
     fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable
 
-    fun createPlayer(): Single<Optional<IPlayer>>
+    fun createPlayer(): Single<Optional<PlayerData>>
 
     fun isUserNameExistServer(userName: String): Single<Boolean>
 
     fun setIsCanPlay(isCanPlay : Boolean) : Completable?
 
-    fun getDataPlayerChanges() : Observable<IPlayer>
+    fun getDataPlayerChanges() : Observable<PlayerData>
 
     fun getAllAvailableOnlinePlayersByLevel(): Observable<List<IOnlinePlayerEvent>>
 
@@ -50,11 +51,11 @@ interface IRemoteDb {
 
     fun setMoney(money : Int) : Completable
 
-    fun setTotalGames(totalLoss: Int, totalWin : Int): Completable
+    fun setTotalGamesUserAndPlayer(totalLoss: Int, totalWin : Int): Completable
 
     fun resetPlayer() : Completable
 
-    fun setImageProfileAndPlayer(encodeImage: String, playerName: String): Completable
+    fun setImageProfileAndPlayer(encodeImage: String): Completable
 
     fun setImageDefaultPreUpdate() : Single<ByteArray?>
 
@@ -64,9 +65,7 @@ interface IRemoteDb {
 
     fun isStillSendRequest(): Observable<Boolean>
 
-    fun getRemotePlayerById(playerId: Long): IPlayer
-
-    fun getRemotePlayer() : IPlayer
+    fun getRemotePlayerById(playerId: Long): PlayerData
 
     fun setDialogCreator(dialogStateCreator: DialogStateCreator)
 
@@ -78,5 +77,7 @@ interface IRemoteDb {
 
     fun setTopPlayer(totalWin: Int, totalLoss: Int, moneyByGameResult: Int): Completable
     fun getTopPlayersListByMoney(): Observable<List<ITopPlayer>>
+
+    fun createDialogStateCreator(): Disposable
 
 }

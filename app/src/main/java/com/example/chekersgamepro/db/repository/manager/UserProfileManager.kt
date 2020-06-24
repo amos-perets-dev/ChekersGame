@@ -6,7 +6,6 @@ import com.example.chekersgamepro.db.remote.IRemoteDb
 import com.example.chekersgamepro.models.data.UserDataTmp
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import io.reactivex.*
-import io.reactivex.subjects.PublishSubject
 import io.realm.RealmObject
 
 class UserProfileManager(private val realmManager: RealmManager,
@@ -21,34 +20,30 @@ class UserProfileManager(private val realmManager: RealmManager,
 
     private val realm = realmManager.getDefaultRealm()
 
-    fun getUserProfileLevelChanges() : Flowable<String> =
+    fun getUserProfileName(): Flowable<String> =
+            this.userProfileDataChanges
+                    .map { it.getUserName() }
+
+    fun getUserProfileLevelChanges(): Flowable<String> =
             this.userProfileDataChanges
                     .map { it.getLevelUser().toString() }
 
-    fun getUserProfileMoney(): Single<String> =
+    fun getEncodeImageProfileChanges(): Flowable<String> =
             this.userProfileDataChanges
-                    .map { it.getMoney().toString() }
-                    .firstOrError()
-
-    fun getUserProfileTotalGames(): Single<UserDataTmp> =
-            this.userProfileDataChanges
-                    .map { UserDataTmp(it.getTotalLoss(), it.getTotalWin(), 0, 0) }
-                    .firstOrError()
-
-    fun getEncodeImageProfile(): Flowable<String> =
-            this.userProfileDataChanges
-                    .map { it.getAvatarEncode() }
+                    .map { it.getAvatarEncodeImage() }
+                    .distinctUntilChanged()
 
     fun getUserProfileMoneyChanges(): Flowable<String> =
             this.userProfileDataChanges
                     .map { it.getMoney().toString() }
+                    .distinctUntilChanged()
 
     fun getUserProfileTotalWinChanges(): Flowable<String> =
-            realmManager.getUserProfileDataChanges()
+            this.userProfileDataChanges
                     .map { it.getTotalWin().toString() }
 
     fun getUserProfileTotalLossChanges(): Flowable<String> =
-            realmManager.getUserProfileDataChanges()
+            this.userProfileDataChanges
                     .map { it.getTotalLoss().toString() }
 
     fun createUser(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
@@ -84,7 +79,7 @@ class UserProfileManager(private val realmManager: RealmManager,
         }
                 .flatMapCompletable { userDataTmp ->
                     remoteDb.setMoney(userDataTmp.moneyByGameResult)
-                            .andThen(remoteDb.setTotalGames(userDataTmp.totalLoss, userDataTmp.totalWin))
+                            .andThen(remoteDb.setTotalGamesUserAndPlayer(userDataTmp.totalLoss, userDataTmp.totalWin))
                             .andThen(remoteDb.setTopPlayer(userDataTmp.totalWin, userDataTmp.totalLoss, userDataTmp.moneyByGameResult))
                             .andThen(realmManager.setUserDataTmp(userDataTmp))
                 }
@@ -99,19 +94,9 @@ class UserProfileManager(private val realmManager: RealmManager,
         return if (isWinAndNeedUpdate) (userMoney + (moneyStep * 2)) else userMoney
     }
 
-    fun setEncodeImageProfile(encode: String?): Completable {
-        return Completable.create { emitter ->
-
-            realmManager.getDefaultRealm().executeTransaction { realm ->
-
-                val userProfileImpl = realm.where(UserProfileImpl::class.java).findFirst()
-                userProfileImpl?.setAvatarEncode(encode!!)
-
-                emitter.onComplete()
-
-            }
-        }
-    }
+    fun setEncodeImageProfile(encode: String?): Completable =
+            realmManager.setUserEncodeImageProfile(encode!!)
+                    .andThen(remoteDb.setImageProfileAndPlayer(encode))
 
     override fun <E : RealmObject> insertAsync(`object`: E): Completable = realmManager.insertAsync(`object` as UserProfileImpl)
 

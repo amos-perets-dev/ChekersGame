@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.screens.homepage.menu
 
+import android.util.Log
 import android.view.ViewGroup
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.menu.model.IMenuButton

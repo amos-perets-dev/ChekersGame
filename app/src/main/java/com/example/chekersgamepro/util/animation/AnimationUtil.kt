@@ -67,10 +67,13 @@ class AnimationUtil {
                     textView.animate().withLayer().setStartDelay(100).translationX(0f).setDuration(700).start()
                 }
 
-//                computerGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
-//                onlineGameButton.animate().withLayer().translationY(0f).setStartDelay(250).setDuration(900).start()
-
-                imageProfile.animate().withLayer().alpha(1f).withEndAction { emitter.onComplete() }.setStartDelay(250).setDuration(800).start()
+                imageProfile.animate()
+                        .withLayer()
+                        .alpha(1f)
+                        .withEndAction { emitter.onComplete() }
+                        .setStartDelay(250)
+                        .setDuration(800)
+                        .start()
 
             }
 

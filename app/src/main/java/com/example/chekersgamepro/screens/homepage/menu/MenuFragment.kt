@@ -2,13 +2,20 @@ package com.example.chekersgamepro.screens.homepage.menu
 
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.HomePageActivity
+import com.example.chekersgamepro.screens.homepage.online.players.OnlinePlayersFragment
+import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayersFragment
 import com.jakewharton.rxbinding2.view.RxView
+import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.menu_fragment.view.*
+
 
 class MenuFragment : CheckersFragment() {
 
@@ -16,18 +23,19 @@ class MenuFragment : CheckersFragment() {
 
     private lateinit var recyclerViewButtons: CheckersRecyclerView
 
-    override fun getLayoutResId() =  R.layout.menu_fragment
+    private lateinit var imageProfile : CircleImageView
+
+    override fun getLayoutResId() = R.layout.menu_fragment
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         this.recyclerViewButtons = view.recycler_view_buttons
         val menuViewModel = MenuInjector().createViewModelActivity(activity!!)
 
         compositeDisposableOnDestroyed.addAll(
                 menuViewModel
-                        .openOnlineGame(this)
-                        .subscribe { (activity as HomePageActivity).onClickOnlineGame() },
+                        .openOnlinePlayers(this)
+                        .subscribe {startOnlinePlayersFragment()},
 
                 menuViewModel
                         .openComputerGame(this)
@@ -35,7 +43,7 @@ class MenuFragment : CheckersFragment() {
 
                 menuViewModel
                         .openTopPlayers(this)
-                        .subscribe { (activity as HomePageActivity).onClickTopPlayers() },
+                        .subscribe { startTopPlayersFragment() },
 
                 menuViewModel
                         .openUpdatePicture(this)
@@ -55,8 +63,26 @@ class MenuFragment : CheckersFragment() {
                             val menuButtonsAdapter = MenuButtonsAdapter(menuViewModel.getButtonsList(), this.recyclerViewButtons.measuredHeight)
                             this.recyclerViewButtons.layoutManager = LinearLayoutManager(context)
                             this.recyclerViewButtons.adapter = menuButtonsAdapter
+                            this.imageProfile = activity!!.image_profile_hp
+
                         }
         )
     }
+
+    private fun startTopPlayersFragment() {
+        val topPlayersFragment: Fragment? = TopPlayersFragment()
+        if (topPlayersFragment != null) {
+            (topPlayersFragment as DialogFragment).show(childFragmentManager, "top_players")
+        }
+    }
+
+    private fun startOnlinePlayersFragment() {
+        val onlinePlayersFragment: Fragment? = OnlinePlayersFragment()
+        if (onlinePlayersFragment != null) {
+            (onlinePlayersFragment as DialogFragment).show(childFragmentManager, "online_players")
+        }
+    }
+
+
 
 }

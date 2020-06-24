@@ -1,6 +1,7 @@
 package com.example.chekersgamepro.screens.homepage.topplayers.model
 
 import android.graphics.Bitmap
+import io.reactivex.Observable
 
 interface ITopPlayer {
 
@@ -8,6 +9,6 @@ interface ITopPlayer {
     fun getTotalWin(): Int
     fun getTotalLoss(): Int
     fun getMoney(): Int
-    fun getAvatarEncode(): String
+    fun getAvatar(): Observable<Bitmap>
     fun getPlayerPositionSign(): String
 }

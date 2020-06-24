@@ -22,12 +22,13 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
+import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.online_players_fragment.*
 import kotlinx.android.synthetic.main.online_players_fragment.view.*
 import java.util.concurrent.TimeUnit
 
 
-class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : OnlineBaseFragment(imageProfileHp) {
+class OnlinePlayersFragment : OnlineBaseFragment() {
 
     private val onlinePlayersViewModel by lazy {
         ViewModelProviders.of(this).get(OnlinePlayersViewModel::class.java)
@@ -39,12 +40,12 @@ class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : Onlin
 
     private val compositeDisposable = CompositeDisposable()
 
-    companion object {
-        fun newInstance(image_profile_hp: CircleImageView): OnlinePlayersFragment? {
-            Log.d("TEST_GAME", "OnlinePlayersFragment -> newInstance")
-            return OnlinePlayersFragment(image_profile_hp)
-        }
-    }
+//    companion object {
+//        fun newInstance(image_profile_hp: CircleImageView): OnlinePlayersFragment? {
+//            Log.d("TEST_GAME", "OnlinePlayersFragment -> newInstance")
+//            return OnlinePlayersFragment(image_profile_hp)
+//        }
+//    }
 
     override fun getTitle() = getString(R.string.activity_home_page_online_players_title_text)
 
@@ -54,6 +55,8 @@ class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : Onlin
         super.onViewCreated(view, savedInstanceState)
         view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         this.recyclerViewPlayers = view.recycler_view_players
+
+
     }
 
     @SuppressLint("CheckResult")
@@ -104,7 +107,7 @@ class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : Onlin
 
     override fun onDestroyView() {
         Log.d("TEST_GAME", "OnlinePlayersFragment -> onDestroyView")
-        this.onlinePlayersAdapter.clear()
+        this.onlinePlayersAdapter.dispose()
         compositeDisposable.dispose()
         super.onDestroyView()
     }
@@ -122,6 +125,7 @@ class OnlinePlayersFragment(private val imageProfileHp: CircleImageView) : Onlin
         linearLayoutManager.isAutoMeasureEnabled = false
         recycler_view_players.layoutManager = linearLayoutManager
         onlinePlayersAdapter.scrollToPositionWithOffset()
+        Log.d("TEST_GAME", "OnlinePlayersFragment -> initRecyclerView")
 
     }
 }

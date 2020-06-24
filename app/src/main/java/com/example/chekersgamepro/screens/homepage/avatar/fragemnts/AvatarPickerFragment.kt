@@ -23,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.fragment_avatar.view.*
 
 
@@ -78,7 +79,6 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
         this.actionOkButton = view.action_ok_button
         this.recyclerButtons = view.recycler_buttons_avatar_selected
         this.viewPager = view.avatar_pager_fragment
-
     }
 
     private fun initRecyclerViewButtonsAvatarSelected(buttonsAvatarSelectedAdapter: ButtonsAvatarSelectedAdapter) {
@@ -108,6 +108,17 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                             .flatMap { Observable.fromCallable { actionOkButton.measuredHeight.toFloat() } }
                             .doOnNext(this::animateActionOkButton)
                             .subscribe()
+
+//                    RxView.globalLayouts(this.avatarImageTmp)
+//                            .firstOrError()
+//                            .subscribe { t1, t2 ->
+//                                val layoutParams = this.avatarImageTmp.layoutParams
+//                                val ratio = resources.displayMetrics.widthPixels * 0.35
+//                                layoutParams.width = ratio.toInt()
+//                                layoutParams.height = ratio.toInt()
+//                                this.avatarImageTmp.layoutParams = layoutParams
+//                                this.avatarImageTmp.requestLayout()
+//                            }
             )
 
             this.avatarViewModel.visibleMainScreen(this.avatarImageTmp, viewPager, this.recyclerButtons)
