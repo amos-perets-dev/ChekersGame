@@ -2,6 +2,7 @@ package com.example.chekersgamepro.util
 
 import android.content.Context
 import android.content.Intent
+import com.example.chekersgamepro.BuildConfig
 import com.example.chekersgamepro.checkers.CheckersConfiguration
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.data.data_game.DataGame
@@ -17,16 +18,7 @@ class IntentUtil {
 
         private val checkersConfiguration = CheckersConfiguration.getInstance()
 
-        fun createOpenGalleryIntent(): Intent {
-//            val intent = Intent()
-//            intent.type = "image/*"
-//            intent.action = Intent.ACTION_GET_CONTENT
-
-                        return  Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-
-
-//            return intent
-        }
+        fun createOpenGalleryIntent(): Intent  =   Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
 
         fun createPlayersGameIntent(playerAsync: Observable<PlayerData>, gameMode: Int, imageUtil: CheckersImageUtil, context: Context) : Single<Intent>{
             return playerAsync
@@ -50,6 +42,16 @@ class IntentUtil {
 
                     }
                     .firstOrError()
+        }
+
+        fun createAppShareIntent(): Intent  {
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "My application name")
+            var shareMessage = "\nLet me recommend you this application\n\n"
+            shareMessage = shareMessage + "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID + "\n\n"
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage)
+            return  shareIntent
         }
 
         private fun getPlayerNameGuestOrComputer(gameMode: Int, player: PlayerData): String =

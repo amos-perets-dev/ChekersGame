@@ -26,7 +26,7 @@ interface IUserProfile {
 
     fun setUserId(id : Long)
 
-    fun getAvatarEncodeImage() : String
+    fun getAvatarEncode() : String
 
     fun setAvatarEncodeImage(encodeImage : String)
 

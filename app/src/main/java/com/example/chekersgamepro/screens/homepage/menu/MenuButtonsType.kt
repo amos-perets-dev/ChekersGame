@@ -4,7 +4,8 @@ enum class MenuButtonsType {
     ONLINE_PLAYERS,
     COMPUTER_GAME,
     TOP_PLAYERS,
-    UPDATE_PICTURE,
+    RULES,
     SHARE,
-    SETTINGS
+    SETTINGS,
+    CLOSE_APP
 }

@@ -14,10 +14,10 @@ import com.example.chekersgamepro.models.player.online.OnlinePlayerEventImpl
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
-import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayerData
-import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
-import com.example.chekersgamepro.screens.homepage.topplayers.model.TopPlayerImpl
+import com.example.chekersgamepro.screens.homepage.menu.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.TopPlayerData
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.model.ITopPlayer
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.model.TopPlayerImpl
 import com.example.chekersgamepro.util.network.NetworkUtil
 import com.google.common.base.Optional
 import com.google.common.collect.Lists
@@ -63,7 +63,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
             this.player.playerName = userProfile.getUserName()
             this.player.canPlay = true
             this.player.id = userProfile.getUserId()
-            this.player.avatarEncodeImage = userProfile.getAvatarEncodeImage()
+            this.player.avatarEncodeImage = userProfile.getAvatarEncode()
             this.player.totalWin = userProfile.getTotalWin()
             this.player.totalLoss = userProfile.getTotalLoss()
 
@@ -72,7 +72,7 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
                     userProfile.getTotalWin(),
                     userProfile.getTotalLoss(),
                     userProfile.getMoney(),
-                    userProfile.getAvatarEncodeImage())
+                    userProfile.getAvatarEncode())
         }
     }
 

@@ -6,7 +6,9 @@ import com.example.chekersgamepro.db.remote.IRemoteDb
 import com.example.chekersgamepro.models.data.UserDataTmp
 import com.example.chekersgamepro.models.user.UserProfileImpl
 import io.reactivex.*
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.realm.RealmObject
+import java.util.concurrent.TimeUnit
 
 class UserProfileManager(private val realmManager: RealmManager,
                          private val remoteDb: IRemoteDb,
@@ -30,7 +32,7 @@ class UserProfileManager(private val realmManager: RealmManager,
 
     fun getEncodeImageProfileChanges(): Flowable<String> =
             this.userProfileDataChanges
-                    .map { it.getAvatarEncodeImage() }
+                    .map { it.getAvatarEncode() }
                     .distinctUntilChanged()
 
     fun getUserProfileMoneyChanges(): Flowable<String> =

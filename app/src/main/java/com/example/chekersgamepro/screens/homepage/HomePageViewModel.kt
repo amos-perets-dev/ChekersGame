@@ -10,7 +10,7 @@ import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.db.repository.RepositoryManager
 import com.example.chekersgamepro.screens.homepage.avatar.AvatarScreenState
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogOnlinePlayersActivity
+import com.example.chekersgamepro.screens.homepage.menu.online.dialog.DialogOnlinePlayersActivity
 import com.example.chekersgamepro.util.PermissionUtil
 import com.google.common.base.Optional
 import io.reactivex.*
@@ -27,11 +27,11 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
 
     private val onlineGame = MutableLiveData<Optional<Intent>>()
 
-    private val computerGame = MutableLiveData<Intent>()
+//    private val computerGame = MutableLiveData<Intent>()
 
     private val avatarScreenState = MutableLiveData<AvatarScreenState>()
 
-    private val homePageState = MutableLiveData<MenuStateOpen>()
+//    private val homePageState = MutableLiveData<MenuStateOpen>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -83,29 +83,16 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
                     .filter { it.isPresent }
                     .map { it.get() }
 
+//    fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
+//            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerGame))
 
-    fun isOpenOnlinePlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
-                    .subscribeOn(Schedulers.io())
-                    .map { it.ordinal == MenuStateOpen.OPEN_ONLINE_PLAYERS.ordinal }
-                    .filter(Functions.equalsWith(true))
-
-    fun isOpenTopPlayers(lifecycleOwner: LifecycleOwner): Observable<Boolean> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, homePageState))
-                    .subscribeOn(Schedulers.io())
-                    .map { it.ordinal == MenuStateOpen.OPEN_TOP_PLAYERS.ordinal }
-                    .filter(Functions.equalsWith(true))
-
-    fun startComputerGame(lifecycleOwner: LifecycleOwner): Observable<Intent> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, computerGame))
-
-    fun onClickComputerGame() {
-        compositeDisposable.add(
-                repositoryManager.setIsCanPlay(false)
-                        .andThen(createCheckersGameIntent(DataGame.Mode.COMPUTER_GAME_MODE))
-                        .subscribe { t1, t2 -> computerGame.postValue(t1) }
-        )
-    }
+//    fun onClickComputerGame() {
+//        compositeDisposable.add(
+//                repositoryManager.setIsCanPlay(false)
+//                        .andThen(createCheckersGameIntent(DataGame.Mode.COMPUTER_GAME_MODE))
+//                        .subscribe { t1, t2 -> computerGame.postValue(t1) }
+//        )
+//    }
 
     fun getUserProfileMoneyChanges() : Flowable<String> = repositoryManager.getUserProfileMoneyChanges()
 
@@ -155,13 +142,5 @@ class HomePageViewModel : ViewModel(), LifecycleObserver {
                         }
         )
     }
-
-    fun onClickOnlineGame() {
-        homePageState.postValue(MenuStateOpen.OPEN_ONLINE_PLAYERS)
-    }
-
-//    fun onClickTopPlayers() {
-//        homePageState.postValue(MenuStateOpen.OPEN_TOP_PLAYERS)
-//    }
 
 }

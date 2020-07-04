@@ -72,11 +72,11 @@ open class HomePageActivity : CheckersActivity() {
         )
 
 
-        compositeDisposable.add(
-                homePageViewModel
-                        .startComputerGame(this)
-                        .subscribe { startActivityForResult(it, 55) }
-        )
+//        compositeDisposable.add(
+//                homePageViewModel
+//                        .startComputerGame(this)
+//                        .subscribe { startActivityForResult(it, 55) }
+//        )
 
         compositeDisposable.add(
                 homePageViewModel
@@ -85,7 +85,7 @@ open class HomePageActivity : CheckersActivity() {
         )
 
         image_profile_hp
-                .setOnTouchListener(TouchListener(View.OnClickListener { onClickAvatar() }, 0.8f))
+                .setOnTouchListener(TouchListener(View.OnClickListener { onClickAvatar() }, 1.1f))
 
         compositeDisposable.add(
                 homePageViewModel.openAvatarScreen(this)
@@ -145,12 +145,8 @@ open class HomePageActivity : CheckersActivity() {
 
     }
 
-    fun onClickAvatar() {
+    private fun onClickAvatar() {
         this.homePageViewModel.onClickAvatar(this)
-    }
-
-    fun onClickComputerGame() {
-        this.homePageViewModel.onClickComputerGame()
     }
 
     private fun startAvatarPickerFragment() {

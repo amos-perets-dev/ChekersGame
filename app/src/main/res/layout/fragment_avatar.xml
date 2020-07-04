@@ -25,7 +25,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.95"
         android:background="@drawable/border_title_accept_button_avatar"
-        android:text="Update avatar"
+        android:text="@string/activity_home_page_update_avatar_text"
         android:elevation="20dp"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="3dp"

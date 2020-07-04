@@ -12,13 +12,14 @@ import com.example.chekersgamepro.db.repository.manager.PlayerManager
 import com.example.chekersgamepro.db.repository.manager.UserProfileManager
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.UserProfileImpl
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.menu.online.dialog.DialogStateCreator
 import com.example.chekersgamepro.screens.registration.RegistrationStatus
 import com.example.chekersgamepro.checkers.CheckersApplication
 import com.example.chekersgamepro.checkers.CheckersConfiguration
 import com.example.chekersgamepro.checkers.CheckersImageUtil
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
+import com.example.chekersgamepro.screens.homepage.menu.settings.SettingsData
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.model.ITopPlayer
 import com.example.chekersgamepro.util.IntentUtil
 import com.example.chekersgamepro.util.StringUtil
 import io.reactivex.*
@@ -86,6 +87,11 @@ class RepositoryManager : Repository {
     fun setRunFirstTime() {
         sharedPreferencesManager.setRunFirstTime()
     }
+
+    override fun addNewSettings(settingsData: SettingsData) = realmManager.insertAsync(settingsData)
+
+
+    override fun getSettingsData(): Flowable<SettingsData> = realmManager.getSettingsData()
 
     private fun getEncodeImageDefaultPreUpdate(): String? = sharedPreferencesManager.getEncodeImageDefaultPreUpdate()
 
@@ -254,7 +260,8 @@ class RepositoryManager : Repository {
                     .map { encodeImage -> imageUtil.decodeBase64(encodeImage) }
                     .doOnNext { Log.d("TEST_GAME", "5555 userProfileManager.getImageProfileAsync()") }
 
-    fun createPlayersGame(gameMode: Int): Single<Intent> = IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync()!!, gameMode, imageUtil, context)
+    fun createPlayersGame(gameMode: Int): Single<Intent> =
+            IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync()!!, gameMode, imageUtil, context)
 
     fun setImageDefaultPreUpdate(): Single<Boolean> = remoteDb.setImageDefaultPreUpdate()
             .flatMap { arrayFromBitmap ->

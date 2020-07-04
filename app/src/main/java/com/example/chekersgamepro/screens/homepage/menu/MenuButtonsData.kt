@@ -15,9 +15,9 @@ class MenuButtonsData(private val resources: Resources,
         addButton(MenuButtonsType.ONLINE_PLAYERS, R.string.activity_home_page_menu_buttons_online_game_text)
         addButton(MenuButtonsType.COMPUTER_GAME, R.string.activity_home_page_menu_buttons_computer_game_text)
         addButton(MenuButtonsType.TOP_PLAYERS, R.string.activity_home_page_menu_buttons_top_players_game_text)
-        addButton(MenuButtonsType.UPDATE_PICTURE, R.string.activity_home_page_menu_buttons_update_picture_game_text)
-        addButton(MenuButtonsType.SHARE, R.string.activity_home_page_menu_buttons_share_game_text)
-        addButton(MenuButtonsType.SETTINGS, R.string.activity_home_page_menu_buttons_settings_game_text)
+        addButton(MenuButtonsType.RULES, R.string.activity_home_page_menu_buttons_rules_game_text)
+//        addButton(MenuButtonsType.SHARE, R.string.activity_home_page_menu_buttons_share_game_text)
+//        addButton(MenuButtonsType.SETTINGS, R.string.activity_home_page_menu_buttons_settings_game_text)
     }
 
     private fun addButton(menuButtonsType : MenuButtonsType, resId : Int){

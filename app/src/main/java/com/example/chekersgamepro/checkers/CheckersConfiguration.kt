@@ -5,20 +5,22 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.util.Log
 import com.example.chekersgamepro.R
+import com.example.chekersgamepro.screens.homepage.menu.settings.SettingsData
 import io.reactivex.Single
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
+import io.realm.Realm
 
-class CheckersConfiguration(private val context : Context) {
+class CheckersConfiguration(private val context: Context) {
 
     private val imageUtil = CheckersImageUtil.create()
-    private  val resources: Resources = context.resources
+    private val resources: Resources = context.resources
 
     private val avatarList = ArrayList<Bitmap>()
 
     private val avatarImagesList = BehaviorSubject.create<List<Bitmap>>()
 
-    private val computerIconEncode : String
+    private val computerIconEncode: String
 
 
     init {
@@ -27,6 +29,7 @@ class CheckersConfiguration(private val context : Context) {
         this.computerIconEncode = imageUtil.encodeBase64Image(bitmap)!!
 
     }
+
     fun getComputerIconEncode() = this.computerIconEncode
 
     fun getDefaultAvatarsList(): Single<List<Bitmap>>? {
@@ -34,14 +37,14 @@ class CheckersConfiguration(private val context : Context) {
     }
 
     public fun initAvatarList(): Single<Boolean> {
-        return Single.create<Boolean> {emitter ->
+        return Single.create<Boolean> { emitter ->
             Log.d("TEST_GAME", "1 initAvatarList")
 
             emitter.onSuccess(true)
 
             Log.d("TEST_GAME", "2 initAvatarList")
 
-            if(avatarList.isEmpty()){
+            if (avatarList.isEmpty()) {
                 val bitmap1 = imageUtil.drawableToBitmap(resources.getDrawable(R.drawable.avatar_1))
                 val bitmap2 = imageUtil.drawableToBitmap(resources.getDrawable(R.drawable.avatar_2))
                 val bitmap3 = imageUtil.drawableToBitmap(resources.getDrawable(R.drawable.avatar_3))
@@ -65,18 +68,18 @@ class CheckersConfiguration(private val context : Context) {
                 avatarImagesList.onNext(avatarList)
             }
             Log.d("TEST_GAME", "3 initAvatarList")
-         }
+        }
 
     }
 
-    fun getDefaultAvatarDrawable()  = context.getDrawable(R.drawable.default_avatar_icon)
+    fun getDefaultAvatarDrawable() = context.getDrawable(R.drawable.default_avatar_icon)
 
-    companion object Factory{
-        private var checkersConfiguration : CheckersConfiguration? = null
+    companion object Factory {
+        private var checkersConfiguration: CheckersConfiguration? = null
 
         @JvmStatic
-        fun create(context :  Context?) : CheckersConfiguration {
-            if (checkersConfiguration == null){
+        fun create(context: Context?): CheckersConfiguration {
+            if (checkersConfiguration == null) {
                 checkersConfiguration = CheckersConfiguration(context!!)
             }
 
@@ -84,7 +87,7 @@ class CheckersConfiguration(private val context : Context) {
         }
 
         @JvmStatic
-        fun getInstance() : CheckersConfiguration {
+        fun getInstance(): CheckersConfiguration {
             return checkersConfiguration as CheckersConfiguration
         }
     }

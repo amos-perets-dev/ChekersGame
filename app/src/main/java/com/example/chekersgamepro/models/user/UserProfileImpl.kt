@@ -26,7 +26,7 @@ open class UserProfileImpl(@PrimaryKey private var key: String = ""
 
     override fun getTotalLoss(): Int = this.totalLoss
 
-    override fun getAvatarEncodeImage()= this.avatarEncodeImage
+    override fun getAvatarEncode()= this.avatarEncodeImage
 
     override fun setAvatarEncodeImage(encodeImage: String) {
         this.avatarEncodeImage = encodeImage

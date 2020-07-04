@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.screens.homepage.menu
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
@@ -9,21 +10,24 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.HomePageActivity
-import com.example.chekersgamepro.screens.homepage.online.players.OnlinePlayersFragment
-import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayersFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.players.OnlinePlayersFragment
+import com.example.chekersgamepro.screens.homepage.menu.rules.RulesFragment
+import com.example.chekersgamepro.screens.homepage.menu.settings.SettingsFragment
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.TopPlayersFragment
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.view.RxView
 import de.hdodenhof.circleimageview.CircleImageView
+import io.reactivex.internal.functions.Functions
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.menu_fragment.view.*
+import kotlin.reflect.KFunction1
 
 
 class MenuFragment : CheckersFragment() {
 
-//    private val menuViewModel = MenuInjector().createViewModelActivity(activity!!)
-
     private lateinit var recyclerViewButtons: CheckersRecyclerView
 
-    private lateinit var imageProfile : CircleImageView
+    private lateinit var imageProfile: CircleImageView
 
     override fun getLayoutResId() = R.layout.menu_fragment
 
@@ -32,32 +36,44 @@ class MenuFragment : CheckersFragment() {
         this.recyclerViewButtons = view.recycler_view_buttons
         val menuViewModel = MenuInjector().createViewModelActivity(activity!!)
 
+        view.fab_settings.setOnClickListener(menuViewModel::onClickSettings)
+        view.fab_share.setOnClickListener ( menuViewModel::onClickShare)
+        view.fab_logout.setOnClickListener ( menuViewModel::onClickExit)
+
         compositeDisposableOnDestroyed.addAll(
                 menuViewModel
                         .openOnlinePlayers(this)
-                        .subscribe {startOnlinePlayersFragment()},
+                        .subscribe (Functions.actionConsumer(this::startOnlinePlayersFragment)),
 
                 menuViewModel
                         .openComputerGame(this)
-                        .subscribe { (activity as HomePageActivity).onClickComputerGame() },
+                        .subscribe (Functions.actionConsumer(menuViewModel::onClickComputerGame)),
 
                 menuViewModel
                         .openTopPlayers(this)
-                        .subscribe { startTopPlayersFragment() },
+                        .subscribe (Functions.actionConsumer(this::startTopPlayersFragment)),
 
                 menuViewModel
                         .openUpdatePicture(this)
-                        .subscribe { (activity as HomePageActivity).onClickAvatar() },
-
-                menuViewModel
-                        .openShareGame(this)
-                        .subscribe { },
+                        .subscribe (Functions.actionConsumer(this::startRulesFragment)),
 
                 menuViewModel
                         .openSettings(this)
-                        .subscribe { },
+                        .subscribe (Functions.actionConsumer(this::startSettingsFragment)) ,
 
-                RxView.globalLayouts(this.recyclerViewButtons)
+                menuViewModel
+                        .shareApp(this)
+                        .subscribe (this::startActivity),
+
+                menuViewModel
+                        .isCloseApp(this)
+                        .subscribe (),
+
+                menuViewModel
+                        .startComputerGame(this)
+                        .subscribe (this::startComputerGame),
+
+                        RxView.globalLayouts (this.recyclerViewButtons)
                         .firstOrError()
                         .subscribe { t1, t2 ->
                             val menuButtonsAdapter = MenuButtonsAdapter(menuViewModel.getButtonsList(), this.recyclerViewButtons.measuredHeight)
@@ -68,6 +84,25 @@ class MenuFragment : CheckersFragment() {
                         }
         )
     }
+
+    private fun startComputerGame(intent : Intent){
+        startActivityForResult(intent, 55)
+    }
+
+    private fun startSettingsFragment() {
+        val settingsFragment: Fragment? = SettingsFragment()
+        if (settingsFragment != null) {
+            (settingsFragment as DialogFragment).show(childFragmentManager, "settings")
+        }
+    }
+
+    private fun startRulesFragment() {
+        val rulesFragment: Fragment? = RulesFragment()
+        if (rulesFragment != null) {
+            (rulesFragment as DialogFragment).show(childFragmentManager, "rules")
+        }
+    }
+
 
     private fun startTopPlayersFragment() {
         val topPlayersFragment: Fragment? = TopPlayersFragment()
@@ -82,7 +117,6 @@ class MenuFragment : CheckersFragment() {
             (onlinePlayersFragment as DialogFragment).show(childFragmentManager, "online_players")
         }
     }
-
 
 
 }

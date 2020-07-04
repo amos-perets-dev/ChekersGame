@@ -7,7 +7,7 @@ import com.example.chekersgamepro.data.move.RemoteMove
 import com.example.chekersgamepro.models.player.data.PlayerData
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.screens.homepage.topplayers.TopPlayerData
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.TopPlayerData
 import com.example.chekersgamepro.util.network.NetworkUtil
 import com.google.common.base.Optional
 import com.google.firebase.database.*

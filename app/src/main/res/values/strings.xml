@@ -21,6 +21,7 @@
     <string name="activity_home_page_avatar_add_gallery_photo_permission_text">Open storage permission</string>
     <string name="activity_home_page_avatar_add_open_camera_permission_text">Open camera permission</string>
     <string name="activity_home_page_online_players_title_text">Online players</string>
+    <string name="activity_home_page_rules_game_title_text">Rules</string>
     <string name="activity_home_page_online_players_request_play_button_text">PLAY</string>
     <string name="activity_home_page_dialog_players_close_button_text">DONE</string>
     <string name="activity_home_page_online_players_decline_request_play_button_text">DECLINE</string>
@@ -31,14 +32,43 @@
     <string name="activity_home_page_online_players_dialog_request_game_text">Hi %1$s! let\'s play?</string>
 
     <string name="activity_home_page_top_players_title_text">Top Players</string>
+    <string name="activity_home_page_settings_title_text">Settings</string>
 
     <string name="activity_home_page_menu_buttons_online_game_text">TWO PLAYERS</string>
     <string name="activity_home_page_menu_buttons_computer_game_text">ONE PLAYER</string>
     <string name="activity_home_page_menu_buttons_top_players_game_text">TOP PLAYERS</string>
     <string name="activity_home_page_menu_buttons_get_money_text">MONEY</string>
-    <string name="activity_home_page_menu_buttons_update_picture_game_text">UPDATE PICTURE</string>
+    <string name="activity_home_page_menu_buttons_rules_game_text">RULES</string>
+
     <string name="activity_home_page_menu_buttons_share_game_text">SHARE</string>
     <string name="activity_home_page_menu_buttons_settings_game_text">SETTINGS</string>
     <string name="activity_home_page_menu_buttons_title_text">Menu</string>
+
+    <string name="activity_home_page_menu_rules_description_text">
+        <![CDATA[
+        <b><font color="#333">Rules of the Game:</font></b>
+        <br>1) An ordinary pawn steps forward.</br>
+        <br>2) An ordinary pawn cannot go back in any situation.</br>
+        <br>3) The Queen can go one step in any direction.</br>
+        <br></br>
+        <br></br>
+        <b><font color="#333">Online Game Rules:</font></b>
+        <br>1) Payment (virtual) per game by player level.</br>
+        <br>2) Stopping an online game is a technical loss.</br>
+        <br>3) If the timer is over it\'s a technical loss.</br>]]>
+    </string>
+
+    <string-array name="languages_array">
+        <item>Hebrew - עברית</item>
+        <item>English - English</item>
+        <item>Russian - русский</item>
+    </string-array>
+    <string name="activity_home_page_menu_settings_multi_languages_spinner_hint_text">aaaaaa</string>
+    <string name="activity_home_page_menu_settings_sound_text">Sound</string>
+    <string name="activity_home_page_menu_settings_chat_text">Chat while playing</string>
+    <string name="activity_home_page_menu_settings_sound_picker_on_text">ON</string>
+    <string name="activity_home_page_menu_settings_sound_picker_off_text">OFF</string>
+    <string name="activity_home_page_update_avatar_text">Update avatar</string>
+    <string name="activity_home_page_menu_settings_save_text">Save settings</string>
 
 </resources>

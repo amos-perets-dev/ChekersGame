@@ -5,8 +5,8 @@ import com.example.chekersgamepro.models.player.data.PlayerData
 import com.example.chekersgamepro.models.player.online.IOnlinePlayerEvent
 import com.example.chekersgamepro.models.user.IUserProfile
 import com.example.chekersgamepro.screens.homepage.RequestOnlineGameStatus
-import com.example.chekersgamepro.screens.homepage.online.dialog.DialogStateCreator
-import com.example.chekersgamepro.screens.homepage.topplayers.model.ITopPlayer
+import com.example.chekersgamepro.screens.homepage.menu.online.dialog.DialogStateCreator
+import com.example.chekersgamepro.screens.homepage.menu.topplayers.model.ITopPlayer
 import com.google.common.base.Optional
 import io.reactivex.Completable
 import io.reactivex.Observable
