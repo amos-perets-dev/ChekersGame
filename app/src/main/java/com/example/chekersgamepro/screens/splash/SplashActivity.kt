@@ -1,14 +1,11 @@
 package com.example.chekersgamepro.screens.splash
 
-import androidx.appcompat.app.AppCompatActivity
-
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.lifecycle.ViewModelProviders
 import com.example.chekersgamepro.R
+import com.example.chekersgamepro.checkers.CheckersActivity
 import com.example.chekersgamepro.util.animation.AnimationUtil
-import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -16,7 +13,7 @@ import kotlinx.android.synthetic.main.activity_splash.*
 import java.util.concurrent.TimeUnit
 
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : CheckersActivity() {
 
     private val splashViewModel by lazy {
         ViewModelProviders.of(this@SplashActivity).get(SplashViewModel::class.java)

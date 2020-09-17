@@ -116,7 +116,7 @@ public class PawnDataImpl {
     }
 
     public int getRegularIcon() {
-        return player == DataGame.CellState.PLAYER_ONE ? R.drawable.ic_pawn_one : R.drawable.ic_pawn_two;
+        return player == DataGame.CellState.PLAYER_ONE ? R.drawable.ic_pawn_1 : R.drawable.ic_pawn_2;
     }
 
     public int getQueenIcon() {

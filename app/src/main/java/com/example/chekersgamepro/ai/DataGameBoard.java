@@ -282,7 +282,7 @@ public class DataGameBoard {
         if ((currCellData.getCellContain() == DataGame.CellState.EMPTY && isFromRoot) || gameValidation.isLeaf(currCellData, dataOptionalPathByView, isQueenPawn)){
             addDataOptionalPath( currCellData);
 
-            DataMove dataMove = new DataMove(new Move(cellDataSrcCurrently.getPointCell(), currCellData.getPointCell())
+            DataMove dataMove = new DataMove(new Move(cellDataSrcCurrently.getPointCell(), currCellData.getPointCell(), cellDataSrcCurrently.getIdCell())
                     , cellDataSrcCurrently
                     , currCellData
                     , new ArrayList<>(removeListPawnCell));
@@ -597,11 +597,11 @@ public class DataGameBoard {
      */
     public float getEvaluateBoard(boolean isPlayerOne) {
 
-        if (isPlayerOne) {
+//        if (isPlayerOne) {
             return getPlayerOneScore() - getPlayerTwoScore();
-        } else {
-            return getPlayerTwoScore() - getPlayerOneScore();
-        }
+//        } else {
+//            return getPlayerTwoScore() - getPlayerOneScore();
+//        }
     }
 
 }

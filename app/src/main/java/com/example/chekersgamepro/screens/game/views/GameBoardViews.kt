@@ -7,7 +7,6 @@ import android.util.Pair
 import android.view.View
 import com.example.chekersgamepro.data.cell.CellDataImpl
 import com.example.chekersgamepro.data.data_game.DataGame
-import com.example.chekersgamepro.data.game_board.GameInitialImpl
 import com.example.chekersgamepro.data.pawn.pawn.PawnDataImpl
 import com.example.chekersgamepro.graphic.cell.CellView
 import com.example.chekersgamepro.graphic.game_board.GameBoardView
@@ -83,7 +82,7 @@ class GameBoardViews(private val gameBoardView: GameBoardView
                 .setHeight(cellData.heightCell)
                 .setBg(cellData.alphaCell, cellData.isMasterCell)
                 .setXY(cellData.pointCell.x, cellData.pointCell.y)
-                .setIsCanClick(cellData.cellContain != DataGame.CellState.EMPTY_INVALID)
+//                .setIsCanClick(cellData.cellContain != DataGame.CellState.EMPTY_INVALID)
         return Pair(cellData.pointCell, cellView)
     }
 
@@ -116,10 +115,10 @@ class GameBoardViews(private val gameBoardView: GameBoardView
         pawnView
                 .setWidth(pawnData!!.width)
                 .setHeight(pawnData.height)
-                .setRegularIcon(pawnData.regularIcon)
                 .setQueenIcon(pawnData.queenIcon)
                 .setXY(pawnData.startXY.x, pawnData.startXY.y)
-                .setIsReady(true)
+                .setRegularIcon(pawnData.regularIcon)
+//                .setIsReady(true)
         return Pair(pawnData.startXY, pawnView)
     }
 
@@ -144,7 +143,8 @@ class GameBoardViews(private val gameBoardView: GameBoardView
      *
      * @param point the path end point
      */
-    fun updatePawnViewStart(point: Point, currPointPawnViewStartPath: Point?, currPawnViewStartPath: PawnView) {
+    fun updatePawnViewStart(point: Point, currPointPawnViewStartPath: Point?, currPawnViewStartPath: PawnView?) {
+        if(currPawnViewStartPath == null) return
         pawnViewMap.remove(currPointPawnViewStartPath)
         currPawnViewStartPath.setXY(point.x, point.y)
         // now the curr point is the end point
@@ -157,7 +157,7 @@ class GameBoardViews(private val gameBoardView: GameBoardView
     }
 
     fun removePawnView(point: Point?) {
-        pawnViewMap[point]!!.removePawn()
+        pawnViewMap[point]?.removePawn()
     }
 
     fun getCellViewByPoint(point: Point?): CellView? {
@@ -168,8 +168,8 @@ class GameBoardViews(private val gameBoardView: GameBoardView
         checkedCell(point, DataGame.ColorCell.CLEAR_CHECKED)
     }
 
-    fun checkedCell(point: Point?, color: Int) {
+    fun checkedCell(point: Point?, color: Int, drawQueen : Boolean = false) {
         val cellView = cellViewMap[point]
-        cellView?.checked(color)
+        cellView?.checked(color, drawQueen)
     }
 }

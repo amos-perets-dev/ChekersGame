@@ -11,7 +11,7 @@ import com.example.chekersgamepro.util.DisplayUtil
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.online_base_fragment.view.*
 
-open class OnlineBaseFragment : CheckersFragment(), ViewTreeObserver.OnGlobalLayoutListener {
+open class BaseFragment : CheckersFragment(), ViewTreeObserver.OnGlobalLayoutListener {
     protected lateinit var closeTab: AppCompatTextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

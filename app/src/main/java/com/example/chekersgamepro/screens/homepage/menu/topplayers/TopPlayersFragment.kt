@@ -6,13 +6,13 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
-import com.example.chekersgamepro.screens.homepage.menu.online.OnlineBaseFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.top_players_fragment.view.*
 
-class TopPlayersFragment : OnlineBaseFragment() {
+class TopPlayersFragment : BaseFragment() {
 
     private lateinit var recyclerViewTopPlayers: CheckersRecyclerView
 

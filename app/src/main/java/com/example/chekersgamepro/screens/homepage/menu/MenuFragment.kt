@@ -4,23 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
-import com.example.chekersgamepro.screens.homepage.HomePageActivity
-import com.example.chekersgamepro.screens.homepage.menu.online.players.OnlinePlayersFragment
+import com.example.chekersgamepro.screens.homepage.menu.computer.ComputerGameFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.players.PlayersFragment
 import com.example.chekersgamepro.screens.homepage.menu.rules.RulesFragment
 import com.example.chekersgamepro.screens.homepage.menu.settings.SettingsFragment
 import com.example.chekersgamepro.screens.homepage.menu.topplayers.TopPlayersFragment
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.view.RxView
 import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.internal.functions.Functions
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.menu_fragment.view.*
-import kotlin.reflect.KFunction1
 
 
 class MenuFragment : CheckersFragment() {
@@ -47,7 +45,7 @@ class MenuFragment : CheckersFragment() {
 
                 menuViewModel
                         .openComputerGame(this)
-                        .subscribe (Functions.actionConsumer(menuViewModel::onClickComputerGame)),
+                        .subscribe (Functions.actionConsumer(this::startComputerGameFragment)),
 
                 menuViewModel
                         .openTopPlayers(this)
@@ -90,32 +88,31 @@ class MenuFragment : CheckersFragment() {
     }
 
     private fun startSettingsFragment() {
-        val settingsFragment: Fragment? = SettingsFragment()
-        if (settingsFragment != null) {
-            (settingsFragment as DialogFragment).show(childFragmentManager, "settings")
-        }
+        createFragment(SettingsFragment(), "settings")
+
     }
 
     private fun startRulesFragment() {
-        val rulesFragment: Fragment? = RulesFragment()
-        if (rulesFragment != null) {
-            (rulesFragment as DialogFragment).show(childFragmentManager, "rules")
-        }
+        createFragment(RulesFragment(), "rules")
     }
 
+    private fun startComputerGameFragment() {
+        createFragment(ComputerGameFragment(), "computer_game")
+    }
 
     private fun startTopPlayersFragment() {
-        val topPlayersFragment: Fragment? = TopPlayersFragment()
-        if (topPlayersFragment != null) {
-            (topPlayersFragment as DialogFragment).show(childFragmentManager, "top_players")
+        createFragment(TopPlayersFragment(), "top_players")
+    }
+
+    private fun <T : BaseFragment?> createFragment(fragment: T, tag: String){
+        if (fragment != null) {
+            (fragment as DialogFragment).show(childFragmentManager, tag)
         }
     }
 
     private fun startOnlinePlayersFragment() {
-        val onlinePlayersFragment: Fragment? = OnlinePlayersFragment()
-        if (onlinePlayersFragment != null) {
-            (onlinePlayersFragment as DialogFragment).show(childFragmentManager, "online_players")
-        }
+        createFragment(PlayersFragment(), "online_players")
+
     }
 
 

@@ -125,11 +125,11 @@ public class CheckersGameViewsManager {
         return gameBoardViews.addViewsToObservable();
     }
 
-//    /**
-//     * Update the pawn view by point when the animate move finished
-//     *
-//     * @param point the path end point
-//     */
+    /**
+     * Update the pawn view by point when the animate move finished
+     *
+     * @param point the path end point
+     */
     private void updatePawnViewStart(Point point, Point currPointPawnViewStartPath, PawnView currPawnViewStartPath) {
         gameBoardViews.updatePawnViewStart(point, currPointPawnViewStartPath, currPawnViewStartPath);
     }
@@ -142,8 +142,8 @@ public class CheckersGameViewsManager {
         gameBoardViews.removePawnView(point);
     }
 
-    public void checkedCell(Point point, int color) {
-         gameBoardViews.checkedCell(point, color);
+    public void checkedCell(Point point, int color, boolean drawQueen) {
+         gameBoardViews.checkedCell(point, color, drawQueen);
     }
 
     private Completable initGameBoardCellsPawns(int gameMode) {
@@ -209,7 +209,7 @@ public class CheckersGameViewsManager {
      */
     private void clearPrevRelevantCellsStart() {
         for (CellView cellView : viewsByRelevantCellsList){
-            cellView.checked(DataGame.ColorCell.CLEAR_CHECKED);
+            cellView.checked(DataGame.ColorCell.CLEAR_CHECKED, false);
         }
     }
 

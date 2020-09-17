@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
-import com.example.chekersgamepro.screens.homepage.menu.online.OnlineBaseFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.online_players_fragment.view.*
 import java.util.concurrent.TimeUnit
 
 
-class OnlinePlayersFragment : OnlineBaseFragment() {
+class PlayersFragment : BaseFragment() {
 
     private val onlinePlayersViewModel by lazy {
         ViewModelProviders.of(this).get(OnlinePlayersViewModel::class.java)

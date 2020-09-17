@@ -14,10 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class DataGame extends DataGameHelper {
 
     public static final int GAME_BOARD_SIZE = 8;
-    public static final int DIFFICULT_LEVEL = 3;
+    public static int DIFFICULT_LEVEL = 3;
 
     private static DataGame instance = null;
 
@@ -43,6 +45,19 @@ public class DataGame extends DataGameHelper {
     private int countKing;
 
     private CellDataImpl[][] boardCells;
+
+    private int difficultLevelCustom = -1;
+
+    public int getDifficultLevel(){
+        if (difficultLevelCustom != -1){
+            return Math.min(difficultLevelCustom, 5);
+        }
+        return DIFFICULT_LEVEL;
+    }
+
+    public void setDifficultLevel(int difficultLevelCustom){
+        this.difficultLevelCustom = difficultLevelCustom;
+    }
 
     private DataGame() {
         idCells = new HashMap<>();
@@ -222,7 +237,7 @@ public class DataGame extends DataGameHelper {
         return pawns.get(point);
     }
 
-    public CellDataImpl getCellByPoint(Point point) {
+    public @Nullable CellDataImpl getCellByPoint(Point point) {
         CellDataImpl cellData = cells.get(point);
         PawnDataImpl pawnData = getPawnByPoint(point);
 
@@ -230,10 +245,6 @@ public class DataGame extends DataGameHelper {
         return cellData != null
                 ? cellData
                 : pawnData != null ? cells.get(pawnData.getContainerCellXY()) : null;
-    }
-
-    public int getIdCellByPoint(Point point) {
-        return getCellByPoint(point).getIdCell();
     }
 
     public Point getPointCellById(int id) {
@@ -247,6 +258,7 @@ public class DataGame extends DataGameHelper {
     public void updatePawnKilled(PawnDataImpl pawnData) {
         CellDataImpl cellByPoint = getCellByPoint(pawnData.getContainerCellXY());
 
+        if (cellByPoint == null) return;
         // update that the cell is change to empty because the pawn killed
         updateCell(cellByPoint, CellState.EMPTY);
         pawnData.setKilled(true);
@@ -295,19 +307,6 @@ public class DataGame extends DataGameHelper {
             }
         }
         return board;
-    }
-
-    public void clearAllData() {
-//        idCells.clear();
-//
-//        cells.clear();
-//        cellsPlayerOne.clear();
-//        cellsPlayerTwo.clear();
-//
-//        pawns.clear();
-//        pawnsPlayerOne.clear();
-//        pawnsPlayerTwo.clear();
-
     }
 
     public List<BorderLine> getBorderLines() {

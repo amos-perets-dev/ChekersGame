@@ -70,5 +70,8 @@
     <string name="activity_home_page_menu_settings_sound_picker_off_text">OFF</string>
     <string name="activity_home_page_update_avatar_text">Update avatar</string>
     <string name="activity_home_page_menu_settings_save_text">Save settings</string>
+    <string name="activity_home_page_computer_game_button_start_title_text">Start</string>
+    <string name="activity_home_page_computer_game_title_text">Computer Game</string>
+    <string name="first_level">1</string>
 
 </resources>

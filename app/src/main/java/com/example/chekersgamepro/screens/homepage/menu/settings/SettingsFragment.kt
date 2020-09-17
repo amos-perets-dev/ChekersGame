@@ -3,12 +3,12 @@ package com.example.chekersgamepro.screens.homepage.menu.settings
 import android.os.Bundle
 import android.view.View
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.screens.homepage.menu.online.OnlineBaseFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.internal.functions.Functions
 import kotlinx.android.synthetic.main.settings_fragment.view.*
 
-class SettingsFragment : OnlineBaseFragment() {
+class SettingsFragment : BaseFragment() {
 
     override fun getTitle() = getString(R.string.activity_home_page_settings_title_text)
 

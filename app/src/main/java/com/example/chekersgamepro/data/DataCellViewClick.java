@@ -8,17 +8,26 @@ public class DataCellViewClick {
     private int colorClearChecked;
 
     private Point point;
+    private boolean isDrawQueen;
 
     public DataCellViewClick(Point point, int colorChecked, int colorClearChecked) {
         this.point = point;
         this.colorChecked = colorChecked;
         this.colorClearChecked = colorClearChecked;
+        this.isDrawQueen = false;
     }
 
     public DataCellViewClick(Point point) {
         this.point = point;
     }
 
+    public void setDrawQueen(boolean drawQueen) {
+        isDrawQueen = drawQueen;
+    }
+
+    public boolean isDrawQueen() {
+        return isDrawQueen;
+    }
 
     public int getColorChecked() {
         return colorChecked;

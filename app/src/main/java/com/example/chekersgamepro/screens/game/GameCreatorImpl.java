@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class GameCreatorImpl{
+public class GameCreatorImpl{
 
     private List<DataCellViewClick> cellsRelevantStart = new ArrayList<>();
 
@@ -107,7 +107,7 @@ class GameCreatorImpl{
         return dataCellViewClicks;
     }
 
-    public List<DataCellViewClick> createOptionalPath(CellDataImpl currCellData){
+    public @Nullable List<DataCellViewClick> createOptionalPath(CellDataImpl currCellData){
 
         dataOptionalPathByView.clear();
         listsAllOptionalPathByCell.clear();
@@ -183,8 +183,18 @@ class GameCreatorImpl{
 
         }
 
+        calculateLastCellIfNeedDrawQueen();
         return dataOptionalPathByView;
 
+    }
+
+    private void calculateLastCellIfNeedDrawQueen(){
+        DataCellViewClick last = dataOptionalPathByView.get(dataOptionalPathByView.size() - 1);
+        Point point = last.getPoint();
+        CellDataImpl cellByPoint = dataGame.getCellByPoint(point);
+        if (cellByPoint == null) return;
+        boolean masterCell = cellByPoint.isMasterCell();
+        last.setDrawQueen(masterCell && !isQueenPawn);
     }
 
     private void createOptionalPathByCell(@Nullable CellDataImpl currCellData, boolean isFromRoot){
@@ -328,13 +338,14 @@ class GameCreatorImpl{
     }
 
 
-    public List<Point> getMovePawnPath(Point endPoint) {
+    public @Nullable List<Point> getMovePawnPath(Point endPoint) {
         //check if the point in the path and in the valid cell(end point)
         if (listsAllOptionalPathByCell.get(endPoint) == null) return null;
 
         endPointPathFromUser = endPoint;
 
-        return listsAllOptionalPathByCell.get(endPointPathFromUser).first;
+        Pair<List<Point>, List<PawnDataImpl>> pair = listsAllOptionalPathByCell.get(endPointPathFromUser);
+        return pair == null ? null : pair.first;
     }
 
     public void actionAfterPublishMovePawnPath(){
@@ -342,7 +353,10 @@ class GameCreatorImpl{
 
         listPawnsNeededKilled = new ArrayList<>(listsAllOptionalPathByCell.get(endPointPathFromUser).second);
 
-        setCurrentSrcDstCellData(dataGame.getCellByPoint(endPointPathFromUser));
+        CellDataImpl cellByPoint = dataGame.getCellByPoint(endPointPathFromUser);
+        if (cellByPoint != null){
+            setCurrentSrcDstCellData(cellByPoint);
+        }
     }
 
     public void setCurrentSrcDstCellData(CellDataImpl cellDataDst){

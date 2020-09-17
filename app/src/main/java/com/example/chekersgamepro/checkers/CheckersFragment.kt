@@ -55,6 +55,7 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.actionBar?.hide()
 
     }
 
@@ -62,7 +63,7 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
         view.setOnTouchListener(SwipeUtil(context, this::closeFragment))
     }
 
-    protected fun closeFragment(){
+    private fun closeFragment(){
         dismissAllowingStateLoss()
     }
 
@@ -102,8 +103,13 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
                 window.setWindowAnimations(R.style.AvatarFragmentShowHideStyle)
                 window.setGravity(Gravity.BOTTOM)
                 window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                window.setFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                )
             }
         }
     }
+
 
 }

@@ -4,12 +4,11 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.checkers.CheckersActivity;
 import com.example.chekersgamepro.data.DataCellViewClick;
 import com.example.chekersgamepro.graphic.pawn.PawnView;
 import com.example.chekersgamepro.screens.game.model.GameFinishData;
@@ -30,7 +29,7 @@ import io.reactivex.disposables.Disposables;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
-public class CheckersGameActivity extends AppCompatActivity {
+public class CheckersGameActivity extends CheckersActivity {
 
     private CheckersViewModel checkersViewModel;
 
@@ -175,7 +174,10 @@ public class CheckersGameActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(dataCellViewClicks -> {
                     // set the pawn start in the current path
-                    pawnViewStartPath = checkersGameViewsManager.getPawn(checkersViewModel.getPointPawnByCell(dataCellViewClicks.get(0).getPoint()));
+                    DataCellViewClick dataCellViewClick = dataCellViewClicks.get(0);
+                    Point point = dataCellViewClick.getPoint();
+                    Point pointPawnByCell = checkersViewModel.getPointPawnByCell(point);
+                    pawnViewStartPath = checkersGameViewsManager.getPawn(pointPawnByCell);
                 })
                 .flatMapCompletable(this::checkedOptionalPathByClick)
                 .subscribe();
@@ -215,7 +217,7 @@ public class CheckersGameActivity extends AppCompatActivity {
      */
     private void checkRelevantCellsStart(DataCellViewClick dataCellViewClick) {
         if (checkersViewModel.isYourTurn()) {
-            checkersGameViewsManager.checkedCell(dataCellViewClick.getPoint(), dataCellViewClick.getColorChecked());
+            checkersGameViewsManager.checkedCell(dataCellViewClick.getPoint(), dataCellViewClick.getColorChecked(), dataCellViewClick.isDrawQueen());
         }
     }
 
@@ -235,7 +237,7 @@ public class CheckersGameActivity extends AppCompatActivity {
     }
 
     private void onClickCell(View view) {
-        checkersViewModel.showErrorMsg(view.getX(), view.getY());
+        checkersViewModel.onClickCell(view.getX(), view.getY());
     }
 
     private Completable checkedOptionalPathByClick(List<DataCellViewClick> dataCellViewClicks) {
@@ -256,7 +258,7 @@ public class CheckersGameActivity extends AppCompatActivity {
             checkersGameViewsManager.checkedCell(cellViewClick.getPoint(),
                     isChecked
                             ? cellViewClick.getColorChecked()
-                            : cellViewClick.getColorClearChecked());
+                            : cellViewClick.getColorClearChecked(), cellViewClick.isDrawQueen());
         }
 
         return Completable.complete();

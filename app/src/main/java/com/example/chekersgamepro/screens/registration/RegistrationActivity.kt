@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import com.example.chekersgamepro.checkers.CheckersActivity
 import com.example.chekersgamepro.util.TouchListener
 import com.example.chekersgamepro.util.keybord_util.KeyboardUtil
 import com.example.chekersgamepro.util.keybord_util.KeyboardUtilData
@@ -14,7 +15,7 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_registration.*
 
 
-class RegistrationActivity : AppCompatActivity() {
+class RegistrationActivity : CheckersActivity() {
 
     private lateinit var registrationViewModel : RegistrationViewModel
 

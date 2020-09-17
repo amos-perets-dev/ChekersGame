@@ -15,10 +15,17 @@ public class Move {
 
     private Point startPoint;
     private Point endPoint;
+    private int idCell;
 
-    public Move(Point pointCellStart, Point endPoint) {
+    public Move(Point pointCellStart, Point endPoint, int idCell) {
         this.startPoint = pointCellStart;
         this.endPoint = endPoint;
+        this.idCell = idCell;
+
+    }
+
+    public int getIdCell() {
+        return idCell;
     }
 
     public Move() {

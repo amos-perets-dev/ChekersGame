@@ -280,8 +280,7 @@ public class GameValidationImpl {
     public boolean isAttackMoveByDirection(CellDataImpl currCellData, boolean isLeft) {
 
         if (isQueenPawn(currCellData)){
-            boolean isAttackMoveByQueen = isAttackMoveByQueen(currCellData);
-            return isAttackMoveByQueen;
+            return isAttackMoveByQueen(currCellData);
 
         }
 

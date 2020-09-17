@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.R;
@@ -30,9 +29,8 @@ public class CellView extends ImageView{
 
     private Paint paint = new Paint();
 
-    private Bitmap crownIcon;
-
-    private boolean isCanClick;
+    private boolean isMasterCell = false;
+    private Bitmap queenIcon;
 
     public CellView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -40,12 +38,6 @@ public class CellView extends ImageView{
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setColor(Color.TRANSPARENT);
         paint.setStrokeWidth(10f);
-//        setCardElevation(30);
-    }
-
-    public CellView setEnabledCell(boolean isClickable){
-        setEnabled(isClickable && isCanClick);
-        return this;
     }
 
     public CellView setColor(int color) {
@@ -63,11 +55,9 @@ public class CellView extends ImageView{
 
     public CellView setBg(float alpha, boolean isMasterCell){
 
-        crownIcon = isMasterCell ? drawableToBitmap(getContext().getDrawable(R.drawable.ic_crown)) : null;
-
         setBackgroundResource(DRAWABLE_ID);
         setAlpha(alpha);
-
+        queenIcon = drawableToBitmap(getContext().getDrawable(R.drawable.ic_crown));
         return this;
     }
 
@@ -77,8 +67,9 @@ public class CellView extends ImageView{
         super.onDraw(canvas);
         Rect clipBounds = canvas.getClipBounds();
         RectF rectF = new RectF(clipBounds.left + 17, clipBounds.top + 17, clipBounds.right - 17, clipBounds.bottom - 17);
-        if (crownIcon != null) {
-            canvas.drawBitmap(crownIcon, null, rectF, null);
+        if (isMasterCell) {
+            canvas.drawBitmap(queenIcon, null, rectF, null);
+            isMasterCell = false;
         }
 
     }
@@ -103,12 +94,15 @@ public class CellView extends ImageView{
         return RxView.clicks(this)
                 .switchMap(ignored -> Observable.just(this));
     }
-
-    public CellView checked(int color){
+    public CellView checked(int color, boolean drawQueen){
         if (color == DataGame.ColorCell.CLEAR_CHECKED){
             setBackgroundResource(DataGame.ColorCell.CLEAR_CHECKED);
         } else {
             setBackgroundColor(color);
+            if (drawQueen){
+                isMasterCell = true;
+                invalidate();
+            }
         }
         return this;
     }
@@ -135,10 +129,5 @@ public class CellView extends ImageView{
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
-    }
-
-    public CellView setIsCanClick(boolean isCanClick) {
-        this.isCanClick = isCanClick;
-        return this;
     }
 }

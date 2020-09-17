@@ -6,17 +6,23 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.Editable
 import android.util.Log
 import android.view.View
+import androidx.core.text.isDigitsOnly
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersActivity
+import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.screens.homepage.avatar.fragemnts.AvatarPickerFragment
 import com.example.chekersgamepro.util.TouchListener
+import com.example.chekersgamepro.util.VibrateUtil
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
+import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
@@ -60,12 +66,13 @@ open class HomePageActivity : CheckersActivity() {
                 homePageViewModel
                         .getMsgState(this)
                         .doOnNext {
-                            val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE))
-                            } else { //deprecated in API 26
-                                v.vibrate(1000)
-                            }
+                            VibrateUtil().vibrateNow(this)
+//                            val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                                v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE))
+//                            } else { //deprecated in API 26
+//                                v.vibrate(1000)
+//                            }
                         }
                         .doOnNext(this::startActivity)
                         .subscribe { overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out) }

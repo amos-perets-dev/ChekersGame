@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.text.Html
 import android.view.View
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.screens.homepage.menu.online.OnlineBaseFragment
+import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
 import kotlinx.android.synthetic.main.rules_fragment.view.*
 
-class RulesFragment : OnlineBaseFragment() {
+class RulesFragment : BaseFragment() {
 
     override fun getTitle() = getString(R.string.activity_home_page_rules_game_title_text)
 

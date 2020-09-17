@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -112,18 +114,26 @@ public class GameManager {
 
     }
 
-    public List<DataCellViewClick> createOptionalPathByCell(Point point) {
+    public @Nullable List<DataCellViewClick> createOptionalPathByCell(Point point) {
         CellDataImpl cellByPoint = dataGame.getCellByPoint(point);
-        move.setIdStartCell(cellByPoint.getIdCell());
-        return gameCreator.createOptionalPath(cellByPoint);
+        if (cellByPoint != null){
+            move.setIdStartCell(cellByPoint.getIdCell());
+            return gameCreator.createOptionalPath(cellByPoint);
+        }
+       return null;
     }
 
     public List<Point> getMovePawnPath(Point endPoint) {
         List<Point> movePawnPath = gameCreator.getMovePawnPath(endPoint);
         if (movePawnPath != null) {
-            move.setIdEndCell(dataGame.getCellByPoint(endPoint).getIdCell());
+            CellDataImpl cellByPoint = dataGame.getCellByPoint(endPoint);
+            if (cellByPoint != null){
+                move.setIdEndCell(cellByPoint.getIdCell());
+            } else {
+                movePawnPath = null;
+            }
         }
-        return movePawnPath;
+        return (movePawnPath != null && movePawnPath.isEmpty()) ? null : movePawnPath;
     }
 
     public PawnDataImpl removePawnIfNeeded() {
@@ -151,8 +161,10 @@ public class GameManager {
         gameCreator.actionAfterPublishMovePawnPath();
     }
 
-    public Point getPointPawnByCell(Point pointByCell) {
-        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(dataGame.getCellByPoint(pointByCell).getPointStartPawn());
+    public @Nullable Point getPointPawnByCell(Point pointByCell) {
+        CellDataImpl cellByPoint = dataGame.getCellByPoint(pointByCell);
+        if (cellByPoint == null) return null;
+        PawnDataImpl pawnByPoint = dataGame.getPawnByPoint(cellByPoint.getPointStartPawn());
         return pawnByPoint != null ? pawnByPoint.getStartXY() : null;
     }
 
@@ -163,7 +175,8 @@ public class GameManager {
      * @return
      */
     public boolean isQueenPawn(Point currPawnPoint) {
-        return gameValidation.isQueenPawn(dataGame.getCellByPoint(currPawnPoint));
+        CellDataImpl cellByPoint = dataGame.getCellByPoint(currPawnPoint);
+        return cellByPoint != null && gameValidation.isQueenPawn(cellByPoint);
     }
 
     public boolean isYourWin() {
@@ -255,7 +268,7 @@ public class GameManager {
         Point pointStartCellById = dataGame.getPointCellById(remoteMove.getIdStartCell());
         Point pointEndCellById = dataGame.getPointCellById(remoteMove.getIdEndCell());
 
-        return new Move(pointStartCellById, pointEndCellById);
+        return new Move(pointStartCellById, pointEndCellById, 0);
     }
 
     public boolean isPlayerOneTurn() {

@@ -17,17 +17,19 @@ import com.example.chekersgamepro.data.pawn.total.TotalPawnsDataByPlayer;
 import com.example.chekersgamepro.screens.game.model.GameFinishData;
 import com.example.chekersgamepro.screens.game.model.GameFinishState;
 import com.example.chekersgamepro.checkers.CheckersApplication;
+import com.example.chekersgamepro.util.VibrateUtil;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.subjects.PublishSubject;
 
@@ -56,6 +58,8 @@ public class CheckersViewModel extends ViewModel {
     private GameManager gameManager = new GameManager();
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    private boolean inProgressMovePawn = false;
 
     public CheckersViewModel() {
 
@@ -141,6 +145,7 @@ public class CheckersViewModel extends ViewModel {
 
 
     public void initStartGameOrNextTurn() {
+        inProgressMovePawn = false;
 
         isPlayerOneTurn.postValue(gameManager.isPlayerOneTurn());
 
@@ -181,12 +186,14 @@ public class CheckersViewModel extends ViewModel {
         return gameManager.isYourTurn();
     }
 
-    public void showErrorMsg(float x, float y) {
+    public void onClickCell(float x, float y) {
 
         Point point = new Point((int) x, (int) y);
 
         boolean isInvalidTurn = !gameManager.isYourTurn() || gameManager.isComputerTurn();
-        if (isInvalidTurn) {
+
+        if (isInvalidTurn || inProgressMovePawn) {
+            new VibrateUtil().vibrateNow(CheckersApplication.create().getApplicationContext(), 200);
             CheckersApplication.create().showToast("ERROR");
             return;
         }
@@ -196,6 +203,8 @@ public class CheckersViewModel extends ViewModel {
 
     public void setMoveOrOptionalPath(Point point) {
         Log.d("TEST_GAME", " public void setMoveOrOptionalPath(Point point): " + point);
+        // Check if by the click create move pawn or new path
+        // or maybe the click is invalid
         boolean isCreateMovePawnPath = createMovePawnPath(point);
 
         if (!isCreateMovePawnPath) {
@@ -203,9 +212,15 @@ public class CheckersViewModel extends ViewModel {
         }
     }
 
+    /**
+     * Create move pawn if the user click on the last cell in the path
+     * @param point from user click
+     * @return if the user click on the last cell in the pass or not
+     */
     private boolean createMovePawnPath(Point point) {
         List<Point> movePawnPath = gameManager.getMovePawnPath(point);
         if (movePawnPath == null) return false;
+        inProgressMovePawn = true;
         movePawn.postValue(movePawnPath);
         gameManager.actionAfterPublishMovePawnPath();
         return true;
@@ -213,7 +228,7 @@ public class CheckersViewModel extends ViewModel {
 
     private void createOptionalPathByCell(Point point) {
         List<DataCellViewClick> optionalPathByCell = gameManager.createOptionalPathByCell(point);
-        if (optionalPathByCell != null) {
+        if (optionalPathByCell != null && !optionalPathByCell.isEmpty()) {
             optionalPath.postValue(optionalPathByCell);
         }
     }
@@ -232,7 +247,7 @@ public class CheckersViewModel extends ViewModel {
         return gameManager.isQueenPawn(currPawnPoint);
     }
 
-    public Point getPointPawnByCell(Point pointByCell) {
+    public @Nullable Point getPointPawnByCell(Point pointByCell) {
         return gameManager.getPointPawnByCell(pointByCell);
     }
 

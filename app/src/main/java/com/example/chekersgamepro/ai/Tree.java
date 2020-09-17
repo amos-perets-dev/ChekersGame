@@ -1,11 +1,12 @@
 package com.example.chekersgamepro.ai;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.chekersgamepro.data.move.Move;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -36,7 +37,9 @@ public class Tree {
     /**
      * @return the board of the tree
      */
-    public Object getDataGameBoard() {return dataGameBoard;}
+    public Object getDataGameBoard() {
+        return dataGameBoard;
+    }
 
     /**
      * @return the move of the tree
@@ -68,6 +71,7 @@ public class Tree {
 
     /**
      * Changes the tree's score
+     *
      * @param newVal the new score of the tree
      */
     public void setScore(float newVal) {
@@ -76,15 +80,18 @@ public class Tree {
 
     /**
      * The child at the given index
+     *
      * @param index the chosen index
      * @return the child at the index
      */
-    public @Nullable Tree getChild(int index) {
+    public @Nullable
+    Tree getChild(int index) {
         return children.size() > 0 ? children.get(index) : null;
     }
 
     /**
      * Adds a child to the tree
+     *
      * @param child the tree that will be added to the children
      */
     public void addChild(Tree child) {
@@ -103,12 +110,56 @@ public class Tree {
 
     /**
      * Adds multiple children to the tree
+     *
      * @param children the trees that will be added to the children
      */
-    public void addChildren(Tree ... children) {
+    public void addChildren(Tree... children) {
         for (Tree child : children) {
             addChild(child);
         }
+    }
+
+    private String speicalTab = "|____";
+    private String speicalTabSpace = "|    ";
+    private String tab = "     ";
+    private boolean firstTime = true;
+
+    public String print(Tree root, int level) {
+        StringBuilder br = new StringBuilder();
+        if (firstTime){
+            br.append("\n");
+            firstTime = false;
+        }
+        for (int i = 0; i < level; i++) {
+            if(i ==0 ){
+                if (level == 1){
+                    br.append(speicalTab);
+                } else {
+                    br.append(speicalTabSpace);
+                }
+            }else if (i + 1 == level){
+                br.append(speicalTab);
+            } else {
+                br.append(speicalTabSpace);
+            }
+        }
+        String dataRoot = root.toString();
+        br
+                .append(dataRoot)
+                .append("\n");
+
+//        Log.d("TEST_GAME", "dataRoot: " + br.toString() + dataRoot);
+        for (Tree child : root.getChildList()) {
+            br.append(print(child, level + 1));
+        }
+        return br.toString();
+    }
+
+    public void print() {
+        firstTime = true;
+        String print = print(this, 0);
+        Log.d("TEST_GAME", "dataRoot: " + print);
+
     }
 
     @NonNull

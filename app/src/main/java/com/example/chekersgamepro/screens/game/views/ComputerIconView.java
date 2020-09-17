@@ -113,9 +113,9 @@ public class ComputerIconView {
 
     private void animateClick(boolean isReturnToStartPointAfterClick, CompletableEmitter emitter) {
         ObjectAnimator objectAnimator = ObjectAnimator.ofPropertyValuesHolder(computerIcon,
-                PropertyValuesHolder.ofFloat("scaleX", 1, 0.7f, 1),
-                PropertyValuesHolder.ofFloat("scaleY", 1, 0.7f, 1))
-                .setDuration(220);
+                PropertyValuesHolder.ofFloat("scaleX", 1, 0.6f, 1),
+                PropertyValuesHolder.ofFloat("scaleY", 1, 0.6f, 1))
+                .setDuration(200);
 
         objectAnimator.addListener(new AnimatorListenerAdapter() {
             @Override

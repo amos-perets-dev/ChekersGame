@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.graphic.pawn;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.annotation.SuppressLint;
@@ -9,17 +10,25 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.util.DisplayUtil;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.List;
@@ -28,32 +37,27 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
 @SuppressLint("AppCompatCustomView")
-public class PawnView extends ImageView {
+public class PawnView extends pl.droidsonroids.gif.GifImageView {
 
     private Paint paint = new Paint();
 
-    private Bitmap regularIcon;
-
-    private Bitmap specialIcon;
-
-    private Bitmap icon;
+    private int specialIconRes;
+    private Bitmap queenIcon = null;
+    private int regularIconRes;
 
     private boolean isAlreadyChangeIcon = false;
 
-    private boolean isCanBeDraw = false;
+    private boolean isDrawQueenPawn = false;
 
     public PawnView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setColor(Color.TRANSPARENT);
+//        paint.setColor(Color.TRANSPARENT);
         paint.setStrokeWidth(2.5f);
+        setScaleX(0.92F);
+        setScaleY(0.92F);
 
-    }
-
-    public PawnView setEnabledPawn(boolean isClickable) {
-        setEnabled(isClickable);
-        return this;
     }
 
     public PawnView setXY(Integer x, Integer y) {
@@ -62,15 +66,21 @@ public class PawnView extends ImageView {
         return this;
     }
 
-    public PawnView setRegularIcon(int drawable){
-        icon = regularIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
+    public PawnView setRegularIcon(int drawable) {
+        regularIconRes = drawable;
+        setBackgroundResource(drawable);
+//        icon = regularIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
         return this;
     }
 
     public PawnView setQueenIcon(int drawable) {
-        specialIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), drawable));
+        specialIconRes = drawable;
+
         return this;
     }
+
+    private int pixels = (int) DisplayUtil.Companion.convertDpToPixel(10);
+    private int pixelsTop = (int) DisplayUtil.Companion.convertDpToPixel(6);
 
     @SuppressLint("DrawAllocation")
     @Override
@@ -78,20 +88,18 @@ public class PawnView extends ImageView {
         super.onDraw(canvas);
         Rect clipBounds = canvas.getClipBounds();
 
-        if (isCanBeDraw) {
-            //draw shadow
-            paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setColor(Color.DKGRAY);
-            canvas.drawCircle(getPivotX() + 6, getPivotY() + 6, getPivotY() - 9, paint);
+        Log.d("TEST_GAME", "PawnView -> 1 onDraw");
+//        if (!isAlreadyChangeIcon) {
+        Log.d("TEST_GAME", "PawnView -> 2 onDraw");
 
-            //draw bitmap
-            RectF rectF = new RectF(clipBounds.left + 10, clipBounds.top + 10, clipBounds.right - 10, clipBounds.bottom - 10);
+        RectF rectF = new RectF(clipBounds.left + pixels, clipBounds.top + pixelsTop, clipBounds.right - pixels, clipBounds.bottom - pixels);
 
-            if (icon != null) {
-                canvas.drawBitmap(icon, null, rectF, paint);
-//                setRadius(90);
-            }
+        if (queenIcon != null) {
+            Log.d("TEST_GAME", "PawnView -> 3 onDraw");
+
+            canvas.drawBitmap(queenIcon, null, rectF, paint);
         }
+//        }
 
     }
 
@@ -130,15 +138,31 @@ public class PawnView extends ImageView {
     }
 
     public void removePawn() {
+
         animate()
                 .withLayer()
                 .alpha(0)
-                .setDuration(400)
+                .setDuration(600)
+                .withStartAction(this::startFire)
                 .withEndAction(() -> {
-                    // set the visibility pawn
+                    setScaleX(1F);
+                    setScaleY(1F);
                     setVisibility(GONE);
                 })
                 .start();
+    }
+
+    private void startFire() {
+        animate()
+                .withLayer()
+                .setDuration(200)
+                .withEndAction(() -> {
+                    setBackgroundResource(R.drawable.fire_1);
+                    setScaleX(1.6F);
+                    setScaleY(1.6F);
+                })
+                .start();
+
     }
 
     public Bitmap drawableToBitmap(Drawable drawable) {
@@ -166,19 +190,42 @@ public class PawnView extends ImageView {
     }
 
     public void setIcon(boolean isSpecialIcon) {
-        icon = isSpecialIcon ? specialIcon : regularIcon;
+        Log.d("TEST_GAME", "PawnView -> 1 setIcon");
 
         if (isSpecialIcon && !isAlreadyChangeIcon) {
-            isAlreadyChangeIcon = true;
+            Log.d("TEST_GAME", "PawnView -> 2 setIcon");
+
             ObjectAnimator animatePulse = ObjectAnimator.ofPropertyValuesHolder(this,
-                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-                    PropertyValuesHolder.ofFloat("scaleY", 1.2f));
-            animatePulse.setDuration(300);
+                    PropertyValuesHolder.ofFloat("scaleX", 0.2f, 1f, 0.92f),
+                    PropertyValuesHolder.ofFloat("scaleY", 0.2f, 1f, 0.92f));
+            animatePulse.setDuration(1000);
 
-            animatePulse.setRepeatCount(3);
-            animatePulse.setRepeatMode(ObjectAnimator.REVERSE);
+            animatePulse.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                }
 
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    isAlreadyChangeIcon = true;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animator) {
+
+                }
+            });
             animatePulse.start();
+        }
+
+        if (isSpecialIcon) {
+            queenIcon = drawableToBitmap(ContextCompat.getDrawable(getContext(), R.drawable.ic_crown));
+            invalidate();
         }
     }
 
@@ -189,7 +236,7 @@ public class PawnView extends ImageView {
                 .startWith(true);
     }
 
-    public void animatePawnMove(List<Point> pointsListAnimatePawnMove, int indexPointsListAnimatePawn){
+    public void animatePawnMove(List<Point> pointsListAnimatePawnMove, int indexPointsListAnimatePawn) {
 
         Point currPoint = pointsListAnimatePawnMove.get(indexPointsListAnimatePawn);
         final int index = ++indexPointsListAnimatePawn;
@@ -215,9 +262,4 @@ public class PawnView extends ImageView {
                 .start();
     }
 
-    public PawnView setIsReady(boolean isReady) {
-        this.isCanBeDraw = isReady;
-        invalidate();
-        return this;
-    }
 }
