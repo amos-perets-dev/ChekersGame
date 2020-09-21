@@ -40,6 +40,7 @@ import io.reactivex.subjects.PublishSubject;
 public class PawnView extends pl.droidsonroids.gif.GifImageView {
 
     private Paint paint = new Paint();
+    private Paint paintCircle = new Paint();
 
     private int specialIconRes;
     private Bitmap queenIcon = null;
@@ -58,6 +59,8 @@ public class PawnView extends pl.droidsonroids.gif.GifImageView {
         setScaleX(0.92F);
         setScaleY(0.92F);
 
+        paintCircle.setStyle(Paint.Style.FILL_AND_STROKE);
+        paintCircle.setColor(Color.DKGRAY);
     }
 
     public PawnView setXY(Integer x, Integer y) {
@@ -99,6 +102,23 @@ public class PawnView extends pl.droidsonroids.gif.GifImageView {
 
             canvas.drawBitmap(queenIcon, null, rectF, paint);
         }
+
+//        int bottom = clipBounds.bottom;
+//        int left = clipBounds.left;
+//        int right = clipBounds.right;
+//        int top = clipBounds.top;
+//
+//        int cx = ((right - left) + left) / 2;
+//        int cy = ((bottom - top) + top) / 2;
+//        Log.d("TEST_GAME", "PawnView -> cx: " + cx);;
+//        Log.d("TEST_GAME", "PawnView -> clipBounds cx: " + clipBounds.centerX());;
+//        Log.d("TEST_GAME", "PawnView -> cy: " + cy);;
+//        Log.d("TEST_GAME", "PawnView -> clipBounds cy: " + clipBounds.centerY());;
+//
+//
+//
+//        canvas.drawCircle(cx, cy, (clipBounds.width() / 4), paintCircle);
+
 //        }
 
     }

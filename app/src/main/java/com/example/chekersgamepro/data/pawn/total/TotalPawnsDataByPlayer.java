@@ -11,6 +11,14 @@ public class TotalPawnsDataByPlayer {
         this.totalPawnsDataPlayerTwo = totalPawnsDataPlayerTwo;
     }
 
+    public String getTotalPawnsPlayerOne() {
+        return String.valueOf(totalPawnsDataPlayerOne.getRegularPawns() + totalPawnsDataPlayerOne.getQueenPawns());
+    }
+
+    public String getTotalPawnsPlayerTwo() {
+        return String.valueOf(totalPawnsDataPlayerTwo.getRegularPawns() + totalPawnsDataPlayerTwo.getQueenPawns());
+    }
+
     public String getRegularPawnsPlayerOne() {
         return String.valueOf(totalPawnsDataPlayerOne.getRegularPawns());
     }

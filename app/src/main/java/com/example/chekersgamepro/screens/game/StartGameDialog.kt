@@ -3,6 +3,7 @@ package com.example.chekersgamepro.screens.game
 import android.app.Activity
 import android.app.Dialog
 import android.content.res.Resources
+import android.graphics.Bitmap
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -12,14 +13,13 @@ import android.view.WindowManager
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.example.chekersgamepro.R
-import com.example.chekersgamepro.checkers.CheckersImageUtil
-import com.example.chekersgamepro.data.data_game.DataGame
 import com.example.chekersgamepro.models.player.game.PlayerGame
 import com.example.chekersgamepro.util.animation.AnimationUtil
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.dialog_start_game.*
 import java.util.concurrent.TimeUnit
@@ -27,7 +27,9 @@ import java.util.concurrent.TimeUnit
 class StartGameDialog(private val activity: Activity
                       , private val guestPlayer: PlayerGame
                       , private val ownerPlayer: PlayerGame
-                      , private val isComputerGame: Boolean) {
+                      , private val isComputerGame: Boolean
+                      , private val imageProfilePlayerTwoOwner: Bitmap
+                      , private val imageProfileGuestOrComputer: Bitmap) {
 
     private val limitMoneyGame = guestPlayer.moneyGame + ownerPlayer.moneyGame
 
@@ -44,7 +46,7 @@ class StartGameDialog(private val activity: Activity
 
     private val dialog = Dialog(activity)
 
-    private val behaviorSubject = BehaviorSubject.create<Boolean>()
+    private val isShowDialog = BehaviorSubject.create<Boolean>()
 
     init {
 
@@ -58,7 +60,9 @@ class StartGameDialog(private val activity: Activity
 
     }
 
-    fun isShowDialogGame(): Observable<Boolean> = behaviorSubject.hide()
+    private val compositeDisposable = CompositeDisposable()
+
+    fun isShowDialogGame(): Observable<Boolean> = isShowDialog.hide()
 
     private fun convertDpToPixel(dp: Float): Float {
         val metrics = Resources.getSystem().displayMetrics
@@ -71,22 +75,22 @@ class StartGameDialog(private val activity: Activity
         dialog.guest_player_computer.text = guestPlayer.playerNme
         dialog.owner_player.text = ownerPlayer.playerNme
 
-        val imageUtil = CheckersImageUtil.create()
-
-        val imageProfilePlayerTwoOwner = imageUtil.createBitmapFromByteArray(ownerPlayer.image)
-        val imageProfileGuestOrComputer = imageUtil.createBitmapFromByteArray(guestPlayer.image)
-
         dialog.image_profile_owner_player.setImageBitmap(imageProfilePlayerTwoOwner)
         dialog.image_profile_guest_computer.setImageBitmap(imageProfileGuestOrComputer)
 
         dialog.show()
 
+
+        dialog.setOnDismissListener {
+            Log.d("TEST_GAME", "StartGameDialog setOnDismissListener")
+            compositeDisposable.dispose()
+        }
         RxView.globalLayouts(dialog.dialog_start_game)
                 .doOnNext {
                     dialog.money_game_count.translationY = dialog.money_game_count.measuredHeight.toFloat() + convertDpToPixel(35f)
                     dialog.center_coin.translationY = dialog.center_coin.measuredHeight.toFloat() + convertDpToPixel(35f)
                 }
-                .doOnSubscribe { behaviorSubject.onNext(true) }
+                .doOnSubscribe { isShowDialog.onNext(true) }
                 .distinctUntilChanged()
                 .flatMap {
                     animateNameImageProfileAndVs(dialog.guest_player_computer, dialog.image_profile_guest_computer, dialog.vs_icon_text, false)
@@ -96,14 +100,14 @@ class StartGameDialog(private val activity: Activity
                 }
                 .flatMap {
 
-                    val observable : Observable<*>
+                    val observable: Observable<*>
 
-                    if (isComputerGame){
-                        observable =  Observable.just(true)
-                    } else{
+                    if (isComputerGame) {
+                        observable = Observable.just(true)
+                    } else {
                         var count = 1
                         val limitMoneyGame = this.limitMoneyGame + 1
-                        observable =  Observable.interval(DELAY_TO_INCREASE_MONEY_GAME, TimeUnit.MILLISECONDS)
+                        observable = Observable.interval(DELAY_TO_INCREASE_MONEY_GAME, TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .doOnNext { dialog.money_game_count.text = count++.toString() }
                                 .takeUntil { count == limitMoneyGame }
@@ -112,19 +116,22 @@ class StartGameDialog(private val activity: Activity
                     }
 
                     return@flatMap observable
+                            .doOnNext { isShowDialog.onNext(false) }
                             .delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                 }
-                .doOnNext {
-                    behaviorSubject.onNext(false)
-                    dialog.dismiss()
+                ?.doOnNext { dialog.dismiss() }
+                ?.subscribe()?.let {
+                    compositeDisposable.add(
+                            it
+                    )
                 }
-                .subscribe()
+
     }
 
     private fun animateAddMoneyByGameState(): Observable<Boolean> {
-       return if (isComputerGame){
+        return if (isComputerGame) {
             Observable.just(true)
-        } else{
+        } else {
             animateCoins(dialog.money_bag_guest_computer_player_right, dialog.money_bag_owner_player_left)
         }
     }
@@ -136,7 +143,7 @@ class StartGameDialog(private val activity: Activity
                 .into(view)
     }
 
-    public fun closeDialog(){
+    public fun closeDialog() {
         dialog.dismiss()
     }
 

@@ -5,7 +5,7 @@
     android:id="@+id/checkersActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="#6A3710"
     android:orientation="vertical"
     tools:context=".screens.game.CheckersGameActivity">
 
@@ -28,15 +28,6 @@
         android:gravity="center"
         android:textSize="15dp" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="bottom|end"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/top_board"
         android:layout_width="wrap_content"
@@ -56,9 +47,55 @@
         android:id="@+id/container_game_board"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0"
+        android:alpha="1"
         android:translationZ="20dp"
         app:elevation="20dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/image_profile_guest_computer_screen"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="30dp"
+            android:alpha="0"
+            android:elevation="20dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_pawn_one"
+            app:civ_border_color="#333"
+            app:civ_border_width="0.5dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/text_view_total_pawns_computer_guest"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/ic_pawn_1"
+            android:gravity="center"
+            android:alpha="0"
+            android:translationX="-50dp"
+            android:paddingEnd="2dp"
+            android:paddingBottom="3dp"
+            android:text="12"
+            app:layout_constraintBottom_toBottomOf="@+id/image_profile_guest_computer_screen"
+            app:layout_constraintStart_toEndOf="@+id/image_profile_guest_computer_screen"
+            app:layout_constraintTop_toTopOf="@+id/image_profile_guest_computer_screen" />
+
+        <com.example.chekersgamepro.views.custom.Typewriter
+            android:id="@+id/text_view_name_computer_guest"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/text_view_total_pawns_computer_guest"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/text_view_total_pawns_computer_guest"
+            app:layout_constraintTop_toTopOf="@+id/text_view_total_pawns_computer_guest"
+            tools:text="COMPUTER" />
 
         <ProgressBar
             android:id="@+id/progress_top"
@@ -92,61 +129,51 @@
             app:layout_constraintStart_toStartOf="@+id/game_board_view"
             app:layout_constraintTop_toBottomOf="@+id/game_board_view" />
 
-        <com.example.chekersgamepro.views.custom.PlayerNameView
-            android:id="@+id/text_player_two"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="45dp"
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/image_profile_owner_player_screen"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="30dp"
             android:alpha="0"
-            android:background="#C5C3C3"
+            android:elevation="20dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_pawn_one"
+            app:civ_border_color="#333"
+            app:civ_border_width="0.5dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.07"
-            app:layout_constraintTop_toBottomOf="@+id/game_board_view"
-            app:layout_constraintWidth_percent="0.45"
-            tools:text="PLAYER TWO" />
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <com.example.chekersgamepro.views.custom.PlayerNameView
-            android:id="@+id/text_player_one"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginBottom="45dp"
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/text_view_total_pawns_owner_player"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/ic_pawn_2"
+            android:gravity="center"
+            android:paddingEnd="2dp"
+            android:translationX="-50dp"
+            android:paddingBottom="3dp"
             android:alpha="0"
-            android:background="#E4E2E2"
-            app:layout_constraintBottom_toTopOf="@+id/game_board_view"
+            android:text="12"
+            app:layout_constraintBottom_toBottomOf="@+id/image_profile_owner_player_screen"
+            app:layout_constraintStart_toEndOf="@+id/image_profile_owner_player_screen"
+            app:layout_constraintTop_toTopOf="@+id/image_profile_owner_player_screen" />
+
+        <com.example.chekersgamepro.views.custom.Typewriter
+            android:id="@+id/text_view_name_owner_player"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/text_view_total_pawns_owner_player"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.07"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.45"
-            tools:text="PLAYER ONE" />
-
-        <com.example.chekersgamepro.views.custom.TotalPawnPlayerView
-            android:id="@+id/text_player_two_total_pawn"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="45dp"
-            android:alpha="1"
-            android:background="#C5C3C3"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHeight_percent="0.07"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/game_board_view"
-            app:layout_constraintWidth_percent="0.45"
-            tools:text="PLAYER TWO" />
-
-        <com.example.chekersgamepro.views.custom.TotalPawnPlayerView
-            android:id="@+id/text_player_one_total_pawn"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginBottom="45dp"
-            android:alpha="1"
-            android:background="#E4E2E2"
-            app:layout_constraintBottom_toTopOf="@+id/game_board_view"
-            app:layout_constraintHeight_percent="0.07"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.45"
-            tools:text="PLAYER ONE" />
+            app:layout_constraintStart_toEndOf="@+id/text_view_total_pawns_owner_player"
+            app:layout_constraintTop_toTopOf="@+id/text_view_total_pawns_owner_player"
+            tools:text="OWNER" />
 
         <include layout="@layout/cells" />
 

@@ -4,6 +4,7 @@
     android:id="@+id/dialog_start_game"
     android:layout_width="match_parent"
     android:layout_height="220dp"
+    android:elevation="50dp"
     android:orientation="vertical">
 
     <androidx.appcompat.widget.AppCompatTextView

@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 
 import com.example.chekersgamepro.data.data_game.DataGame;
 import com.example.chekersgamepro.R;
+import com.example.chekersgamepro.util.DisplayUtil;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import io.reactivex.Observable;
@@ -61,12 +62,15 @@ public class CellView extends ImageView{
         return this;
     }
 
+    private int pixels = (int) DisplayUtil.Companion.convertDpToPixel(5);
+
+
     @SuppressLint("DrawAllocation")
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Rect clipBounds = canvas.getClipBounds();
-        RectF rectF = new RectF(clipBounds.left + 17, clipBounds.top + 17, clipBounds.right - 17, clipBounds.bottom - 17);
+        RectF rectF = new RectF(clipBounds.left + pixels, clipBounds.top + pixels, clipBounds.right - pixels, clipBounds.bottom - pixels);
         if (isMasterCell) {
             canvas.drawBitmap(queenIcon, null, rectF, null);
             isMasterCell = false;
