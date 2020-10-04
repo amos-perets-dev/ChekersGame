@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F5F5F5">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_level_title"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="@+id/lottie_file_level"
+        app:layout_constraintEnd_toEndOf="@+id/lottie_file_level"
+        app:layout_constraintBottom_toBottomOf="@+id/lottie_file_level"
+        app:layout_constraintTop_toTopOf="@+id/lottie_file_level"
+        android:text="@string/first_level"
+        android:elevation="50dp"
+        app:fontFamily="serif"
+        android:textColor="@color/activity_home_page_online_players_title_background_color"
+        android:paddingBottom="55dp"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="22dp"
+        app:autoSizeMaxTextSize="24dp"
+        android:gravity="center_horizontal|bottom"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_file_level"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layerType="hardware"
+        android:padding="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_percent="0.6"
+        app:lottie_loop="true"
+        app:lottie_fileName="level_up_speed.json"/>
+
+    <SeekBar
+        android:id="@+id/seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:max="25"
+        android:min="1"
+        android:progressTint="#333"
+        android:thumbTint="#333"
+        app:layout_constraintTop_toBottomOf="@+id/lottie_file_level"
+        app:layout_constraintBottom_toTopOf="@+id/button_start_game"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_start_game"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.13"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95"
+        android:background="@drawable/border_title_accept_button_avatar"
+        android:text="@string/activity_home_page_computer_game_button_start_title_text"
+        android:elevation="20dp"
+        android:layout_marginBottom="15dp"
+        android:textColor="@color/color_white"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

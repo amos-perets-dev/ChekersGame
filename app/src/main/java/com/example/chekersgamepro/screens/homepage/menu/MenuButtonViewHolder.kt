@@ -14,8 +14,6 @@ class MenuButtonViewHolder(parent: ViewGroup)
     : CheckersRecyclerView.Companion.ViewHolder<IMenuButton>(parent, R.layout.menu_button_item)  {
 
     init {
-//        itemView
-//                .setOnTouchListener(TouchClickListener(View.OnClickListener {  getDataModel()?.onClick() }, 0.6f))
 
         itemView
                 .setOnTouchListener(TouchListener(View.OnClickListener {
