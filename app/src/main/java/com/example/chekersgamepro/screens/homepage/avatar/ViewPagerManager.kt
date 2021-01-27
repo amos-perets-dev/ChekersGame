@@ -34,13 +34,18 @@ class ViewPagerManager(private val pager: ViewPager
 
     init {
 
-        val displayMatrix = DisplayUtil.getDisplayMatrix(activity!!)
+        val displayMatrix = DisplayUtil.getDisplayMatrix(activity)
         val height = displayMatrix.heightPixels
         val width = displayMatrix.widthPixels
 
         val layoutParams = pager.layoutParams
 
-        val mPagerHeight = height - bottom - activity.resources.getDimensionPixelSize(R.dimen.avatar_fragment_top_margin)
+        val mPagerHeight = if (activity != null) {
+            height - bottom - activity.resources.getDimensionPixelSize(R.dimen.avatar_fragment_top_margin)
+        } else {
+            0
+        }
+
         layoutParams.height = mPagerHeight
         layoutParams.width = width
         pager.layoutParams = layoutParams

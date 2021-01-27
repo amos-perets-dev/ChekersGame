@@ -17,12 +17,17 @@ class ComputerGameFragment : BaseFragment() {
 
     override fun getLayoutResId(): Int = R.layout.computer_game_fragment
 
+    override fun getActionOkButtonText() = getString(R.string.activity_home_page_computer_game_button_start_title_text)
+
+    override fun getActionOkButtonVisibility() = View.VISIBLE
+
+
     private val compositeDisposable = CompositeDisposable()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val computerGameViewModel = ComputerGameInjector().createViewModelActivity(activity!!)
+        val computerGameViewModel = ComputerGameInjector().createViewModelActivity(requireActivity())
 
         val lottieFileLevel = lottie_file_level
         lottieFileLevel.setAnimation("level_up_speed.json")
@@ -47,13 +52,15 @@ class ComputerGameFragment : BaseFragment() {
 
         })
 
-        button_start_game.setOnClickListener {
-            compositeDisposable.add(
+        getOnClickActionOk()
+                ?.flatMap {
                     computerGameViewModel.onClickComputerGame(text_view_level_title.text)
-                            .subscribe (this::startComputerGame, Throwable::printStackTrace)
-            )
-        }
-
+                }
+                ?.subscribe(this::startComputerGame, Throwable::printStackTrace)?.let {
+                    compositeDisposable.add(
+                            it
+                    )
+                }
     }
 
     private fun startComputerGame(intent: Intent) {

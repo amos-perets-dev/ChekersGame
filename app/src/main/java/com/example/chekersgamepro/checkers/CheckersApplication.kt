@@ -67,9 +67,9 @@ class CheckersApplication : MultiDexApplication() {
         Toast.makeText(checkersApplication, msg, Toast.LENGTH_SHORT).show()
     }
 
-    fun getInteger(resId : Int) = applicationContext!!.resources.getInteger(resId)
+    fun getInteger(resId : Int) = applicationContext.resources.getInteger(resId)
 
-    fun getColorRes(resId : Int) = applicationContext!!.resources.getColor(resId)
+    fun getColorRes(resId : Int) = applicationContext.resources.getColor(resId)
 
 
     companion object Factory {

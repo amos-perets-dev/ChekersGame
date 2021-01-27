@@ -25,8 +25,8 @@ class CheckersConfiguration(private val context: Context) {
 
     init {
 
-        val bitmap = imageUtil.drawableToBitmap(context.getDrawable(R.drawable.ic_robot_circle)!!)
-        this.computerIconEncode = imageUtil.encodeBase64Image(bitmap)!!
+        val bitmap = context.getDrawable(R.drawable.ic_robot_circle)?.let { imageUtil.drawableToBitmap(it) }
+        this.computerIconEncode = bitmap?.let { imageUtil.encodeBase64Image(it).toString() }.toString()
 
     }
 
@@ -80,7 +80,7 @@ class CheckersConfiguration(private val context: Context) {
         @JvmStatic
         fun create(context: Context?): CheckersConfiguration {
             if (checkersConfiguration == null) {
-                checkersConfiguration = CheckersConfiguration(context!!)
+                checkersConfiguration = context?.let { CheckersConfiguration(it) }
             }
 
             return checkersConfiguration as CheckersConfiguration

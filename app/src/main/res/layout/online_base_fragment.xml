@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/base_fragment"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -10,6 +11,8 @@
         android:id="@+id/close_player_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:background="@drawable/border_online_players_list_title"
         android:drawableStart="@drawable/ic_close_player_list"
         android:drawableEnd="@drawable/ic_close_player_list"
@@ -25,24 +28,55 @@
         app:fontFamily="serif"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.1"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/container_views"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#0027F7"
         android:clipChildren="true"
         android:clipToPadding="true"
-        android:elevation="2dp"
-        android:layoutDirection="ltr"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/close_player_list">
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleX="1.14"
+            android:scaleY="1.1"
+            android:translationY="-30dp"
+            android:src="@drawable/bg_ch" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background_pickers" />
+
     </androidx.cardview.widget.CardView>
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/action_ok_button"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/border_shape_button_menu"
+        android:elevation="5dp"
+        android:gravity="center"
+        android:layerType="hardware"
+        android:textColor="@color/color_white"
+        android:typeface="serif"
+        app:autoSizeMaxTextSize="@dimen/activity_home_page_menu_picker_action_ok_text_size_max"
+        app:autoSizeMinTextSize="@dimen/activity_home_page_menu_picker_action_ok_text_size_min"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="SIGNLR PLAER" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

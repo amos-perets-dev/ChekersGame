@@ -105,7 +105,7 @@ class PlayersFragment : BaseFragment() {
     }
 
     private fun startActivity(pair: Pair<Intent, ActivityOptionsCompat>) {
-        startActivity(pair.first, pair.second!!.toBundle())
+        startActivity(pair.first, pair.second?.toBundle())
     }
 
     private fun initRecyclerView() {

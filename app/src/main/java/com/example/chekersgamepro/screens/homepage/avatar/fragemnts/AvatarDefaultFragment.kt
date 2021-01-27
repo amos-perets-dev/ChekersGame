@@ -35,28 +35,30 @@ class AvatarDefaultFragment(private val avatarViewModel: AvatarViewModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val saveImage = avatarViewModel.saveImage(activity!!)
+        val saveImage = avatarViewModel.saveImage(requireActivity())
         val defaultAvatars = DefaultAvatarsImpl(avatarViewModel, isMovePage(), saveImage)
 
-        compositeDisposableOnDestroyed.add(
-                defaultAvatars.getAvatarsDefaultAdapter()
-                        ?.subscribeOn(Schedulers.io())
-                        ?.observeOn(AndroidSchedulers.mainThread())
-                        ?.doOnEvent { defaultAvatarAdapter, t2 -> addListener(defaultAvatarAdapter) }
-                        ?.subscribe { defaultAvatarAdapter, t2 -> initRecyclerView(defaultAvatarAdapter) }!!
-        )
+        defaultAvatars.getAvatarsDefaultAdapter()
+                ?.subscribeOn(Schedulers.io())
+                ?.observeOn(AndroidSchedulers.mainThread())
+                ?.doOnEvent { defaultAvatarAdapter, t2 -> addListener(defaultAvatarAdapter) }
+                ?.subscribe { defaultAvatarAdapter, t2 -> initRecyclerView(defaultAvatarAdapter) }?.let {
+                    compositeDisposableOnDestroyed.add(
+                            it
+                    )
+                }
     }
 
     private fun initRecyclerView(defaultAvatarAdapter: DefaultAvatarAdapter) {
 
-        val recyclerDefaultAvatars = view!!.recycler_default_avatars
-        recyclerDefaultAvatars.setHasFixedSize(true)
-        recyclerDefaultAvatars.setItemViewCacheSize(20)
-        recyclerDefaultAvatars.isDrawingCacheEnabled = true
-        recyclerDefaultAvatars.drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
+        val recyclerDefaultAvatars = view?.recycler_default_avatars
+        recyclerDefaultAvatars?.setHasFixedSize(true)
+        recyclerDefaultAvatars?.setItemViewCacheSize(20)
+        recyclerDefaultAvatars?.isDrawingCacheEnabled = true
+        recyclerDefaultAvatars?.drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
 
-        recyclerDefaultAvatars.layoutManager = GridLayoutManager(view!!.context, 3)
-        recyclerDefaultAvatars.adapter = defaultAvatarAdapter
+        recyclerDefaultAvatars?.layoutManager = GridLayoutManager(view?.context, 3)
+        recyclerDefaultAvatars?.adapter = defaultAvatarAdapter
     }
 
 }

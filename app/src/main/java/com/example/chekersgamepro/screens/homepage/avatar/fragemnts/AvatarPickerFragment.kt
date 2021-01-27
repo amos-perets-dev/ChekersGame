@@ -89,7 +89,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
     override fun onGlobalLayout() {
         view?.viewTreeObserver?.removeOnGlobalLayoutListener(this)
         if (view != null) {
-            Log.d("TEST_GAME", "AvatarPickerFragment -> this.recyclerButtons height: ${this.recyclerButtons!!.measuredHeight}")
+            Log.d("TEST_GAME", "AvatarPickerFragment -> this.recyclerButtons height: ${this.recyclerButtons.measuredHeight}")
 
             val refreshImageProfile = avatarViewModel.refreshImageProfile(this)
                     .subscribeOn(Schedulers.io())
@@ -133,8 +133,8 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                     this.avatarViewModel
                             .getPagerManager(
                                     viewPager
-                                    , this.activity!!
-                                    , this.image_profile_hp.bottom + this.recyclerButtons!!.measuredHeight
+                                    , this.activity
+                                    , this.image_profile_hp.bottom + this.recyclerButtons.measuredHeight
                                     , this.childFragmentManager
                             )
 //                            .observeOn(Schedulers.io())
@@ -146,7 +146,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                             .subscribe(this::initRecyclerViewButtonsAvatarSelected),
 
                     avatarViewModel
-                            .saveImage(activity!!)
+                            .saveImage(requireActivity())
                             .subscribeOn(Schedulers.io())
                             .map { actionOkButton.measuredHeight.toFloat() }
                             .observeOn(AndroidSchedulers.mainThread())
@@ -156,7 +156,7 @@ class AvatarPickerFragment(private val image_profile_hp: CircleImageView) :
                                         .observeOn(Schedulers.io())
                                         .doOnEvent { avatarViewModel.finishAnimateImageProfile() }
                             }
-                            ?.subscribe()!!,
+                            ?.subscribe(),
 
                     avatarViewModel
                             .getImageProfileTmp(this)

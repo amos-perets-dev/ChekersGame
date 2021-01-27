@@ -148,20 +148,20 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
 
                     for (value in list) {
 
-                        val player = value.getValue(TopPlayerData::class.java)!!
-                        val money = player.money
+                        val player = value.getValue(TopPlayerData::class.java)
+                        val money = player?.money ?: 0
 
                         val listFromMap = topPlayersMap[money]
                         if (listFromMap == null && topPlayersMap.size < TOP_PLAYERS_LIMIT) {
 
-                            topPlayersMap[money] = Lists.newArrayList(createTopPlayerModel(topPlayersMap.size + 1, true, player))
+                            topPlayersMap[money] = Lists.newArrayList(createTopPlayerModel(topPlayersMap.size + 1, true, player ?: TopPlayerData()))
 
                             if (topPlayersMap.size == TOP_PLAYERS_LIMIT) {
                                 this.minValueStopCheck = money
                             }
                         } else if (listFromMap != null) {
 
-                            listFromMap.add(createTopPlayerModel(-1, false, player))
+                            listFromMap.add(createTopPlayerModel(-1, false, player ?: TopPlayerData()))
                         }
 
                         if (money != this.minValueStopCheck && topPlayersMap.size == TOP_PLAYERS_LIMIT) {
@@ -311,8 +311,8 @@ class RemoteDbManager(userProfile: UserProfileImpl?) : IRemoteDb {
         } else if (status.ordinal == RequestOnlineGameStatus.DECLINE_BY_GUEST.ordinal && player.owner) {
             // The remote player this is the guest
             val remotePlayer = remotePlayersCache[playerId]
-            val remotePlayerEvent = createOnlinePlayerEvent(remotePlayer!!)
-            remotePlayerEvent
+            val remotePlayerEvent = remotePlayer?.let { createOnlinePlayerEvent(it) }
+            remotePlayerEvent ?: OnlinePlayerEventImpl()
         } else {
             OnlinePlayerEventImpl()
         }

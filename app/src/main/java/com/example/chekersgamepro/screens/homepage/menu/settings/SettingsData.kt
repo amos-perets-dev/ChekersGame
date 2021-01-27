@@ -1,5 +1,6 @@
 package com.example.chekersgamepro.screens.homepage.menu.settings
 
+import com.example.chekersgamepro.screens.homepage.menu.settings.model.LanguageItem
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 

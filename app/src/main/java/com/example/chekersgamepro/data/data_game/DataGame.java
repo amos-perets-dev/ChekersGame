@@ -326,14 +326,14 @@ public class DataGame extends DataGameHelper {
     }
 
     public static class ColorCell{
-        public static final int CHECKED_PAWN_START_END = Color.argb(155, 45, 170, 0);
-        public static final int INVALID_CHECKED = Color.argb(155, 170, 0, 0);
-        public static final int CAN_CELL_START = Color.argb(155, 243, 215, 0);
-        public static final int INSIDE_PATH = Color.argb(155, 0, 43, 170);
+        public static final int CHECKED_PAWN_START_END = Color.parseColor("#FF2DAA00");//GREEN
+        public static final int INVALID_CHECKED = Color.parseColor("#FFAA0000");//RED
+        public static final int CAN_CELL_START = Color.parseColor("#FFF3D700");//YELLOW
+        public static final int INSIDE_PATH = Color.parseColor("#FF002BAA");//BLUE
         public static final int CLEAR_CHECKED = R.drawable.cell_1;
     }
 
-    public class CellState {
+    public static class CellState {
         public static final int EMPTY_INVALID = -1;
         public static final int EMPTY = 0;
         public static final int PLAYER_ONE = 1;
@@ -343,13 +343,13 @@ public class DataGame extends DataGameHelper {
         public static final int INVALID_STATE = -999;
     }
 
-    public class Mode{
+    public static class Mode{
         public static final int COMPUTER_GAME_MODE = 1;
         public static final int OFFLINE_GAME_MODE = 2;
         public static final int ONLINE_GAME_MODE = 3;
     }
 
-    public class Direction{
+    public static class Direction{
         public static final int LEFT_TOP_DIRECTION = 1;
         public static final int LEFT_BOTTOM_DIRECTION = 2;
         public static final int RIGHT_TOP_DIRECTION = 3;

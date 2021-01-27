@@ -29,6 +29,7 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
         drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
         isNestedScrollingEnabled = false
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        overScrollMode = OVER_SCROLL_NEVER
     }
 
     fun addPagerSnap(){
@@ -179,7 +180,9 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
             }
 
             open fun addOnItemClickListener(onItemClickListener: OnItemClickListener?) {
-                this.clickListeners.add(onItemClickListener!!)
+                if (onItemClickListener != null) {
+                    this.clickListeners.add(onItemClickListener)
+                }
             }
 
             open fun removeOnItemClickListener(onItemClickListener: OnItemClickListener?) {
@@ -237,10 +240,10 @@ class CheckersRecyclerView(context: Context, attributeSet: AttributeSet) : Recyc
             fun setDataModel(model: Model) {
                 val modelsIsEquals = Objects.equal(model, currentModel)
 
-                if (currentModel != null) {
-                    unBindData(currentModel!!)
+                currentModel?.let {currModel ->
+                    unBindData(currModel)
                     if (!modelsIsEquals) {
-                        unBindDifferentData(currentModel!!)
+                        unBindDifferentData(currModel)
                     }
                 }
 

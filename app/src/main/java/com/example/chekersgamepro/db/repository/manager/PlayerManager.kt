@@ -45,11 +45,11 @@ class PlayerManager(private val realmManager: RealmManager, private val remoteDb
     fun createTopPlayer(id: Long, userName: String, encodeImageDefaultPreUpdate: String): Completable =
         remoteDb.createTopPlayer(id, userName, encodeImageDefaultPreUpdate)
 
-    fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync()!!.map(PlayerData::owner).distinctUntilChanged()
+    fun isOwnerPlayerAsync(): Observable<Boolean> = getPlayerAsync().map(PlayerData::owner).distinctUntilChanged()
 
-    fun getPlayerAsync() : Observable<PlayerData>? = playerAsync.hide()
+    fun getPlayerAsync() : Observable<PlayerData> = playerAsync.hide()
 
-    fun getNowPlayAsync(): Observable<Int> = getPlayerAsync()!!.map(PlayerData::nowPlay).distinctUntilChanged()
+    fun getNowPlayAsync(): Observable<Int> = getPlayerAsync().map(PlayerData::nowPlay).distinctUntilChanged()
 
     fun sendRequestOnlineGame(remotePlayerId: Long): Completable =  remoteDb.sendRequestOnlineGame(remotePlayerId)
 

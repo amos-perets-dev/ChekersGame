@@ -1,15 +1,12 @@
 package com.example.chekersgamepro.screens.homepage.menu.settings
 
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveDataReactiveStreams
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.chekersgamepro.db.repository.RepositoryManager
+import com.example.chekersgamepro.screens.homepage.menu.settings.model.ILanguageItem
 import io.reactivex.Flowable
-import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.Single
+import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
@@ -18,7 +15,9 @@ import io.reactivex.subjects.PublishSubject
 import java.util.concurrent.TimeUnit
 
 class SettingsViewModel(private val settingsData: Flowable<SettingsData>,
-                        private val repositoryManager: RepositoryManager) : ViewModel() {
+                        private val repositoryManager: RepositoryManager,
+                        private val languagesAdapter: LanguagesAdapter,
+                        private val onSelectedLanguage: Observable<ILanguageItem>) : ViewModel() {
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -37,11 +36,15 @@ class SettingsViewModel(private val settingsData: Flowable<SettingsData>,
         )
     }
 
+    fun getSelectedItem() = onSelectedLanguage
 
-    fun isSave (): Observable<Boolean> =
-         isSaveData.hide()
-                .filter(Functions.equalsWith(true))
-                .delay(200, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+    fun getLanguagesAdapter() = languagesAdapter
+
+    fun isSave(): Observable<Boolean> =
+            isSaveData.hide()
+                    .subscribeOn(Schedulers.io())
+                    .filter(Functions.equalsWith(true))
+                    .delay(200, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
 
 
     fun getSettingData() = this.settingsData
@@ -51,7 +54,6 @@ class SettingsViewModel(private val settingsData: Flowable<SettingsData>,
         this.compositeDisposable.dispose()
         super.onCleared()
     }
-
 
 
 }

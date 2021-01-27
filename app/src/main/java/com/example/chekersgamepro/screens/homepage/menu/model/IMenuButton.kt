@@ -8,6 +8,8 @@ interface IMenuButton {
 
     fun getButtonName() : String
 
+    fun getIcon() : Int
+
     fun onClick()
 
 }

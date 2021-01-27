@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 
@@ -88,7 +89,7 @@ public class CircleImageViewCustom extends CircleImageView implements IBaseViewA
 
 
         RectF rect = new RectF(left, top, right, bottom);
-
+        Log.d("TEST_GAME", "CircleImageViewCustom -> onDraw-> angle: " + angle);
         canvas.drawArc(rect, START_ANGLE_POINT, angle, false, paint);
     }
 

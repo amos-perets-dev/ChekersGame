@@ -29,7 +29,7 @@ class TopPlayersFragment : BaseFragment() {
 
         this.compositeDisposableOnDestroyed.addAll(
                 TopPlayersInjector()
-                        .createViewModelActivity(activity!!)
+                        .createViewModelActivity(requireActivity())
                         .getTopPlayersList()
                         .subscribe {
                             this.topPlayersAdapter.updateList(it)

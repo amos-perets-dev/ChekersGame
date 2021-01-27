@@ -71,10 +71,10 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
                         },
 
                 RxView.clicks(textButtonGallery)
-                        .subscribe { avatarViewModel.clickOnGallery(context!!) },
+                        .subscribe { avatarViewModel.clickOnGallery(requireContext()) },
 
                 avatarViewModel
-                        .saveImage(activity!!)
+                        .saveImage(requireActivity())
                         .distinctUntilChanged()
                         .subscribe { textButtonGallery.visibility = View.GONE }
         )
@@ -94,7 +94,7 @@ class AvatarGalleryFragment(private val avatarViewModel: AvatarViewModel) :
         textButtonGallery.scaleX = 1f
         textButtonGallery.scaleY = 1f
 //        animateButtonGallery(0f, 0f, 1f, CANCEL_ANIMATE_GALLERY_BUTTON_DURATION)
-        view!!.setBackgroundColor(getColor(context!!, R.color.activity_home_page_avatar_gallery_background_color))
+        view?.setBackgroundColor(getColor(requireContext(), R.color.activity_home_page_avatar_gallery_background_color))
     }
 
     override fun onPauseFragment() {

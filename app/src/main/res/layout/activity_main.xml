@@ -5,7 +5,7 @@
     android:id="@+id/checkersActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#6A3710"
+    android:background="@drawable/bg_ch_1"
     android:orientation="vertical"
     tools:context=".screens.game.CheckersGameActivity">
 

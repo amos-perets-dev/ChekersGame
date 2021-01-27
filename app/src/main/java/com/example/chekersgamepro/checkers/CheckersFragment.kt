@@ -17,7 +17,7 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
 
     private val lifecycleListenerList  = ArrayList<LifecycleListener>()
 
-    protected val checkersApplication = CheckersApplication.create()
+    private val checkersApplication = CheckersApplication.create()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -96,7 +96,7 @@ open class CheckersFragment : AppCompatDialogFragment(), ViewTreeObserver.OnGlob
 
     protected open fun changeWindowSize(){
         if (dialog != null) {
-            val window = dialog!!.window
+            val window = dialog?.window
             if (window != null) { // height  - to prohibit screen resizing when keyboard is open
                 window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
                 // window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);

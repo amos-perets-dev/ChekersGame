@@ -9,6 +9,7 @@ import com.example.chekersgamepro.R
 import com.example.chekersgamepro.checkers.CheckersFragment
 import com.example.chekersgamepro.checkers.recycler.CheckersRecyclerView
 import com.example.chekersgamepro.screens.homepage.menu.computer.ComputerGameFragment
+import com.example.chekersgamepro.screens.homepage.menu.model.IMenuButton
 import com.example.chekersgamepro.screens.homepage.menu.online.BaseFragment
 import com.example.chekersgamepro.screens.homepage.menu.online.players.PlayersFragment
 import com.example.chekersgamepro.screens.homepage.menu.rules.RulesFragment
@@ -34,9 +35,9 @@ class MenuFragment : CheckersFragment() {
         this.recyclerViewButtons = view.recycler_view_buttons
         val menuViewModel = MenuInjector().createViewModelActivity(activity!!)
 
-        view.fab_settings.setOnClickListener(menuViewModel::onClickSettings)
-        view.fab_share.setOnClickListener ( menuViewModel::onClickShare)
-        view.fab_logout.setOnClickListener ( menuViewModel::onClickExit)
+//        view.fab_settings.setOnClickListener(menuViewModel::onClickSettings)
+//        view.fab_share.setOnClickListener ( menuViewModel::onClickShare)
+//        view.fab_logout.setOnClickListener ( menuViewModel::onClickExit)
 
         compositeDisposableOnDestroyed.addAll(
                 menuViewModel

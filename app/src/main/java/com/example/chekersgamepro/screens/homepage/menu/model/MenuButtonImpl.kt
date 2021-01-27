@@ -6,7 +6,8 @@ import io.reactivex.subjects.PublishSubject
 
 class MenuButtonImpl(private val menuButtonsType: MenuButtonsType,
                      private val buttonName: String,
-                     private val onClickButton: PublishSubject<Int>) : IMenuButton {
+                     private val onClickButton: PublishSubject<Int>,
+                     private val icon: Int) : IMenuButton {
 
     override fun getButtonType() = this.menuButtonsType.ordinal
 
@@ -15,5 +16,7 @@ class MenuButtonImpl(private val menuButtonsType: MenuButtonsType,
     override fun onClick() {
         this.onClickButton.onNext(this.menuButtonsType.ordinal)
     }
+
+    override fun getIcon(): Int = icon
 
 }

@@ -84,7 +84,7 @@ class AvatarViewModel : ViewModel() {
 
     fun setChangeAvatarData(avatarData: AvatarData) {
         if (avatarData.image != null) {
-            imageProfile.postValue(avatarData.image!!)
+            imageProfile.postValue(avatarData.image)
         }
         setAvatarData(avatarData)
     }
@@ -96,8 +96,8 @@ class AvatarViewModel : ViewModel() {
         setAvatarData(AvatarData(AvatarState.AVATAR_SAVE, null))
     }
 
-    private fun changeAvatarScreen(lifecycleOwner: LifecycleOwner): Observable<Int> =
-            Observable.fromPublisher(LiveDataReactiveStreams.toPublisher(lifecycleOwner, changeAvatarScreen))
+    private fun changeAvatarScreen(lifecycleOwner: LifecycleOwner?): Observable<Int> =
+            Observable.fromPublisher(lifecycleOwner?.let { LiveDataReactiveStreams.toPublisher(it, changeAvatarScreen) })
                     .distinctUntilChanged()
 
     fun imageProfileTmpChange(lifecycleOwner: LifecycleOwner): Observable<Bitmap> =
@@ -191,7 +191,7 @@ class AvatarViewModel : ViewModel() {
     }
 
     fun getDefaultAvatarsList(): Single<List<Bitmap>> {
-        return CheckersConfiguration.getInstance().getDefaultAvatarsList()!!
+        return CheckersConfiguration.getInstance().getDefaultAvatarsList() ?: Single.just(listOf<Bitmap>())
     }
 
     fun getButtonsAvatarSelectedAdapter(infoScrollPageData: Observable<ScrollPageData>) =
@@ -221,7 +221,7 @@ class AvatarViewModel : ViewModel() {
     }
 
     fun getPagerManager(avatarPager: ViewPager
-                        , activity: FragmentActivity
+                        , activity: FragmentActivity?
                         , bottom: Int
                         , childFragmentManager: FragmentManager): Single<ViewPagerManager> =
             Single.create {

@@ -35,10 +35,10 @@
     <string name="activity_home_page_settings_title_text">Settings</string>
 
     <string name="activity_home_page_menu_buttons_online_game_text">TWO PLAYERS</string>
-    <string name="activity_home_page_menu_buttons_computer_game_text">ONE PLAYER</string>
+    <string name="activity_home_page_menu_buttons_computer_game_text">SINGLE PLAYER</string>
     <string name="activity_home_page_menu_buttons_top_players_game_text">TOP PLAYERS</string>
     <string name="activity_home_page_menu_buttons_get_money_text">MONEY</string>
-    <string name="activity_home_page_menu_buttons_rules_game_text">RULES</string>
+    <string name="activity_home_page_menu_buttons_rules_game_text">SETTINGS</string>
 
     <string name="activity_home_page_menu_buttons_share_game_text">SHARE</string>
     <string name="activity_home_page_menu_buttons_settings_game_text">SETTINGS</string>
@@ -69,8 +69,8 @@
     <string name="activity_home_page_menu_settings_sound_picker_on_text">ON</string>
     <string name="activity_home_page_menu_settings_sound_picker_off_text">OFF</string>
     <string name="activity_home_page_update_avatar_text">Update avatar</string>
-    <string name="activity_home_page_menu_settings_save_text">Save settings</string>
-    <string name="activity_home_page_computer_game_button_start_title_text">Start</string>
+    <string name="activity_home_page_menu_settings_save_text">SAVE</string>
+    <string name="activity_home_page_computer_game_button_start_title_text">START</string>
     <string name="activity_home_page_computer_game_title_text">Computer Game</string>
     <string name="first_level">1</string>
 

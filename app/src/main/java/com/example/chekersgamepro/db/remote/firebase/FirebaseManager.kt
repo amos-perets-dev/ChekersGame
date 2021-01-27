@@ -210,7 +210,7 @@ class FirebaseManager {
             // Handle unsuccessful uploads
         }.addOnSuccessListener { taskSnapshot ->
 
-            val ref = FirebaseStorage.getInstance().reference.child(taskSnapshot.metadata?.path!!)
+            val ref = FirebaseStorage.getInstance().reference.child(taskSnapshot.metadata?.path.toString())
             ref.downloadUrl.addOnSuccessListener {
                 val imageUrl = it.toString()
                 emitter.onSuccess(imageUrl)

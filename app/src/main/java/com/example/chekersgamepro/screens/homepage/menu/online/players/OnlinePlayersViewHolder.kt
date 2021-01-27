@@ -55,12 +55,14 @@ class OnlinePlayersViewHolder(parent: ViewGroup
 
         val imageProfile = itemView.image_profile
 
-        val imagePair = Pair.create(imageProfile as View, ViewCompat.getTransitionName(imageProfile)!!)
+        val imagePair = Pair.create(imageProfile as View, ViewCompat.getTransitionName(imageProfile))
 
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation((itemView.context as Activity), imagePair)
         val onClickPlay = getDataModel()?.onClickPlay(options)
 
-        this.clickOn.onNext(onClickPlay!!)
+        if (onClickPlay != null) {
+            this.clickOn.onNext(onClickPlay)
+        }
     }
 
 

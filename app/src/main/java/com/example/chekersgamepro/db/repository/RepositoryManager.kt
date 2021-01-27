@@ -80,7 +80,8 @@ class RepositoryManager : Repository {
     fun createDialogStateCreator() = remoteDb.createDialogStateCreator()
 
     override fun getTopPlayersList(): Observable<List<ITopPlayer>> =
-            this.topPlayersList.hide().subscribeOn(Schedulers.io())
+            this.topPlayersList.hide()
+                    .subscribeOn(Schedulers.io())
 
     fun isRegistered(): Boolean = sharedPreferencesManager.isRegistered()
 
@@ -103,9 +104,9 @@ class RepositoryManager : Repository {
 
                         val id = StringUtil.convertToAscii(userName) + System.currentTimeMillis()
 
-                        return@flatMap userProfileManager.createUser(id, userName, getEncodeImageDefaultPreUpdate()!!)
-                                .andThen(playerManager.createPlayer(id, userName, getEncodeImageDefaultPreUpdate()!!)
-                                        .andThen(playerManager.createTopPlayer(id, userName, getEncodeImageDefaultPreUpdate()!!)))
+                        return@flatMap userProfileManager.createUser(id, userName, getEncodeImageDefaultPreUpdate().toString())
+                                .andThen(playerManager.createPlayer(id, userName, getEncodeImageDefaultPreUpdate().toString())
+                                        .andThen(playerManager.createTopPlayer(id, userName, getEncodeImageDefaultPreUpdate().toString())))
                                 .doOnError { Log.d("TEST_GAME", "22 doOnError addNewUser: ${it.message}") }
                                 .toSingleDefault(RegistrationStatus.REGISTERED)
                                 .onErrorReturnItem(RegistrationStatus.ERROR)
@@ -261,7 +262,7 @@ class RepositoryManager : Repository {
                     .doOnNext { Log.d("TEST_GAME", "5555 userProfileManager.getImageProfileAsync()") }
 
     fun createPlayersGame(gameMode: Int): Single<Intent> =
-            IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync()!!, gameMode, imageUtil, context)
+            IntentUtil.createPlayersGameIntent(playerManager.getPlayerAsync(), gameMode, imageUtil, context)
 
     fun setImageDefaultPreUpdate(): Single<Boolean> = remoteDb.setImageDefaultPreUpdate()
             .flatMap { arrayFromBitmap ->

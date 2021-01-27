@@ -43,11 +43,11 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
             setPermissionMsgVisibility(permissionText, true)
         }
 
-        val permissionGranted = PermissionUtil.isCameraPermissionGranted(context!!)
+        val permissionGranted = PermissionUtil.isCameraPermissionGranted(requireContext())
 
         compositeDisposableOnDestroyed.addAll(
                 avatarViewModel
-                        .saveImage(activity!!)
+                        .saveImage(requireActivity())
                         .distinctUntilChanged()
                         .subscribe(Functions.actionConsumer(cameraPreview::hideButtonsCameraVisibility)),
 
@@ -67,13 +67,17 @@ class AvatarCameraFragment(private val avatarViewModel: AvatarViewModel) : Avata
 
     private fun openCameraByState(isGranted: Boolean) {
         Log.d("TEST_GAM", "openCameraByState openCameraByState")
-        val permissionText = view!!.permission_text
+        val permissionText = view?.permission_text
         if (isGranted) {
-            setPermissionMsgVisibility(permissionText, false)
+            if (permissionText != null) {
+                setPermissionMsgVisibility(permissionText, false)
+            }
             cameraPreview.initCamera(view)
             if (!isAlreadyOpenPermission) startCamera(cameraPreview)
         } else {
-            setPermissionMsgVisibility(permissionText, true)
+            if (permissionText != null) {
+                setPermissionMsgVisibility(permissionText, true)
+            }
         }
     }
 

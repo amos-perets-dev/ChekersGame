@@ -11,6 +11,7 @@ import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ExifInterface
+import android.net.Uri
 import android.os.Build
 import android.renderscript.Allocation
 import android.renderscript.Element
@@ -53,7 +54,7 @@ open class CheckersImageUtil {
                     .into(object : CustomTarget<Bitmap>() {
                         override fun onLoadFailed(errorDrawable: Drawable?) {
                             if (drawable != null) {
-                                emitter.onSuccess(drawableToBitmap(drawable)!!)
+                                emitter.onSuccess(drawableToBitmap(drawable))
                             }
                         }
 
@@ -122,7 +123,9 @@ open class CheckersImageUtil {
         return Completable.create { emitter: CompletableEmitter ->
             val requestListener: RequestListener<Drawable?> = object : RequestListener<Drawable?> {
                 override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable?>?, isFirstResource: Boolean): Boolean {
-                    emitter.onError(e!!)
+                    if (e != null) {
+                        emitter.onError(e)
+                    }
                     return false
                 }
 
@@ -132,10 +135,12 @@ open class CheckersImageUtil {
                 }
 
             }
-            Glide.with(context!!)
-                    .load(url)
-                    .listener(requestListener)
-                    .preload()
+            if (context != null) {
+                Glide.with(context)
+                        .load(url)
+                        .listener(requestListener)
+                        .preload()
+            }
         }.subscribeOn(AndroidSchedulers.mainThread())
     }
 
@@ -214,12 +219,12 @@ open class CheckersImageUtil {
     }
 
     fun creteBitmapFromData(data: Intent?, isCompress : Boolean): Bitmap {
-        val imageUri = data?.data!!
+        val imageUri = data?.data
         val path = FileUtils.getPath(context, imageUri)
-        val imageStream = context.contentResolver.openInputStream(imageUri!!)
+        val imageStream = imageUri?.let { context.contentResolver.openInputStream(it) }
         val bitmap = BitmapFactory.decodeStream(imageStream)
 
-        var modifyOrientationBitmap = modifyOrientation(bitmap, path!!)
+        var modifyOrientationBitmap = modifyOrientation(bitmap, path)
 
         if (isCompress){
             modifyOrientationBitmap = compressBitmap(modifyOrientationBitmap)

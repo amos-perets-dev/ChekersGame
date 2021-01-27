@@ -26,13 +26,16 @@
     <dimen name="activity_home_page_menu_buttons_title_text_size_min">18dp</dimen>
     <dimen name="activity_home_page_menu_buttons_title_text_size_max">25dp</dimen>
 
-    <dimen name="activity_home_page_menu_buttons_button_name_text_size_min">12dp</dimen>
-    <dimen name="activity_home_page_menu_buttons_button_name_text_size_max">14dp</dimen>
+    <dimen name="activity_home_page_menu_buttons_button_name_text_size_min">14dp</dimen>
+    <dimen name="activity_home_page_menu_buttons_button_name_text_size_max">16dp</dimen>
 
-    <dimen name="activity_home_page_menu_settings_sound_text_size_min">16dp</dimen>
-    <dimen name="activity_home_page_menu_settings_sound_text_size_max">18dp</dimen>
+    <dimen name="activity_home_page_menu_settings_sound_text_size_min">18dp</dimen>
+    <dimen name="activity_home_page_menu_settings_sound_text_size_max">24dp</dimen>
 
     <dimen name="activity_home_page_menu_settings_language_text_size_min">16dp</dimen>
     <dimen name="activity_home_page_menu_settings_language_text_size_max">18dp</dimen>
+
+    <dimen name="activity_home_page_menu_picker_action_ok_text_size_min">14dp</dimen>
+    <dimen name="activity_home_page_menu_picker_action_ok_text_size_max">17dp</dimen>
 
 </resources>

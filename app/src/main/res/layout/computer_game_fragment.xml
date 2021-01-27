@@ -3,8 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#F5F5F5">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_view_level_title"
@@ -44,21 +43,7 @@
         android:progressTint="#333"
         android:thumbTint="#333"
         app:layout_constraintTop_toBottomOf="@+id/lottie_file_level"
-        app:layout_constraintBottom_toTopOf="@+id/button_start_game"/>
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_start_game"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.13"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.95"
-        android:background="@drawable/border_title_accept_button_avatar"
-        android:text="@string/activity_home_page_computer_game_button_start_title_text"
-        android:elevation="20dp"
-        android:layout_marginBottom="15dp"
-        android:textColor="@color/color_white"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

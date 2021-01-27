@@ -34,7 +34,7 @@ class RealmManager : Serializable {
                     .findAllAsync()
                     .asFlowable()
                     .filter { it.isNotEmpty() }
-                    .map { it.first()!! }
+                    .map { it.first() }
 
     fun setUserDataTmp(userDataTmp: UserDataTmp): Completable =
          Completable.create { emitter ->
@@ -65,8 +65,8 @@ class RealmManager : Serializable {
          realm.where(SettingsData::class.java)
                 .findAllAsync()
                 .asFlowable()
-                .filter { it.isNotEmpty() }
-                .map { it.first()!! }
+//                .filter { it.isNotEmpty() }
+                .map { data -> if (data.isNotEmpty()) data.first() else SettingsData() }
 
     private fun <E : RealmObject> getObjectAsync(realm: Realm, type: Class<E>) = realm.where(type).findFirstAsync()
 

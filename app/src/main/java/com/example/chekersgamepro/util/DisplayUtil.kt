@@ -14,9 +14,9 @@ class DisplayUtil {
             return dp * (metrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
         }
 
-        fun getDisplayMatrix(activity: Activity): DisplayMetrics {
+        fun getDisplayMatrix(activity: Activity?): DisplayMetrics {
             val displayMetrics = DisplayMetrics()
-            activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+            activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
             return displayMetrics
         }
 

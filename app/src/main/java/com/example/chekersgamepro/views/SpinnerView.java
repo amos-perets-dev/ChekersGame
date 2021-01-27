@@ -20,7 +20,7 @@ import java.util.Locale;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposables;
 
-public class SpinnerView extends Spinner {
+public class SpinnerView extends androidx.appcompat.widget.AppCompatSpinner {
 
 
     public SpinnerView(Context context, AttributeSet attrs) {

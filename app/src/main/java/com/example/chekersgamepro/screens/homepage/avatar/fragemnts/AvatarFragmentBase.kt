@@ -20,7 +20,7 @@ open class AvatarFragmentBase(private val avatarViewModel: AvatarViewModel) : Ch
         }
     }
 
-    protected open fun isMovePage(): Observable<Boolean> =  avatarViewModel.movePage(activity!!).map { true }
+    protected open fun isMovePage(): Observable<Boolean> =  avatarViewModel.movePage(requireActivity()).map { true }
 
     override fun onPauseFragment() {
         Log.d("TEST_GAME", "AvatarFragmentBase -> onPauseFragment")

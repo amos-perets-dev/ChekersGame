@@ -18,13 +18,16 @@ class MenuButtonViewHolder(parent: ViewGroup)
         itemView
                 .setOnTouchListener(TouchListener(View.OnClickListener {
                     Log.d("TEST_GAME", "onClick")
-                    getDataModel()?.onClick() }, 1.1f))
+                    getDataModel()?.onClick() }, 0.85f))
 
     }
 
     override fun bindData(model: IMenuButton) {
         super.bindData(model)
         itemView.menu_button.text = model.getButtonName()
+
+        itemView.menu_button_icon.setImageResource(model.getIcon())
+
     }
 
 
