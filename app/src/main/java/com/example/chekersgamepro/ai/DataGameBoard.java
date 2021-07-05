@@ -595,13 +595,22 @@ public class DataGameBoard {
      * Scores the given board based on a weighted system
      * @return the score of the given board
      */
-    public float getEvaluateBoard(boolean isPlayerOne) {
+    public float getEvaluateBoard(boolean isPlayerOne)
+    {
+        float kingWeight = 1.2F;
+        float result = 0;
+        if(isPlayerOne){
+            result = (playerOneKingsCount * kingWeight) + playerOneCount - (playerTwoKingsCount *
+                    kingWeight) -
+                    playerTwoCount;
+        } else {
 
-//        if (isPlayerOne) {
-            return getPlayerOneScore() - getPlayerTwoScore();
-//        } else {
-//            return getPlayerTwoScore() - getPlayerOneScore();
-//        }
+            result = playerTwoKingsCount * kingWeight + playerTwoCount - (playerOneKingsCount *
+                    kingWeight) -
+                    playerOneCount;
+        }
+        return result;
+
     }
 
 }
